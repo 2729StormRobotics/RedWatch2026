@@ -34,43 +34,22 @@ public final class DriveConstants {
 
   // Angular offsets of the modules relative to the chassis in radians
   // Subject to change depending on what robot side is the front
-  /** Front left module angular offset in radians */
   public static final double kFrontLeftChassisAngularOffset = -Math.PI / 2;
-
-  /** Front right module angular offset in radians */
   public static final double kFrontRightChassisAngularOffset = 0;
-
-  /** Back left module angular offset in radians */
   public static final double kBackLeftChassisAngularOffset = Math.PI;
-
-  /** Back right module angular offset in radians */
-  public static final double kBackRightChassisAngularOffset = -Math.PI / 2;
+  public static final double kBackRightChassisAngularOffset = Math.PI / 2;
 
   // SPARK MAX CAN IDs
   // Subject to change depending on what robot side is the front
-  /** Front left driving motor CAN ID */
-  public static final int kFrontLeftDrivingCanId = 4;
+  public static final int kFrontLeftDrivingCanId = 2; // good
+  public static final int kRearLeftDrivingCanId = 6; // good
+  public static final int kFrontRightDrivingCanId = 4; // good
+  public static final int kRearRightDrivingCanId = 8; // good
 
-  /** Rear left driving motor CAN ID */
-  public static final int kRearLeftDrivingCanId = 2;
-
-  /** Front right driving motor CAN ID */
-  public static final int kFrontRightDrivingCanId = 6;
-
-  /** Rear right driving motor CAN ID */
-  public static final int kRearRightDrivingCanId = 8;
-
-  /** Front left turning motor CAN ID */
-  public static final int kFrontLeftTurningCanId = 3;
-
-  /** Rear left turning motor CAN ID */
-  public static final int kRearLeftTurningCanId = 1;
-
-  /** Front right turning motor CAN ID */
-  public static final int kFrontRightTurningCanId = 5;
-
-  /** Rear right turning motor CAN ID */
-  public static final int kRearRightTurningCanId = 7;
+  public static final int kFrontLeftTurningCanId = 1; // good
+  public static final int kRearLeftTurningCanId = 5; // good
+  public static final int kFrontRightTurningCanId = 3; // good
+  public static final int kRearRightTurningCanId = 7; // good
 
   // public static final boolean kGyroReversed = false;
   public static final double kMaxSpeedMetersPerSecond = 5;
@@ -82,12 +61,17 @@ public final class DriveConstants {
       kMaxSpeedMetersPerSecond, kMaxAccelerationMetersPerSecondSquared,
       kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
 
-  public static final double kSlowModeConstant = 0.5;
+  public static final double kSlowModeConstant = 0.50;
   public static final double kTurnAngleP = 0.9;
   public static final double kTurnAngleI = 0;
   public static final double kTurnAngleD = 0;
   public static final double kTurnAngleTolerance = 0.05;
   public static final double kTurnAngleRateTolerance = 0.02;
 
+
+  public static final double kTranslationP = 3.50;
+  public static final double kTranslationI = 0.0;
+  public static final double kTranslationD = 0.0;
+  
   public static final double angleThreshold = 3;
 }

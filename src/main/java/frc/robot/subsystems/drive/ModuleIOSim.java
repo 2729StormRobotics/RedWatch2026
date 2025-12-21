@@ -13,7 +13,11 @@
 
 package frc.robot.subsystems.drive;
 
+import static frc.robot.subsystems.drive.ModuleConstants.*;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -30,24 +34,30 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class ModuleIOSim implements ModuleIO {
   private static final double LOOP_PERIOD_SECS = 0.02;
 
-
-  private static final DCMotor driveMotorModel = DCMotor.getNeoVortex(1);
-  private static final DCMotor turnMotorModel = DCMotor.getNeo550(1);
-
-  public static final double driveReduction = (50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0);
-  public static final double turnReduction = (150.0 / 7.0);
-  private final DCMotorSim driveSim =
+  private DCMotorSim driveSim =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(driveMotorModel, 0.025, driveReduction),
-          driveMotorModel);
-  private final DCMotorSim turnSim =
+          LinearSystemId.createDCMotorSystem(DCMotor.getNeoVortex(1), 0.025, 4.71), DCMotor.getNeoVortex(1));
+  private DCMotorSim turnSim =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(turnMotorModel, 0.004, turnReduction),
-          turnMotorModel);
+          LinearSystemId.createDCMotorSystem(DCMotor.getNeo550(1), 0.004, 150.0 / 7.0),
+          DCMotor.getNeo550(1));
 
-  private final Rotation2d turnAbsoluteInitPosition = new Rotation2d(Math.random() * 2.0 * Math.PI);
+  private final Rotation2d turnAbsoluteInitPosition =
+      new Rotation2d(); // new Rotation2d(Math.random() * 2.0 * Math.PI);
   private double driveAppliedVolts = 0.0;
   private double turnAppliedVolts = 0.0;
+
+  private final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
+  private final PIDController driveFeedback = new PIDController(0.1, 0.0, 0.0);
+  private final PIDController turnFeedback = new PIDController(10.0, 0.0, 0.0);
+
+  public ModuleIOSim() {
+    // -------------------------------------------------------------------------
+    // CRITICAL FIX: ENABLE CONTINUOUS INPUT
+    // This tells the Sim PID that -PI and PI are the same point.
+    // -------------------------------------------------------------------------
+    turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
+  }
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
@@ -55,7 +65,10 @@ public class ModuleIOSim implements ModuleIO {
     turnSim.update(LOOP_PERIOD_SECS);
 
     inputs.drivePositionRad = driveSim.getAngularPositionRad();
+    inputs.drivePositionMeters = driveSim.getAngularPositionRad() * kWheelDiameterMeters / 2;
     inputs.driveVelocityRadPerSec = driveSim.getAngularVelocityRadPerSec();
+    inputs.driveVelocityMeterPerSec =
+        driveSim.getAngularVelocityRadPerSec() * kWheelDiameterMeters / 2;
     inputs.driveAppliedVolts = driveAppliedVolts;
     inputs.driveCurrentAmps = new double[] {Math.abs(driveSim.getCurrentDrawAmps())};
 
@@ -78,13 +91,37 @@ public class ModuleIOSim implements ModuleIO {
   }
 
   @Override
-  public double getDriveVoltage() {
-    return driveAppliedVolts;
-  }
-
-  @Override
   public void setTurnVoltage(double volts) {
     turnAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
     turnSim.setInputVoltage(turnAppliedVolts);
+  }
+
+  @Override
+  public void setDriveVelocity(double velocityRadPerSec) {
+    velocityRadPerSec *= 2 / kWheelDiameterMeters;
+    setDriveVoltage(
+        driveFeedforward.calculate(velocityRadPerSec)
+            + driveFeedback.calculate(driveSim.getAngularVelocityRadPerSec(), velocityRadPerSec));
+  }
+
+  @Override
+  public void setTurnPosition(double angle) {
+    setTurnVoltage(turnFeedback.calculate(turnSim.getAngularPositionRad(), angle));
+  }
+
+  @Override
+  public void setDrivePIDFF(double p, double i, double d, double ff) {
+    driveFeedback.setPID(p, i, d);
+    // driveFeedforward.setGain(ff);
+  }
+
+  @Override
+  public void setTurnPIDFF(double p, double i, double d, double ff) {
+    turnFeedback.setPID(p, i, d);
+  }
+
+  @Override
+  public double getTurnPositionError(double angle) {
+    return turnFeedback.getErrorDerivative();
   }
 }

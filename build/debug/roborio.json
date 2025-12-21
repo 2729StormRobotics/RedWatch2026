@@ -1,9 +1,0 @@
-[
-  {
-    "type": "java",
-    "name": "frcJava",
-    "port": 8349,
-    "target": "10.27.20.2",
-    "project": "RedWatch2025"
-  }
-]

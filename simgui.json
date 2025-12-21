@@ -1,0 +1,21 @@
+{
+  "NTProvider": {
+    "types": {
+      "/AdvantageKit/RealOutputs/PathPlanner": "Alerts",
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Auto Choices": "String Chooser",
+      "/SmartDashboard/Deadzone": "String Chooser",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/PathPlanner": "Alerts",
+      "/SmartDashboard/commandscheduler": "Scheduler"
+    }
+  },
+  "NetworkTables Info": {
+    "Server": {
+      "Publishers": {
+        "open": true
+      }
+    },
+    "visible": true
+  }
+}

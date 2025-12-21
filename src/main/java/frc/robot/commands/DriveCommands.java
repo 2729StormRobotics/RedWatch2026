@@ -61,9 +61,21 @@ public class DriveCommands {
                   Math.hypot(
                       xSupplier.getAsDouble() * slowMode, ySupplier.getAsDouble() * slowMode),
                   DEADBAND);
-          Rotation2d linearDirection =
-              new Rotation2d(
-                  xSupplier.getAsDouble() * slowMode, ySupplier.getAsDouble() * slowMode);
+          // 1. Get the raw values first so we don't call the supplier twice
+            double x = xSupplier.getAsDouble() * slowMode;
+            double y = ySupplier.getAsDouble() * slowMode;
+
+            // 2. Safe calculation of linear magnitude
+            double rawMagnitude = Math.hypot(x, y);
+            linearMagnitude = MathUtil.applyDeadband(rawMagnitude, DEADBAND);
+
+            // 3. SAFE Rotation2d creation (The Fix)
+            Rotation2d linearDirection;
+            if (rawMagnitude > 1e-6) { // Check if we are moving
+                linearDirection = new Rotation2d(x, y);
+            } else {
+                linearDirection = new Rotation2d(); // Default to 0 if not moving
+            }
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble() * slowMode, DEADBAND);
 
           // Square values for better control feel

@@ -34,5 +34,7 @@ public interface GyroIO {
     return 0.0;
   }
 
+  public default void setRobotAngle(double angle) {
+  }
   public default void zeroAll() {}
 }
