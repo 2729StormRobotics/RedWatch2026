@@ -47,6 +47,7 @@ public class DriveCommands {
 
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
+   * NOW WITH HEADING CORRECTION (Drift Correction).
    */
   public static Command joystickDrive(
       Drive drive,
@@ -55,40 +56,52 @@ public class DriveCommands {
       DoubleSupplier omegaSupplier) {
     return Commands.run(
         () -> {
-          // Apply deadband
-          double linearMagnitude =
-              MathUtil.applyDeadband(
-                  Math.hypot(
-                      xSupplier.getAsDouble() * slowMode, ySupplier.getAsDouble() * slowMode),
-                  DEADBAND);
-          // 1. Get the raw values first so we don't call the supplier twice
-            double x = xSupplier.getAsDouble() * slowMode;
-            double y = ySupplier.getAsDouble() * slowMode;
+          // 1. Get raw values
+          // We grab these early so we don't call the suppliers multiple times
+          double rawX = xSupplier.getAsDouble() * slowMode;
+          double rawY = ySupplier.getAsDouble() * slowMode;
+          double rawOmega = omegaSupplier.getAsDouble() * slowMode;
 
-            // 2. Safe calculation of linear magnitude
-            double rawMagnitude = Math.hypot(x, y);
-            linearMagnitude = MathUtil.applyDeadband(rawMagnitude, DEADBAND);
+          // 2. Apply Deadband
+          double linearMagnitude = MathUtil.applyDeadband(Math.hypot(rawX, rawY), DEADBAND);
+          double omega = MathUtil.applyDeadband(rawOmega, DEADBAND);
 
-            // 3. SAFE Rotation2d creation (The Fix)
-            Rotation2d linearDirection;
-            if (rawMagnitude > 1e-6) { // Check if we are moving
-                linearDirection = new Rotation2d(x, y);
-            } else {
-                linearDirection = new Rotation2d(); // Default to 0 if not moving
-            }
-          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble() * slowMode, DEADBAND);
-
-          // Square values for better control feel
+          // 3. Square values for fine control
           linearMagnitude = linearMagnitude * linearMagnitude;
           omega = Math.copySign(omega * omega, omega);
 
-          // Calculate new linear velocity
+          // 4. Safe Rotation Calculation (Prevents crash when joystick is 0,0)
+          Rotation2d linearDirection;
+          if (linearMagnitude > 1e-6) {
+              linearDirection = new Rotation2d(rawX, rawY);
+          } else {
+              linearDirection = new Rotation2d(); 
+          }
+
+          // -------------------------------------------------------------------
+          // 5. HEADING CORRECTION LOGIC
+          // -------------------------------------------------------------------
+          // If the driver is NOT touching the rotation stick, use PID to hold the angle.
+          if (Math.abs(omega) > 1e-4) {
+            // Driver IS turning: Let them turn, and update the "Goal" to current angle.
+            // This ensures that the moment they let go, we lock to THAT new angle.
+            drive.setHeadingGoal(drive.getRotation());
+          } else {
+            // Driver RELEASED the stick: Fight drift using the Heading Controller.
+            // But only correct if we are actually moving (to prevent jitter when stopped).
+            if (linearMagnitude > 0.01) {
+                omega = drive.calculateHeadingCorrection(drive.getRotation());
+            }
+          }
+          // -------------------------------------------------------------------
+
+          // 6. Calculate Linear Velocity Vector
           Translation2d linearVelocity =
               new Pose2d(new Translation2d(), linearDirection)
                   .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                   .getTranslation();
 
-          // Convert to field-relative speeds & send command
+          // 7. Send to Drivetrain
           boolean isFlipped = getIsFlipped();
           drive.runVelocity(
               ChassisSpeeds.fromFieldRelativeSpeeds(

@@ -22,6 +22,14 @@ import static frc.robot.subsystems.drive.DriveConstants.kPathConstraints;
 import static frc.robot.subsystems.drive.DriveConstants.kTrackWidthX;
 import static frc.robot.subsystems.drive.DriveConstants.kTrackWidthY;
 
+import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -29,31 +37,25 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj.DriverStation;
-
 import frc.robot.Constants;
 import frc.robot.util.autonomous.DeadzoneChooser;
 import frc.robot.util.autonomous.LocalADStarAK;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 
 /**
  * Swerve drive subsystem for the robot.
@@ -159,6 +161,13 @@ public class Drive extends SubsystemBase {
 
   /** PathPlanner robot configuration */
   RobotConfig robotConfig;
+
+  // PID Controller for Heading Correction
+  // kP = 5.0 is a good starting point for radians (tries to correct 1 radian error with 5 rad/s speed)
+  private final edu.wpi.first.math.controller.PIDController headingController = 
+      new edu.wpi.first.math.controller.PIDController(5.0, 0.0, 0.0);
+      
+  private Rotation2d headingGoal = new Rotation2d();
 
   public Drive(
       GyroIO gyroIO,
@@ -292,6 +301,25 @@ public class Drive extends SubsystemBase {
     odometry.update(rawGyroRotation, modulePositions);
 
     Logger.recordOutput("Odometry/Odometry", odometry.getPoseMeters());
+  }
+
+  /** Updates the target heading for drift correction. */
+  public void setHeadingGoal(Rotation2d goal) {
+    this.headingGoal = goal;
+  }
+
+  /** Calculates the rotation speed needed to snap back to the heading goal. */
+  public double calculateHeadingCorrection(Rotation2d currentRotation) {
+    // Enable continuous input so it knows -PI and PI are the same point (shortest path)
+    headingController.enableContinuousInput(-Math.PI, Math.PI);
+    
+    // Calculate PID output
+    double output = headingController.calculate(
+        currentRotation.getRadians(), 
+        headingGoal.getRadians()
+    );
+    
+    return output;
   }
 
   /**
@@ -428,6 +456,7 @@ public class Drive extends SubsystemBase {
    * @param timestamp The timestamp of the vision measurement in seconds.
    */
   public void addVisionMeasurement(Pose2d visionPose, double timestamp) {
+    poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
     poseEstimator.addVisionMeasurement(visionPose, timestamp);
   }
 
