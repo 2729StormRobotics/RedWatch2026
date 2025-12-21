@@ -57,7 +57,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final SampleMotor sampleMotor;
+  // private final SampleMotor sampleMotor;
   private final Vision vision;
 
   // LEDs
@@ -81,6 +81,8 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
+        // Create vision IO first (dummy for Drive constructor - Vision subsystem handles actual vision)
+        VisionIO dummyVisionIO = new VisionIO() {};
         drive =
             new Drive(
                 new GyroIOReal(),
@@ -88,7 +90,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(1),
                 new ModuleIOSparkMax(2),
                 new ModuleIOSparkMax(3));
-        sampleMotor = new SampleMotor(new SampleMotorIOReal());
+        // sampleMotor = new SampleMotor(new SampleMotorIOReal());
         
         // Vision subsystem with real Limelight cameras
         vision =
@@ -100,6 +102,8 @@ public class RobotContainer {
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
+        // Create vision IO first (dummy for Drive constructor - Vision subsystem handles actual vision)
+        VisionIO dummyVisionIOSim = new VisionIO() {};
         drive =
             new Drive(
                 new GyroIO() {},
@@ -107,7 +111,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        sampleMotor = new SampleMotor(new SampleMotorIOSim());
+        // sampleMotor = new SampleMotor(new SampleMotorIOSim());
         
         // Vision subsystem with simulation IO (no vision data)
         vision =
@@ -119,6 +123,7 @@ public class RobotContainer {
 
       default:
         // Replayed robot, disable IO implementations
+        VisionIO dummyVisionIOReply = new VisionIO() {};
         drive =
             new Drive(
                 new GyroIO() {},
@@ -126,7 +131,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        sampleMotor = new SampleMotor(new SampleMotorIO() {});
+        // sampleMotor = new SampleMotor(new SampleMotorIO() {});
         
         // Vision subsystem with empty IO for replay
         vision =

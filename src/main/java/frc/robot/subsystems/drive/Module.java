@@ -17,18 +17,17 @@ import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.drive.ModuleConstants.kDrivingD;
 import static frc.robot.subsystems.drive.ModuleConstants.kDrivingFF;
 import static frc.robot.subsystems.drive.ModuleConstants.kDrivingI;
-import static frc.robot.subsystems.drive.ModuleConstants.kDrivingMotorCurrentLimit;
 import static frc.robot.subsystems.drive.ModuleConstants.kDrivingP;
 import static frc.robot.subsystems.drive.ModuleConstants.kTurningD;
 import static frc.robot.subsystems.drive.ModuleConstants.kTurningFF;
 import static frc.robot.subsystems.drive.ModuleConstants.kTurningI;
-import static frc.robot.subsystems.drive.ModuleConstants.kTurningMotorCurrentLimit;
 import static frc.robot.subsystems.drive.ModuleConstants.kTurningP;
 import static frc.robot.subsystems.drive.ModuleConstants.kWheelDiameterMeters;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -127,31 +126,23 @@ public class Module {
   public SwerveModuleState runSetpoint(SwerveModuleState state) {
     // Optimize state based on current angle
     // Controllers run in "periodic" when the setpoint is not null
-    // Note: optimize() is deprecated but still functional - consider updating to new API
-    @SuppressWarnings("deprecation")
-    var optimizedState = SwerveModuleState.optimize(state, getAngle());
+    state.optimize(getAngle());
 
     // Update setpoints, controllers run in "periodic"
-    angleSetpoint = optimizedState.angle;
-    speedSetpoint = optimizedState.speedMetersPerSecond;
+    angleSetpoint = state.angle;
+    speedSetpoint = state.speedMetersPerSecond;
 
-    return optimizedState;
+    return state;
   }
 
   /** Runs the module with the specified voltage while controlling to zero degrees. */
   public void runCharacterization(double volts) {
     // Closed loop turn control
-    // angleSetpoint = new Rotation2d();
+    angleSetpoint = new Rotation2d();
 
     // Open loop drive control
     io.setDriveVoltage(volts);
-
-    // io.setTurnPosition(0);
-    // speedSetpoint = null;
-  }
-
-  public Voltage getDriveVoltage() {
-    return Volts.of(io.getDriveVoltage());
+    speedSetpoint = null;
   }
 
   public void runCharacterization(double driveVolts, double angleVolts) {
@@ -223,19 +214,11 @@ public class Module {
   public double getCharacterizationVelocity() {
     return inputs.driveVelocityRadPerSec;
   }
-
-  /**
-   * Sets the turn motor voltage directly.
-   * Note: This method appears to have a recursive call issue and may need review.
-   *
-   * @param voltage The voltage to apply to the turn motor
-   */
+  /** Returns the voltage currently applied to the drive motor. */
+  public Voltage getDriveVoltage() {
+    return Volts.of(inputs.driveAppliedVolts);
+  }
   public void setTurnVoltage(double voltage) {
     io.setTurnVoltage(voltage);
-  }
-
-  public void setCurrentLimit() {
-    io.setDriveCurrentLimit(kDrivingMotorCurrentLimit);
-    io.setTurningCurrentLimit(kTurningMotorCurrentLimit);
   }
 }

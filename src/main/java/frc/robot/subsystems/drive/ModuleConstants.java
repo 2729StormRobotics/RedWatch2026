@@ -61,6 +61,14 @@ public final class ModuleConstants {
   public static final IdleMode kDrivingMotorIdleMode = IdleMode.kCoast;
   public static final IdleMode kTurningMotorIdleMode = IdleMode.kCoast;
 
+    // Drive Gear Ratio (High Speed - 14T Pinion)
+    // Reduction: 4.71 : 1
+    public static final double kDriveGearRatio = 4.714285714; // (4.71)
+
+    // Turn Gear Ratio (Standard MAXSwerve Azimuth)
+    // Reduction: 46.42 : 1
+    public static final double kTurnGearRatio = 46.42;
+
   public static final int kDrivingMotorCurrentLimit = 35; // amps
   public static final int kTurningMotorCurrentLimit = 20; // amps
 }

@@ -1,5 +1,6 @@
 package frc.robot.util.drive;
 
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -13,10 +14,65 @@ import java.util.function.DoubleSupplier;
 public class DriveControls {
   // Controllers
   /** Translator joystick for forward/strafe movement */
-  public static final CommandJoystick m_translator = new CommandJoystick(0);
+  public static final CommandGenericHID m_translator;
 
   /** Rotator joystick for rotation control */
-  public static final CommandJoystick m_rotator = new CommandJoystick(1);
+  public static final CommandGenericHID m_rotator;
+
+  // Static initializer to set up controllers based on mode
+  static {
+    if (Constants.currentMode == Constants.Mode.REAL) {
+      // Real mode: use CommandJoystick
+      m_translator = new CommandJoystick(0);
+      m_rotator = new CommandJoystick(1);
+    } else {
+      // Simulation mode: use CommandGenericHID
+      m_translator = new CommandGenericHID(0);
+      m_rotator = new CommandGenericHID(1);
+    }
+  }
+
+  /**
+   * Gets the Y axis value from a controller.
+   * Works with both CommandJoystick (using getY()) and CommandGenericHID (using getRawAxis(1)).
+   * Both should return negative when pushed forward (standard joystick convention).
+   */
+  private static double getY(CommandGenericHID controller) {
+    if (controller instanceof CommandJoystick) {
+      return ((CommandJoystick) controller).getY();
+    } else {
+      // getRawAxis(1) returns the raw Y axis value (negative when pushed forward)
+      return -controller.getHID().getRawAxis(1);
+    }
+  }
+
+  /**
+   * Gets the X axis value from a controller.
+   * Works with both CommandJoystick (using getX()) and CommandGenericHID (using getRawAxis(0)).
+   * Both should return negative when pushed right (standard joystick convention).
+   */
+  private static double getX(CommandGenericHID controller) {
+    if (controller instanceof CommandJoystick) {
+      return ((CommandJoystick) controller).getX();
+    } else {
+      // getRawAxis(0) returns the raw X axis value (negative when pushed right)
+      return -controller.getHID().getRawAxis(0);
+    }
+  }
+
+  /**
+   * Gets the twist axis value from a controller.
+   * Works with both CommandJoystick (using getTwist()) and CommandGenericHID (using getRawAxis(2)).
+   * Both should return the raw twist/rotation axis value.
+   */
+  private static double getTwist(CommandGenericHID controller) {
+    if (controller instanceof CommandJoystick) {
+      return ((CommandJoystick) controller).getTwist();
+    } else {
+      // getRawAxis(2) returns the raw twist/rotation axis value
+      return -m_translator.getHID().getRawAxis(2);
+    }
+  }
 
   /** Weapons/operator controller for subsystem controls */
   public static final CommandXboxController m_weaponsController = new CommandXboxController(0);
@@ -78,9 +134,9 @@ public class DriveControls {
     switch (Constants.driver) {
       case KRITHIK:
         // Driver controls - Krithik's configuration
-        DRIVE_FORWARD = () -> (-m_translator.getY());
-        DRIVE_STRAFE = () -> (-m_translator.getX());
-        DRIVE_ROTATE = () -> (m_rotator.getTwist() / 2.0);
+        DRIVE_FORWARD = () -> (-getY(m_translator));
+        DRIVE_STRAFE = () -> (-getX(m_translator));
+        DRIVE_ROTATE = () -> (getTwist(m_rotator) / 2.0);
         RESET_GYRO = m_translator.button(12);
 
         // Driver settings
@@ -95,9 +151,9 @@ public class DriveControls {
       case PROGRAMMERS:
       default:
         // Driver controls - Default/programmer configuration
-        DRIVE_FORWARD = () -> (-m_translator.getY());
-        DRIVE_STRAFE = () -> (-m_translator.getX());
-        DRIVE_ROTATE = () -> (-m_translator.getTwist());
+        DRIVE_FORWARD = () -> (-getY(m_translator));
+        DRIVE_STRAFE = () -> (-getX(m_translator));
+        DRIVE_ROTATE = () -> (-getTwist(m_translator));
         RESET_GYRO = m_translator.button(12);
 
         // Driver settings

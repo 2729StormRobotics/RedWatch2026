@@ -2,10 +2,12 @@ package frc.robot.subsystems.drive;
 
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Queue;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Wrapper class for the navX-MXP and ADXRS450_Gyro
@@ -25,6 +27,7 @@ public class GyroIOReal implements GyroIO {
 
   private final Queue<Double> yawPositionQueue;
   private final Queue<Double> yawTimestampQueue;
+  private final ADXRS450_Gyro gyro;
 
   public GyroIOReal() {
     navx = new AHRS(NavXComType.kMXP_SPI);
@@ -32,6 +35,8 @@ public class GyroIOReal implements GyroIO {
     resetPitch = 0;
     navx.reset();
 
+    gyro = new ADXRS450_Gyro();
+    gyro.calibrate();
     yawPositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(() -> getYawAngle());
     yawTimestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
   }
@@ -39,6 +44,7 @@ public class GyroIOReal implements GyroIO {
   @Override
   public void updateInputs(GyroIOInputs inputs) {
     inputs.connected = navx.isConnected();
+    Logger.recordOutput("OtherGyro", gyro.getAngle());
     inputs.yawPosition = Rotation2d.fromDegrees(getYawAngle());
     inputs.rollPosition = Rotation2d.fromDegrees(getRollAngle());
     inputs.pitchPosition = Rotation2d.fromDegrees(getPitchAngle());
@@ -146,8 +152,11 @@ public class GyroIOReal implements GyroIO {
    * @return THe angle in degrees
    */
   public double getTiltAngle() {
-
-    return getPitchAngle();
+    if (navXConnected()) {
+      return getPitchAngle();
+    } else {
+      return -gyro.getAngle();
+    }
   }
 
   /** Sets the current rotation of the robot to "0". */
@@ -156,6 +165,7 @@ public class GyroIOReal implements GyroIO {
   }
 
   /** Sets the current rotation of the robot to a given value. */
+  @Override
   public void setRobotAngle(double angle) {
     setYawAngle(angle);
   }
@@ -163,6 +173,7 @@ public class GyroIOReal implements GyroIO {
   /** Sets the current tilt of the robot to "0". */
   public void zeroTiltAngle() {
     zeroPitchAngle();
+    gyro.reset();
   }
 
   @Override
@@ -181,6 +192,18 @@ public class GyroIOReal implements GyroIO {
     return navx.isConnected();
   }
 
+  /** Displays the angles on {@code SmartDashboard}. */
+  public void outputValues() {
+    SmartDashboard.putNumber("/Gyro/Yaw Angle", getYawAngle());
+    SmartDashboard.putNumber("/Gyro/Roll Angle", getRollAngle());
+    SmartDashboard.putNumber("/Gyro/Pitch Angle", getPitchAngle());
+
+    SmartDashboard.putNumber("Robot Angle", getRobotAngle());
+    SmartDashboard.putNumber("Robot Angle Vel", getRobotAngleVelocity());
+    // SmartDashboard.putNumber("Tilt Angle", getTiltAngle());
+    SmartDashboard.putBoolean("Gyro Connected", navXConnected());
+  }
+
   public static GyroIOReal getInstance() {
     if (instance == null) {
       instance = new GyroIOReal();
@@ -188,7 +211,7 @@ public class GyroIOReal implements GyroIO {
     return instance;
   }
 
-  public AHRS getGyro() {
-    return navx;
+  public ADXRS450_Gyro getGyro() {
+    return gyro;
   }
 }

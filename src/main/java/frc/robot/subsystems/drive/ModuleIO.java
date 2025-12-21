@@ -43,14 +43,11 @@ public interface ModuleIO {
   /** Run the drive motor at the specified voltage. */
   public default void setDriveVoltage(double volts) {}
 
+  /** Run the drive motor at the specified voltage. */
+  public default double getDriveVoltage() {return 0.0;}
+
   /** Run the turn motor at the specified voltage. */
   public default void setTurnVoltage(double volts) {}
-
-  /** get drive voltage. */
-  public default double getDriveVoltage() {
-    return 0.0;
-  }
-
   /** Enable or disable brake mode on the drive motor. */
   public default void setDriveBrakeMode(boolean enable) {}
 
@@ -72,8 +69,10 @@ public interface ModuleIO {
   public default double getAbsoluteEncoderOffset() {
     return 0.0;
   }
+  
 
   public default void setTurningCurrentLimit(int limit) {}
 
   public default void setDriveCurrentLimit(int limit) {}
 }
+
