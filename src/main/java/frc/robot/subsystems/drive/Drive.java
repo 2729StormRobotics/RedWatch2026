@@ -32,6 +32,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -428,6 +429,25 @@ public class Drive extends SubsystemBase {
    */
   public void addVisionMeasurement(Pose2d visionPose, double timestamp) {
     poseEstimator.addVisionMeasurement(visionPose, timestamp);
+  }
+
+  /**
+   * Adds a vision measurement to the pose estimator with custom standard deviations.
+   * This allows dynamic trust levels based on tag count and distance.
+   *
+   * @param visionPose The pose of the robot as measured by the vision camera.
+   * @param timestamp The timestamp of the vision measurement in seconds.
+   * @param stdDevX Standard deviation for X translation in meters
+   * @param stdDevY Standard deviation for Y translation in meters
+   * @param stdDevTheta Standard deviation for rotation in radians
+   */
+  public void addVisionMeasurement(
+      Pose2d visionPose, double timestamp, double stdDevX, double stdDevY, double stdDevTheta) {
+    // Create standard deviation vector for vision measurement
+    // This allows dynamic trust levels based on tag count and distance
+    var visionStdDevs = VecBuilder.fill(stdDevX, stdDevY, stdDevTheta);
+
+    poseEstimator.addVisionMeasurement(visionPose, timestamp, visionStdDevs);
   }
 
   /** Returns a command to run a quasistatic test in the specified direction. */
