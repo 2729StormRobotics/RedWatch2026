@@ -87,6 +87,18 @@ public class Drive extends SubsystemBase {
   /** Raw gyro rotation (not filtered) */
   private Rotation2d rawGyroRotation = new Rotation2d();
 
+  /** Fallback rotation estimate when the gyro is unavailable */
+  private Rotation2d fallbackRotation = new Rotation2d();
+
+  /** Last commanded chassis speeds, used for fallback rotation integration */
+  private ChassisSpeeds lastCommandedSpeeds = new ChassisSpeeds();
+
+  /** Timestamp of the last periodic loop for fallback integration */
+  private double lastTimestamp = Timer.getFPGATimestamp();
+
+  /** Whether pose estimation is currently using a fallback rotation source */
+  private boolean usingFallbackRotation = false;
+
   /** Last module positions for delta tracking */
   private SwerveModulePosition[] lastModulePositions =
       new SwerveModulePosition[] {
@@ -289,10 +301,37 @@ public class Drive extends SubsystemBase {
     if (gyroInputs.connected) {
       // Use the real gyro angle
       rawGyroRotation = gyroInputs.yawPosition;
+      if (usingFallbackRotation) {
+        Logger.recordOutput("Drive/GyroFallbackActive", false);
+      }
+      usingFallbackRotation = false;
+      fallbackRotation = rawGyroRotation;
+      lastTimestamp = Timer.getFPGATimestamp();
     } else if (Constants.getRobotMode() == Constants.Mode.SIM) {
       // Use simulated rotation in simulation mode
       rawGyroRotation = simRotation;
+      Logger.recordOutput("Drive/GyroFallbackActive", false);
+      usingFallbackRotation = false;
+      fallbackRotation = rawGyroRotation;
+      lastTimestamp = Timer.getFPGATimestamp();
+    } else {
+      // Gyro disconnected on real robot, fall back to integrated omega or cached heading
+      double currentTimestamp = Timer.getFPGATimestamp();
+      double dt = currentTimestamp - lastTimestamp;
+      if (dt > 0.0) {
+        fallbackRotation =
+            fallbackRotation.rotateBy(
+                Rotation2d.fromRadians(lastCommandedSpeeds.omegaRadiansPerSecond * dt));
+      }
+      lastTimestamp = currentTimestamp;
+      rawGyroRotation = fallbackRotation;
+      if (!usingFallbackRotation) {
+        Logger.recordOutput("Drive/GyroFallbackActive", true);
+      }
+      usingFallbackRotation = true;
     }
+
+    Logger.recordOutput("Odometry/Degraded", usingFallbackRotation);
 
     // Update pose estimator with current timestamp, gyro, and module positions
     poseEstimator.updateWithTime(Timer.getFPGATimestamp(), rawGyroRotation, modulePositions);
@@ -328,6 +367,7 @@ public class Drive extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisSpeeds speeds) {
+    lastCommandedSpeeds = speeds;
     // Calculate module setpoints
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     simRotation =
