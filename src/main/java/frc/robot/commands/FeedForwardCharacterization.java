@@ -11,14 +11,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-// NEED TO FIX
-
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-// import frc.robot.util.misc.PolynomialRegression;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -92,17 +90,78 @@ public class FeedForwardCharacterization extends Command {
         return;
       }
 
-      // PolynomialRegression regression =
-      //     new PolynomialRegression(
-      //         velocityData.stream().mapToDouble(Double::doubleValue).toArray(),
-      //         voltageData.stream().mapToDouble(Double::doubleValue).toArray(),
-      //         1);
+      RegressionResults regression = calculateLinearRegression();
+      if (regression == null) {
+        System.out.println("FF Characterization Results: Unable to compute regression (degenerate data)");
+        SmartDashboard.putString("FF Characterization/Status", "Regression failed");
+        return;
+      }
 
       System.out.println("FF Characterization Results:");
       System.out.println("\tCount=" + Integer.toString(velocityData.size()) + "");
-      // System.out.println(String.format("\tR2=%.5f", regression.R2()));
-      // System.out.println(String.format("\tkS=%.5f", regression.beta(0)));
-      // System.out.println(String.format("\tkV=%.5f", regression.beta(1)));
+      System.out.println(String.format("\tR2=%.5f", regression.r2));
+      System.out.println(String.format("\tkS=%.5f", regression.kS));
+      System.out.println(String.format("\tkV=%.5f", regression.kV));
+
+      SmartDashboard.putNumber("FF Characterization/Count", velocityData.size());
+      SmartDashboard.putNumber("FF Characterization/R2", regression.r2);
+      SmartDashboard.putNumber("FF Characterization/kS", regression.kS);
+      SmartDashboard.putNumber("FF Characterization/kV", regression.kV);
+      SmartDashboard.putString("FF Characterization/Status", "OK");
+    }
+
+    private RegressionResults calculateLinearRegression() {
+      int n = velocityData.size();
+      if (n < 2) {
+        return null;
+      }
+
+      double sumX = 0.0;
+      double sumY = 0.0;
+      double sumXY = 0.0;
+      double sumXX = 0.0;
+      for (int i = 0; i < n; i++) {
+        double x = velocityData.get(i);
+        double y = voltageData.get(i);
+        sumX += x;
+        sumY += y;
+        sumXY += x * y;
+        sumXX += x * x;
+      }
+
+      double denominator = (n * sumXX) - (sumX * sumX);
+      if (Math.abs(denominator) < 1E-9) {
+        return null;
+      }
+
+      double kV = ((n * sumXY) - (sumX * sumY)) / denominator;
+      double kS = (sumY - (kV * sumX)) / n;
+
+      double meanY = sumY / n;
+      double ssTot = 0.0;
+      double ssRes = 0.0;
+      for (int i = 0; i < n; i++) {
+        double x = velocityData.get(i);
+        double y = voltageData.get(i);
+        double predicted = kS + (kV * x);
+        ssTot += Math.pow(y - meanY, 2);
+        ssRes += Math.pow(y - predicted, 2);
+      }
+
+      double r2 = ssTot > 1E-9 ? 1.0 - (ssRes / ssTot) : 0.0;
+      return new RegressionResults(kS, kV, r2);
+    }
+
+    private static class RegressionResults {
+      final double kS;
+      final double kV;
+      final double r2;
+
+      RegressionResults(double kS, double kV, double r2) {
+        this.kS = kS;
+        this.kV = kV;
+        this.r2 = r2;
+      }
     }
   }
 }
