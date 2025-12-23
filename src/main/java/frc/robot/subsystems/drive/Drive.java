@@ -54,6 +54,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import frc.robot.util.autonomous.DeadzoneChooser;
 import frc.robot.util.autonomous.LocalADStarAK;
 
@@ -331,7 +332,57 @@ public class Drive extends SubsystemBase {
       usingFallbackRotation = true;
     }
 
-    Logger.recordOutput("Odometry/Degraded", usingFallbackRotation);
+    // 1. Update Limelight with fresh gyro data (Critical for MegaTag 2)
+    // Note: Use the internal robotYaw variable to ensure thread safety if needed
+    double robotYaw = gyroIO.getYawAngle(); 
+    LimelightHelpers.SetRobotOrientation("limelight-front", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+    LimelightHelpers.SetRobotOrientation("limelight-back", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+    // 2. Define cameras to iterate over
+    String[] camNames = {"limelight-front", "limelight-back"};
+
+    for (String camName : camNames) {
+        // Fetch the MegaTag 2 Estimate (if pipeline is configured for it)
+        LimelightHelpers.PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(camName);
+
+        // CHECK 1: Do we have a valid target?
+        if (mt2Estimate.tagCount == 0) {
+            continue; // Skip this camera, it sees nothing
+        }
+
+        // CHECK 2: Is the data fresh? (Reject if > 0.5s old, prevents "ghosting" when connection lags)
+        if (Math.abs(Timer.getFPGATimestamp() - mt2Estimate.timestampSeconds) > 0.5) {
+            continue; 
+        }
+        // 3. Dynamic Standard Deviation Calculation
+        // This is the "Secret Sauce". We trust close multi-tag data, and distrust far single-tag data.
+        double xyStds;
+        double degStds = 9999999; // Default to ignoring vision rotation (trust Gyro)
+
+        if (mt2Estimate.tagCount >= 2) {
+            // MULTI-TAG: Very trustworthy. 
+            // Trust it heavily (0.5m) but scale slightly with distance to be safe.
+            xyStds = 0.5 + (mt2Estimate.avgTagDist * 0.1); 
+        } else {
+            // SINGLE-TAG: Low trust.
+            // If it's far away (>4m), trust it very little (high std dev).
+            // If it's close (<2m), trust it moderately.
+            if (mt2Estimate.avgTagDist > 4.0) {
+                xyStds = 3.0; // Very untrusted
+            } else {
+                xyStds = 0.9 + (mt2Estimate.avgTagDist * 0.2);
+            }
+        }
+
+        // 4. Add to Pose Estimator
+        // We use the 3-argument version to apply these specific StdDevs to THIS measurement only.
+        poseEstimator.addVisionMeasurement(
+            mt2Estimate.pose,
+            mt2Estimate.timestampSeconds,
+            VecBuilder.fill(xyStds, xyStds, degStds)
+        );
+    }
+
 
     // Update pose estimator with current timestamp, gyro, and module positions
     poseEstimator.updateWithTime(Timer.getFPGATimestamp(), rawGyroRotation, modulePositions);
