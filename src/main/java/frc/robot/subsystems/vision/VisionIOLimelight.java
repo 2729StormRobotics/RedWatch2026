@@ -15,7 +15,10 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.LimelightHelpers;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -98,11 +101,7 @@ public class VisionIOLimelight implements VisionIO {
   public void setRobotOrientation(double yaw, double yawVelocity) {
     // CRITICAL: Must call this every cycle for MegaTag 2 to work correctly
     // LimelightHelpers.SetRobotOrientation() injects gyro data into Limelight
-    try {
-      setRobotOrientationToLimelight(yaw, yawVelocity);
-    } catch (Exception e) {
-      Logger.recordOutput("Vision/" + limelightName + "/OrientationError", e.getMessage());
-    }
+    LimelightHelpers.SetRobotOrientation(limelightName, yaw, yawVelocity, 0.0, 0.0, 0.0, 0.0);
   }
 
   @Override
@@ -154,29 +153,8 @@ public class VisionIOLimelight implements VisionIO {
    * MegaTag 2 provides a pose estimate with timestamp and tag count information.
    */
   private Pose2d getBotPoseFromNetworkTables() {
-    try {
-      var table = edu.wpi.first.networktables.NetworkTableInstance.getDefault()
-          .getTable(limelightName);
-      
-      // MegaTag 2 provides botpose_wpiblue_megatag2 (with MT2 suffix)
-      // Format: [x, y, z, roll, pitch, yaw, latency, tagCount, tagSpan, avgTagDist, avgTagArea]
-      double[] botPose = table.getEntry("botpose_wpiblue_megatag2").getDoubleArray(new double[11]);
-      
-      if (botPose.length >= 6) {
-        // Format: [x, y, z, roll, pitch, yaw, latency, tagCount, ...]
-        double x = botPose[0];
-        double y = botPose[1];
-        double yaw = Math.toRadians(botPose[5]);
-        
-        // Validate pose is reasonable (field bounds check)
-        if (x >= -1.0 && x <= 18.0 && y >= -1.0 && y <= 9.0) {
-          return new Pose2d(x, y, Rotation2d.fromRadians(yaw));
-        }
-      }
-    } catch (Exception e) {
-      Logger.recordOutput("Vision/" + limelightName + "/NetworkTablesError", e.getMessage());
-    }
-    return null;
+    
+    return LimelightHelpers.getBotPose2d_wpiBlue(limelightName);
   }
 
   /**
@@ -188,19 +166,7 @@ public class VisionIOLimelight implements VisionIO {
    * We send yaw and yawVelocity, leaving roll/pitch at 0.
    */
   private void setRobotOrientationToLimelight(double yaw, double yawVelocity) {
-    try {
-      var table = edu.wpi.first.networktables.NetworkTableInstance.getDefault()
-          .getTable(limelightName);
-      
-      // Set robot orientation for MegaTag 2
-      // Format: [yawDeg, rollDeg, pitchDeg, yawVelDeg, rollVelDeg, pitchVelDeg]
-      table.getEntry("robot_orientation_set").setDoubleArray(new double[] {
-          Math.toDegrees(yaw), 0.0, 0.0,  // yaw, roll, pitch
-          Math.toDegrees(yawVelocity), 0.0, 0.0  // yawVel, rollVel, pitchVel
-      });
-    } catch (Exception e) {
-      Logger.recordOutput("Vision/" + limelightName + "/SetOrientationError", e.getMessage());
-    }
+    LimelightHelpers.SetRobotOrientation(limelightName, yaw, yawVelocity, 0, 0, 0, 0);
   }
 
   /**
@@ -208,42 +174,14 @@ public class VisionIOLimelight implements VisionIO {
    * Reads from the botpose array which includes tag count.
    */
   private int getTagCountFromMegaTag2() {
-    try {
-      var table = edu.wpi.first.networktables.NetworkTableInstance.getDefault()
-          .getTable(limelightName);
-      
-      // MegaTag 2 botpose array: [x, y, z, roll, pitch, yaw, latency, tagCount, ...]
-      double[] botPose = table.getEntry("botpose_wpiblue_megatag2").getDoubleArray(new double[11]);
-      
-      if (botPose.length >= 8) {
-        // tagCount is at index 7
-        return (int) botPose[7];
-      }
-      return 0;
-    } catch (Exception e) {
-      return 0;
-    }
+    return LimelightHelpers.getTargetCount(limelightName);
   }
 
   /**
    * Gets latency from MegaTag 2 pose array.
    */
   private double getLatencyMsFromMegaTag2() {
-    try {
-      var table = edu.wpi.first.networktables.NetworkTableInstance.getDefault()
-          .getTable(limelightName);
-      
-      // MegaTag 2 botpose array: [x, y, z, roll, pitch, yaw, latency, tagCount, ...]
-      double[] botPose = table.getEntry("botpose_wpiblue_megatag2").getDoubleArray(new double[11]);
-      
-      if (botPose.length >= 7) {
-        // latency is at index 6 (in milliseconds)
-        return botPose[6];
-      }
-      return 0.0;
-    } catch (Exception e) {
-      return 0.0;
-    }
+    return LimelightHelpers.getLatency_Capture(limelightName);
   }
 
   /**
@@ -286,38 +224,15 @@ public class VisionIOLimelight implements VisionIO {
 
   @Override
   public void setThrottle(int throttle) {
-    try {
-      var table = edu.wpi.first.networktables.NetworkTableInstance.getDefault()
-          .getTable(limelightName);
-      
-      // Set throttle parameter for thermal management
-      // 0 = full speed (enabled mode)
-      // 100-200 = throttled (disabled mode to reduce heat)
-      // Limelight 4 uses the "throttle_set" NetworkTables entry
-      table.getEntry("throttle_set").setNumber(throttle);
-      
-      Logger.recordOutput("Vision/" + limelightName + "/Throttle", throttle);
-    } catch (Exception e) {
-      Logger.recordOutput("Vision/" + limelightName + "/ThrottleError", e.getMessage());
-    }
+    NetworkTableInstance.getDefault().getTable(limelightName).getEntry("throttle_set").setNumber(throttle);
+
+
+  
   }
 
   @Override
   public void setIMUMode(int mode) {
-    try {
-      var table = edu.wpi.first.networktables.NetworkTableInstance.getDefault()
-          .getTable(limelightName);
-      
-      // Set IMU mode for MegaTag 2
-      // Mode 0: Use external IMU only (default)
-      // Mode 1: Seed internal IMU with external IMU yaw
-      // Mode 2: Use internal IMU for MT2 localization (recommended)
-      table.getEntry("imu_mode_set").setNumber(mode);
-      
-      Logger.recordOutput("Vision/" + limelightName + "/IMUMode", mode);
-    } catch (Exception e) {
-      Logger.recordOutput("Vision/" + limelightName + "/IMUModeError", e.getMessage());
-    }
+    LimelightHelpers.SetIMUMode(limelightName, mode);
   }
 }
 
