@@ -1,7 +1,9 @@
 package frc.robot.subsystems.drive;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.FeedbackSensor;
+
+import static frc.robot.subsystems.drive.DriveConstants.odometryFrequency;
 import static frc.robot.subsystems.drive.ModuleConstants.kDrivingEncoderPositionFactor;
 import static frc.robot.subsystems.drive.ModuleConstants.kDrivingEncoderVelocityFactor;
 import static frc.robot.subsystems.drive.ModuleConstants.kDrivingMotorCurrentLimit;
@@ -25,7 +27,7 @@ public final class MotorConfigs {
         drivingConfig
                 .idleMode(kDrivingMotorIdleMode)
                 .smartCurrentLimit(kDrivingMotorCurrentLimit)
-                .signals.primaryEncoderPositionPeriodMs((int) (1000.0 / Module.ODOMETRY_FREQUENCY));
+                .signals.primaryEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency));
         drivingConfig.encoder
                 .positionConversionFactor(kDrivingEncoderPositionFactor) // meters
                 .velocityConversionFactor(kDrivingEncoderVelocityFactor); // meters per second
@@ -39,7 +41,7 @@ public final class MotorConfigs {
         turningConfig
                 .idleMode(kTurningMotorIdleMode)
                 .smartCurrentLimit(kTurningMotorCurrentLimit)
-                .signals.primaryEncoderPositionPeriodMs((int) (1000.0 / Module.ODOMETRY_FREQUENCY));
+                .signals.primaryEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency));
         turningConfig.absoluteEncoder
                 // Invert the turning encoder, since the output shaft rotates in the opposite
                 // direction of the steering motor in the MAXSwerve Module.

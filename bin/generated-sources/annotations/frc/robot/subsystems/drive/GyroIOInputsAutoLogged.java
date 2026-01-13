@@ -10,33 +10,27 @@ public class GyroIOInputsAutoLogged extends GyroIO.GyroIOInputs implements Logga
   public void toLog(LogTable table) {
     table.put("Connected", connected);
     table.put("YawPosition", yawPosition);
-    table.put("RollPosition", rollPosition);
-    table.put("PitchPosition", pitchPosition);
+    table.put("YawVelocityRadPerSec", yawVelocityRadPerSec);
     table.put("OdometryYawTimestamps", odometryYawTimestamps);
     table.put("OdometryYawPositions", odometryYawPositions);
-    table.put("YawVelocityRadPerSec", yawVelocityRadPerSec);
   }
 
   @Override
   public void fromLog(LogTable table) {
     connected = table.get("Connected", connected);
     yawPosition = table.get("YawPosition", yawPosition);
-    rollPosition = table.get("RollPosition", rollPosition);
-    pitchPosition = table.get("PitchPosition", pitchPosition);
+    yawVelocityRadPerSec = table.get("YawVelocityRadPerSec", yawVelocityRadPerSec);
     odometryYawTimestamps = table.get("OdometryYawTimestamps", odometryYawTimestamps);
     odometryYawPositions = table.get("OdometryYawPositions", odometryYawPositions);
-    yawVelocityRadPerSec = table.get("YawVelocityRadPerSec", yawVelocityRadPerSec);
   }
 
   public GyroIOInputsAutoLogged clone() {
     GyroIOInputsAutoLogged copy = new GyroIOInputsAutoLogged();
     copy.connected = this.connected;
     copy.yawPosition = this.yawPosition;
-    copy.rollPosition = this.rollPosition;
-    copy.pitchPosition = this.pitchPosition;
+    copy.yawVelocityRadPerSec = this.yawVelocityRadPerSec;
     copy.odometryYawTimestamps = this.odometryYawTimestamps.clone();
     copy.odometryYawPositions = this.odometryYawPositions.clone();
-    copy.yawVelocityRadPerSec = this.yawVelocityRadPerSec;
     return copy;
   }
 }

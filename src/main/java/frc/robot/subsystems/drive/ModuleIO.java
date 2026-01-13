@@ -1,15 +1,9 @@
-// Copyright 2021-2024 FRC 6328
+// Copyright (c) 2021-2026 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
 
 package frc.robot.subsystems.drive;
 
@@ -19,18 +13,17 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ModuleIO {
   @AutoLog
   public static class ModuleIOInputs {
+    public boolean driveConnected = false;
     public double drivePositionRad = 0.0;
-    public double drivePositionMeters = 0.0;
     public double driveVelocityRadPerSec = 0.0;
-    public double driveVelocityMeterPerSec = 0.0;
     public double driveAppliedVolts = 0.0;
-    public double[] driveCurrentAmps = new double[] {};
+    public double driveCurrentAmps = 0.0;
 
-    public Rotation2d turnAbsolutePosition = new Rotation2d();
-    public Rotation2d turnPosition = new Rotation2d();
+    public boolean turnConnected = false;
+    public Rotation2d turnPosition = Rotation2d.kZero;
     public double turnVelocityRadPerSec = 0.0;
     public double turnAppliedVolts = 0.0;
-    public double[] turnCurrentAmps = new double[] {};
+    public double turnCurrentAmps = 0.0;
 
     public double[] odometryTimestamps = new double[] {};
     public double[] odometryDrivePositionsRad = new double[] {};
@@ -40,39 +33,15 @@ public interface ModuleIO {
   /** Updates the set of loggable inputs. */
   public default void updateInputs(ModuleIOInputs inputs) {}
 
-  /** Run the drive motor at the specified voltage. */
-  public default void setDriveVoltage(double volts) {}
+  /** Run the drive motor at the specified open loop value. */
+  public default void setDriveOpenLoop(double output) {}
 
-  /** Run the drive motor at the specified voltage. */
-  public default double getDriveVoltage() {return 0.0;}
+  /** Run the turn motor at the specified open loop value. */
+  public default void setTurnOpenLoop(double output) {}
 
-  /** Run the turn motor at the specified voltage. */
-  public default void setTurnVoltage(double volts) {}
-  /** Enable or disable brake mode on the drive motor. */
-  public default void setDriveBrakeMode(boolean enable) {}
-
-  /** Enable or disable brake mode on the turn motor. */
-  public default void setTurnBrakeMode(boolean enable) {}
-
-  public default void setDrivePIDFF(double p, double i, double d, double ff) {}
-
-  public default void setTurnPIDFF(double p, double i, double d, double ff) {}
-
+  /** Run the drive motor at the specified velocity. */
   public default void setDriveVelocity(double velocityRadPerSec) {}
 
-  public default void setTurnPosition(double angle) {}
-
-  public default double getTurnPositionError(double angle) {
-    return 0.0;
-  }
-
-  public default double getAbsoluteEncoderOffset() {
-    return 0.0;
-  }
-  
-
-  public default void setTurningCurrentLimit(int limit) {}
-
-  public default void setDriveCurrentLimit(int limit) {}
+  /** Run the turn motor to the specified rotation. */
+  public default void setTurnPosition(Rotation2d rotation) {}
 }
-

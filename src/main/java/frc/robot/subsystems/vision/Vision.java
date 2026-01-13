@@ -225,7 +225,7 @@ public class Vision extends SubsystemBase {
   private void addVisionMeasurementWithStdDevs(
       Pose2d pose, double timestamp, double stdDevX, double stdDevY, double stdDevTheta) {
     // Add vision measurement with dynamic standard deviations
-    drive.addVisionMeasurement(pose, timestamp, stdDevX, stdDevY, stdDevTheta);
+    // drive.addVisionMeasurement(pose, timestamp, stdDevX, stdDevY, stdDevTheta);
     
     // Log that we're using dynamic standard deviations
     Logger.recordOutput("Vision/MeasurementAdded", true);

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * Class for a tunable number. Gets value from dashboard in tuning mode, returns default if not or
@@ -17,7 +16,6 @@ public class LoggedTunableNumber {
   private final String key;
   private boolean hasDefault = false;
   private double defaultValue;
-  private LoggedDashboardNumber dashboardNumber;
   private Map<Integer, Double> lastHasChangedValues = new HashMap<>();
 
   /**
@@ -50,7 +48,7 @@ public class LoggedTunableNumber {
       hasDefault = true;
       this.defaultValue = defaultValue;
       if (Constants.tuningMode) {
-        dashboardNumber = new LoggedDashboardNumber(key, defaultValue);
+        // dashboardNumber = new LoggedDashboardNumber(key, defaultValue);
       }
     }
   }
@@ -64,7 +62,8 @@ public class LoggedTunableNumber {
     if (!hasDefault) {
       return 0.0;
     } else {
-      return Constants.tuningMode ? dashboardNumber.get() : defaultValue;
+      // return Constants.tuningMode ? dashboardNumber.get() : defaultValue;
+      return 0.0;
     }
   }
 

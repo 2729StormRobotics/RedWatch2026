@@ -30,10 +30,11 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.LED.BlinkinLEDController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.GyroIOReal;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.samplemotor.SampleMotor;
 import frc.robot.subsystems.samplemotor.SampleMotorIO;
 import frc.robot.subsystems.samplemotor.SampleMotorIOReal;
@@ -45,7 +46,6 @@ import frc.robot.subsystems.vision.VisionIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.drive.DriveControls;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -65,10 +65,6 @@ public class RobotContainer {
 
   // Dashboard inputs
   private LoggedDashboardChooser<Command> autoChooser;
-  private LoggedDashboardBoolean brakeModeDashboard =
-      new LoggedDashboardBoolean("Brake Mode", true);
-  private LoggedDashboardBoolean setStartPosition =
-      new LoggedDashboardBoolean("Set Start Position", false);
 
   // Field
   private final Field2d field;
@@ -85,11 +81,11 @@ public class RobotContainer {
         VisionIO dummyVisionIO = new VisionIO() {};
         drive =
             new Drive(
-                new GyroIOReal(),
-                new ModuleIOSparkMax(0),
-                new ModuleIOSparkMax(1),
-                new ModuleIOSparkMax(2),
-                new ModuleIOSparkMax(3));
+                new GyroIOPigeon2(),
+                new ModuleIOSpark(0),
+                new ModuleIOSpark(1),
+                new ModuleIOSpark(2),
+                new ModuleIOSpark(3));
         // sampleMotor = new SampleMotor(new SampleMotorIOReal());
         
         // Vision subsystem with real Limelight cameras
@@ -192,7 +188,7 @@ public class RobotContainer {
    * Useful for resetting the robot's heading reference.
    */
   public void reset() {
-    drive.resetYaw();
+    // drive.();
   }
   /**
    * Use this method to define your button->command mappings. Buttons can be created by

@@ -1,15 +1,9 @@
-// Copyright 2021-2024 FRC 6328
+// Copyright (c) 2021-2026 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
 
 package frc.robot.subsystems.drive;
 
@@ -20,21 +14,14 @@ public interface GyroIO {
   @AutoLog
   public static class GyroIOInputs {
     public boolean connected = false;
-    public Rotation2d yawPosition = new Rotation2d();
-    public Rotation2d rollPosition = new Rotation2d();
-    public Rotation2d pitchPosition = new Rotation2d();
+    public Rotation2d yawPosition = Rotation2d.kZero;
+    public double yawVelocityRadPerSec = 0.0;
     public double[] odometryYawTimestamps = new double[] {};
     public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
-    public double yawVelocityRadPerSec = 0.0;
   }
 
   public default void updateInputs(GyroIOInputs inputs) {}
 
-  public default double getYawAngle() {
-    return 0.0;
-  }
-
-  public default void setRobotAngle(double angle) {
-  }
-  public default void zeroAll() {}
+  /** Resets the gyro yaw angle to zero. */
+  public default void resetYaw() {}
 }
