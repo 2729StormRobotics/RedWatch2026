@@ -78,7 +78,6 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         // Create vision IO first (dummy for Drive constructor - Vision subsystem handles actual vision)
-        VisionIO dummyVisionIO = new VisionIO() {};
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -99,7 +98,6 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         // Create vision IO first (dummy for Drive constructor - Vision subsystem handles actual vision)
-        VisionIO dummyVisionIOSim = new VisionIO() {};
         drive =
             new Drive(
                 new GyroIO() {},
@@ -119,7 +117,6 @@ public class RobotContainer {
 
       default:
         // Replayed robot, disable IO implementations
-        VisionIO dummyVisionIOReply = new VisionIO() {};
         drive =
             new Drive(
                 new GyroIO() {},

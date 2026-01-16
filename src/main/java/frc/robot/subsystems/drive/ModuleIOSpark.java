@@ -97,7 +97,7 @@ public class ModuleIOSpark implements ModuleIO {
     // Configure drive motor
     var driveConfig = new SparkFlexConfig();
     driveConfig
-        .idleMode(IdleMode.kBrake)
+        .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(driveMotorCurrentLimit)
         .voltageCompensation(12.0);
     driveConfig
@@ -110,6 +110,7 @@ public class ModuleIOSpark implements ModuleIO {
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(driveKp, 0.0, driveKd);
+    driveConfig.closedLoop.feedForward.kV(1/ModuleConstants.kDriveWheelFreeSpeedRps);
     driveConfig
         .signals
         .primaryEncoderPositionAlwaysOn(true)

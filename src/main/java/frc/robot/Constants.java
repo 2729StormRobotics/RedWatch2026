@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 public final class Constants {
 
   /** Robot mode configuration - can be overridden for testing */
-  public static final Mode mode = Mode.SIM;
+  public static final Mode mode = Mode.REAL;
 
   /** Current driver configuration */
   public static final Drivers driver = Drivers.KRITHIK;

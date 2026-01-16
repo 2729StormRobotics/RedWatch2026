@@ -8,13 +8,12 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 public class ModuleIOInputsAutoLogged extends ModuleIO.ModuleIOInputs implements LoggableInputs, Cloneable {
   @Override
   public void toLog(LogTable table) {
+    table.put("DriveConnected", driveConnected);
     table.put("DrivePositionRad", drivePositionRad);
-    table.put("DrivePositionMeters", drivePositionMeters);
     table.put("DriveVelocityRadPerSec", driveVelocityRadPerSec);
-    table.put("DriveVelocityMeterPerSec", driveVelocityMeterPerSec);
     table.put("DriveAppliedVolts", driveAppliedVolts);
     table.put("DriveCurrentAmps", driveCurrentAmps);
-    table.put("TurnAbsolutePosition", turnAbsolutePosition);
+    table.put("TurnConnected", turnConnected);
     table.put("TurnPosition", turnPosition);
     table.put("TurnVelocityRadPerSec", turnVelocityRadPerSec);
     table.put("TurnAppliedVolts", turnAppliedVolts);
@@ -26,13 +25,12 @@ public class ModuleIOInputsAutoLogged extends ModuleIO.ModuleIOInputs implements
 
   @Override
   public void fromLog(LogTable table) {
+    driveConnected = table.get("DriveConnected", driveConnected);
     drivePositionRad = table.get("DrivePositionRad", drivePositionRad);
-    drivePositionMeters = table.get("DrivePositionMeters", drivePositionMeters);
     driveVelocityRadPerSec = table.get("DriveVelocityRadPerSec", driveVelocityRadPerSec);
-    driveVelocityMeterPerSec = table.get("DriveVelocityMeterPerSec", driveVelocityMeterPerSec);
     driveAppliedVolts = table.get("DriveAppliedVolts", driveAppliedVolts);
     driveCurrentAmps = table.get("DriveCurrentAmps", driveCurrentAmps);
-    turnAbsolutePosition = table.get("TurnAbsolutePosition", turnAbsolutePosition);
+    turnConnected = table.get("TurnConnected", turnConnected);
     turnPosition = table.get("TurnPosition", turnPosition);
     turnVelocityRadPerSec = table.get("TurnVelocityRadPerSec", turnVelocityRadPerSec);
     turnAppliedVolts = table.get("TurnAppliedVolts", turnAppliedVolts);
@@ -44,17 +42,16 @@ public class ModuleIOInputsAutoLogged extends ModuleIO.ModuleIOInputs implements
 
   public ModuleIOInputsAutoLogged clone() {
     ModuleIOInputsAutoLogged copy = new ModuleIOInputsAutoLogged();
+    copy.driveConnected = this.driveConnected;
     copy.drivePositionRad = this.drivePositionRad;
-    copy.drivePositionMeters = this.drivePositionMeters;
     copy.driveVelocityRadPerSec = this.driveVelocityRadPerSec;
-    copy.driveVelocityMeterPerSec = this.driveVelocityMeterPerSec;
     copy.driveAppliedVolts = this.driveAppliedVolts;
-    copy.driveCurrentAmps = this.driveCurrentAmps.clone();
-    copy.turnAbsolutePosition = this.turnAbsolutePosition;
+    copy.driveCurrentAmps = this.driveCurrentAmps;
+    copy.turnConnected = this.turnConnected;
     copy.turnPosition = this.turnPosition;
     copy.turnVelocityRadPerSec = this.turnVelocityRadPerSec;
     copy.turnAppliedVolts = this.turnAppliedVolts;
-    copy.turnCurrentAmps = this.turnCurrentAmps.clone();
+    copy.turnCurrentAmps = this.turnCurrentAmps;
     copy.odometryTimestamps = this.odometryTimestamps.clone();
     copy.odometryDrivePositionsRad = this.odometryDrivePositionsRad.clone();
     copy.odometryTurnPositions = this.odometryTurnPositions.clone();

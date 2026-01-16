@@ -1,5 +1,6 @@
 package frc.robot.util.drive;
 
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -134,8 +135,9 @@ public class DriveControls {
     switch (Constants.driver) {
       case KRITHIK:
         // Driver controls - Krithik's configuration
-        DRIVE_FORWARD = () -> (-getY(m_translator));
-        DRIVE_STRAFE = () -> (-getX(m_translator));
+        DRIVE_FORWARD = () -> (-getY(m_rotator));
+        DRIVE_STRAFE = () -> (-getX(m_rotator));
+          // Get linear velocity
         DRIVE_ROTATE = () -> (getTwist(m_rotator) / 2.0);
         RESET_GYRO = m_translator.button(12);
 
