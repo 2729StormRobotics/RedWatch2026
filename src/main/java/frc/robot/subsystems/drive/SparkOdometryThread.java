@@ -91,36 +91,41 @@ public class SparkOdometryThread {
   }
 
   private void run() {
-    // Save new data to queues
-    Drive.odometryLock.lock();
-    try {
-      // Get sample timestamp
-      double timestamp = RobotController.getFPGATime() / 1e6;
+  Drive.odometryLock.lock();
+  try {
+    double timestamp = RobotController.getFPGATime() / 1e6;
 
-      // Read Spark values, mark invalid in case of error
-      double[] sparkValues = new double[sparkSignals.size()];
-      boolean isValid = true;
-      for (int i = 0; i < sparkSignals.size(); i++) {
-        sparkValues[i] = sparkSignals.get(i).getAsDouble();
-        if (sparks.get(i).getLastError() != REVLibError.kOk) {
-          isValid = false;
-        }
+    // Read Spark values, track validity separately
+    double[] sparkValues = new double[sparkSignals.size()];
+    boolean sparkValid = true;
+    for (int i = 0; i < sparkSignals.size(); i++) {
+      sparkValues[i] = sparkSignals.get(i).getAsDouble();
+      if (sparks.get(i).getLastError() != REVLibError.kOk) {
+        sparkValid = false;
       }
-
-      // If valid, add values to queues
-      if (isValid) {
-        for (int i = 0; i < sparkSignals.size(); i++) {
-          sparkQueues.get(i).offer(sparkValues[i]);
-        }
-        for (int i = 0; i < genericSignals.size(); i++) {
-          genericQueues.get(i).offer(genericSignals.get(i).getAsDouble());
-        }
-        for (int i = 0; i < timestampQueues.size(); i++) {
-          timestampQueues.get(i).offer(timestamp);
-        }
-      }
-    } finally {
-      Drive.odometryLock.unlock();
     }
+
+    // Read generic signals (gyro) ALWAYS - don't tie to Spark validity
+    double[] genericValues = new double[genericSignals.size()];
+    for (int i = 0; i < genericSignals.size(); i++) {
+      genericValues[i] = genericSignals.get(i).getAsDouble();
+    }
+
+    // Add Spark data only if valid
+    if (sparkValid) {
+      for (int i = 0; i < sparkSignals.size(); i++) {
+        sparkQueues.get(i).offer(sparkValues[i]);
+      }
+      // Add generic signals and timestamps together with Spark data
+      for (int i = 0; i < genericSignals.size(); i++) {
+        genericQueues.get(i).offer(genericValues[i]);
+      }
+      for (Queue<Double> queue : timestampQueues) {
+        queue.offer(timestamp);
+      }
+    }
+  } finally {
+    Drive.odometryLock.unlock();
   }
+}
 }

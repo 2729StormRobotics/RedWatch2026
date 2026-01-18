@@ -43,7 +43,7 @@ public class VisionIOLimelight implements VisionIO {
   /**
    * Creates a new VisionIOLimelight for a specific Limelight camera.
    *
-   * @param limelightName The NetworkTables name of the Limelight (e.g., "limelight-front")
+   * @param limelightName The NetworkTables name of the Limelight (e.g., "limelight-left")
    */
   public VisionIOLimelight(String limelightName) {
     this.limelightName = limelightName;
@@ -63,15 +63,24 @@ public class VisionIOLimelight implements VisionIO {
 
       if (botPose != null && isValidPose(botPose)) {
         inputs.hasPose = true;
-        inputs.visionPose = botPose;
         
-        // Get tag count and latency from MegaTag 2 pose array
-        // Format: [x, y, z, roll, pitch, yaw, latency, tagCount, tagSpan, avgTagDist, avgTagArea]
         int tagCount = getTagCountFromMegaTag2();
         double latencyMs = getLatencyMsFromMegaTag2();
+        LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
+        if (mt2 != null) {
+            inputs.tagCount = mt2.tagCount;
+            inputs.averageTagDistance = mt2.avgTagDist;
+            inputs.poseTimestamp = mt2.timestampSeconds;
+            inputs.visionPose = mt2.pose;
+        } else {
+          inputs.tagCount = tagCount;
+          inputs.poseTimestamp = Timer.getFPGATimestamp() - (latencyMs / 1000.0);
+          inputs.visionPose = botPose;
+        }
+        // Get tag count and latency from MegaTag 2 pose array
+        // Format: [x, y, z, roll, pitch, yaw, latency, tagCount, tagSpan, avgTagDist, avgTagArea]
         
         inputs.poseTimestamp = Timer.getFPGATimestamp() - (latencyMs / 1000.0);
-        inputs.tagCount = tagCount;
         inputs.averageTagDistance = getAverageTagDistanceFromMegaTag2();
         inputs.closestTagDistance = inputs.averageTagDistance; // Use average as closest for now
         inputs.latencyMs = latencyMs;
@@ -154,7 +163,7 @@ public class VisionIOLimelight implements VisionIO {
    */
   private Pose2d getBotPoseFromNetworkTables() {
     
-    return LimelightHelpers.getBotPose2d_wpiBlue(limelightName);
+    return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName).pose;
   }
 
   /**
@@ -181,8 +190,9 @@ public class VisionIOLimelight implements VisionIO {
    * Gets latency from MegaTag 2 pose array.
    */
   private double getLatencyMsFromMegaTag2() {
-    return LimelightHelpers.getLatency_Capture(limelightName);
-  }
+    return LimelightHelpers.getLatency_Capture(limelightName) 
+         + LimelightHelpers.getLatency_Pipeline(limelightName);
+}
 
   /**
    * Gets average tag distance from MegaTag 2 pose array.

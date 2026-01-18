@@ -7,15 +7,24 @@
 
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.subsystems.drive.DriveConstants.*;
+import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.subsystems.drive.DriveConstants.driveBaseRadius;
+import static frc.robot.subsystems.drive.DriveConstants.maxSpeedMetersPerSec;
+import static frc.robot.subsystems.drive.DriveConstants.moduleTranslations;
+import static frc.robot.subsystems.drive.DriveConstants.ppConfig;
 
-import edu.wpi.first.wpilibj.Timer;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -31,10 +40,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -42,10 +53,6 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
   static final Lock odometryLock = new ReentrantLock();
@@ -55,7 +62,6 @@ public class Drive extends SubsystemBase {
   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
-
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = Rotation2d.kZero;
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
@@ -117,6 +123,12 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+
+    // Configure IMU Mode
+    // Mode 2 uses the LL4's internal IMU for MegaTag 2 calculation
+    LimelightHelpers.SetIMUMode("limelight-front", 2);
+    LimelightHelpers.SetIMUMode("limelight-back", 2);
   }
 
   @Override
@@ -145,7 +157,10 @@ public class Drive extends SubsystemBase {
     // Update odometry
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
-    int sampleCount = sampleTimestamps.length;
+    int sampleCount = Math.min(
+    sampleTimestamps.length,
+    gyroInputs.connected ? gyroInputs.odometryYawPositions.length : Integer.MAX_VALUE
+);
     for (int i = 0; i < sampleCount; i++) {
       // Read wheel positions and deltas from each module
       SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
@@ -176,16 +191,18 @@ public class Drive extends SubsystemBase {
 
     // 1. Update Limelight with fresh gyro data (Critical for MegaTag 2)
     // Note: Use the internal robotYaw variable to ensure thread safety if needed
-    double robotYaw = gyroInputs.yawPosition.getDegrees(); 
-    LimelightHelpers.SetRobotOrientation("limelight-front", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
-    LimelightHelpers.SetRobotOrientation("limelight-back", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+    double robotYaw = getRotation().getDegrees(); 
+    double yawVel = Units.radiansToDegrees(gyroInputs.yawVelocityRadPerSec); // Convert to Degrees/Sec
+
+    LimelightHelpers.SetRobotOrientation("limelight-front", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
+    LimelightHelpers.SetRobotOrientation("limelight-back", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
 
     // 2. Define cameras to iterate over
     String[] camNames = {"limelight-front", "limelight-back"};
 
     for (String camName : camNames) {
         // Fetch the MegaTag 2 Estimate (if pipeline is configured for it)
-        LimelightHelpers.PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(camName);
+        LimelightHelpers.PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(camName);
 
         // CHECK 1: Do we have a valid target?
         if (mt2Estimate.tagCount == 0) {
@@ -193,7 +210,7 @@ public class Drive extends SubsystemBase {
         }
 
         // CHECK 2: Is the data fresh? (Reject if > 0.5s old, prevents "ghosting" when connection lags)
-        if (Math.abs(Timer.getFPGATimestamp() - mt2Estimate.timestampSeconds) > 0.5) {
+        if (Math.abs(Timer.getFPGATimestamp() - mt2Estimate.timestampSeconds) > 0.3) {
             continue; 
         }
         // 3. Dynamic Standard Deviation Calculation

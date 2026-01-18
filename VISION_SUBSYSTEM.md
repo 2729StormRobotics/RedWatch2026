@@ -16,8 +16,8 @@ The subsystem follows the **IO Layer pattern** for hardware abstraction:
 ## Hardware Setup
 
 ### Cameras
-- **Front Limelight**: NetworkTables name `"limelight-front"`
-- **Back Limelight**: NetworkTables name `"limelight-back"`
+- **Left Limelight**: NetworkTables name `"limelight-left"` (defined in `VisionConstants.LEFT_LIMELIGHT_NAME`)
+- **Right Limelight**: NetworkTables name `"limelight-right"` (defined in `VisionConstants.RIGHT_LIMELIGHT_NAME`)
 
 ### MegaTag 2 Configuration
 - Both cameras must be running the MegaTag 2 localization pipeline
@@ -48,7 +48,7 @@ The subsystem calculates trust levels based on vision quality:
 - Gyro is trusted completely for rotation
 
 ### 4. Dual Camera Support
-- Processes measurements from both front and back cameras
+- Processes measurements from both left and right cameras
 - Each camera's measurements are independently evaluated
 - Both cameras contribute to pose estimation
 
@@ -60,8 +60,8 @@ The Vision subsystem is automatically initialized in `RobotContainer`:
 ```java
 // Real robot
 vision = new Vision(
-    new VisionIOLimelight(VisionConstants.FRONT_LIMELIGHT_NAME),
-    new VisionIOLimelight(VisionConstants.BACK_LIMELIGHT_NAME),
+    new VisionIOLimelight(VisionConstants.LEFT_LIMELIGHT_NAME),
+    new VisionIOLimelight(VisionConstants.RIGHT_LIMELIGHT_NAME),
     drive);
 
 // Simulation
@@ -84,8 +84,8 @@ The Vision subsystem runs automatically in `periodic()`:
 All vision data is logged via AdvantageKit:
 
 ### Inputs (Auto-logged)
-- `Vision/Front/*` - Front camera data
-- `Vision/Back/*` - Back camera data
+- `Vision/Left/*` - Left camera data
+- `Vision/Right/*` - Right camera data
 - Camera connection status
 - Pose estimates
 - Tag counts and distances
@@ -94,7 +94,8 @@ All vision data is logged via AdvantageKit:
 ### Outputs
 - `Vision/GyroYawRad` - Current gyro yaw
 - `Vision/GyroYawVelocityRadPerSec` - Current angular velocity
-- `Vision/Front/StdDevX`, `StdDevY`, `StdDevTheta` - Calculated standard deviations
+- `Vision/Left/StdDevX`, `StdDevY`, `StdDevTheta` - Calculated standard deviations for left camera
+- `Vision/Right/StdDevX`, `StdDevY`, `StdDevTheta` - Calculated standard deviations for right camera
 - `Vision/TotalTagCount` - Combined tag count from both cameras
 
 ## Configuration
