@@ -15,102 +15,169 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 
 /**
- * DriveConstants contains all robot-wide constants for the swerve drive subsystem.
- * Names follow the camelCase convention used in AdvantageKit-style projects.
+ * DriveConstants for MAXSwerve with 14T pinion + NEO Vortex drive motors.
+ * Configured for MAXIMUM SPEED.
  */
 public final class DriveConstants {
-  public static final double maxSpeedMetersPerSec = 5.0; // Updated from kMaxSpeedMetersPerSecond
-  public static final double maxAccelerationMetersPerSecSq = 2.5;
-  public static final double odometryFrequency = 100.0; // Hz
 
-  // Chassis configuration
-  public static final double trackWidth = Units.inchesToMeters(26.5); // kTrackWidthX
-  public static final double wheelBase = Units.inchesToMeters(26.5); // kWheelBase
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PHYSICAL ROBOT DIMENSIONS
+  // ═══════════════════════════════════════════════════════════════════════════
+  public static final double trackWidth = Units.inchesToMeters(24.5);
+  public static final double wheelBase = Units.inchesToMeters(24.5);
   public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
 
-  public static final Translation2d[] moduleTranslations =
-      new Translation2d[] {
-        new Translation2d(wheelBase / 2.0, trackWidth / 2.0),  // Front Left
-        new Translation2d(wheelBase / 2.0, -trackWidth / 2.0), // Front Right
-        new Translation2d(-wheelBase / 2.0, trackWidth / 2.0), // Back Left
-        new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0) // Back Right
-      };
+  public static final Translation2d[] moduleTranslations = new Translation2d[] {
+      new Translation2d(wheelBase / 2.0, trackWidth / 2.0),   // Front Left
+      new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),  // Front Right
+      new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),  // Back Left
+      new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0)  // Back Right
+  };
 
-  // Module Offsets (Converted from your Radians constants)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MAXSwerve 14T GEARING & WHEEL
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  // Wheel diameter - MEASURE YOUR ACTUAL WHEELS! They wear down over time.
+  // Stock MAXSwerve uses 3" billet wheels. Worn wheels may be ~2.9"
+  public static final double wheelDiameterMeters = Units.inchesToMeters(2.8669);
+  public static final double wheelRadiusMeters = wheelDiameterMeters / 2.0;
+  public static final double wheelCircumferenceMeters = wheelDiameterMeters * Math.PI;
+
+  // MAXSwerve 14T Drive Gear Ratio: (45 × 22) / (14 × 15) = 4.71:1
+  public static final int drivingMotorPinionTeeth = 14;
+  public static final double driveMotorReduction = 
+      (45.0 * 22.0) / (drivingMotorPinionTeeth * 15.0); // 4.714285714
+
+  // MAXSwerve Turn Gear Ratio: 9424:203 = 46.42:1
+  public static final double turnMotorReduction = 9424.0 / 203.0;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SPEED LIMITS - CALCULATED FOR MAX PERFORMANCE
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  // NEO Vortex free speed: 6784 RPM
+  // Wheel speed = 6784 / 4.71 = 1440 RPM
+  // Linear speed = 1440 × π × 0.0762m / 60 = 5.74 m/s (theoretical max)
+  // We use 5.5 m/s to leave headroom for motor control
+  public static final double maxSpeedMetersPerSec = 5.5;
+  
+  // Max acceleration - increase for snappier response, decrease if wheels slip
+  public static final double maxAccelerationMetersPerSecSq = 4.5;
+  
+  // Max angular velocity = maxSpeed / driveBaseRadius
+  // Calculated automatically via getMaxAngularSpeedRadPerSec()
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ODOMETRY THREAD
+  // ═══════════════════════════════════════════════════════════════════════════
+  public static final double odometryFrequency = 100.0; // Hz
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CAN IDs
+  // ═══════════════════════════════════════════════════════════════════════════
+  public static final int pigeonCanId = 20;
+
+  // Drive motors (NEO Vortex on SparkFlex)
+  public static final int frontLeftDriveCanId = 2;
+  public static final int frontRightDriveCanId = 4;
+  public static final int backLeftDriveCanId = 6;
+  public static final int backRightDriveCanId = 8;
+
+  // Turn motors (NEO 550 on SparkMax)
+  public static final int frontLeftTurnCanId = 1;
+  public static final int frontRightTurnCanId = 3;
+  public static final int backLeftTurnCanId = 5;
+  public static final int backRightTurnCanId = 7;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MODULE ZERO ROTATIONS (Absolute Encoder Offsets)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TODO: CALIBRATE THESE FOR YOUR ROBOT!
+  // 1. Point all wheels forward (same direction)
+  // 2. Read absolute encoder values
+  // 3. Enter those values here
   public static final Rotation2d frontLeftZeroRotation = Rotation2d.fromRadians(-Math.PI / 2);
   public static final Rotation2d frontRightZeroRotation = Rotation2d.fromRadians(0);
   public static final Rotation2d backLeftZeroRotation = Rotation2d.fromRadians(Math.PI);
   public static final Rotation2d backRightZeroRotation = Rotation2d.fromRadians(Math.PI / 2);
 
-  // Device CAN IDs
-  public static final int pigeonCanId = 20;
-
-  public static final int frontLeftDriveCanId = 2;
-  public static final int backLeftDriveCanId = 6;
-  public static final int frontRightDriveCanId = 4;
-  public static final int backRightDriveCanId = 8;
-
-  public static final int frontLeftTurnCanId = 1;
-  public static final int backLeftTurnCanId = 5;
-  public static final int frontRightTurnCanId = 3;
-  public static final int backRightTurnCanId = 7;
-
-  // Drive motor configuration
-  // Note: These values were imported from ModuleConstants in your original file
-  public static final int driveMotorCurrentLimit = 40; // Default placeholder, please check ModuleConstants
-  public static final double wheelRadiusMeters = Units.inchesToMeters(2.0); // Derived from kWheelDiameterMeters/2
-  public static final double driveMotorReduction = 6.75; // Placeholder for kDrivingMotorReduction
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DRIVE MOTOR CONFIGURATION (NEO Vortex)
+  // ═══════════════════════════════════════════════════════════════════════════
   public static final DCMotor driveGearbox = DCMotor.getNeoVortex(1);
+  
+  // Current limit - HIGHER = MORE TORQUE = FASTER ACCELERATION
+  // NEO Vortex can handle 80A, but 60-70A is safer for longevity
+  // Use 80A for competition if you need max acceleration
+  public static final int driveMotorCurrentLimit = 70; // Amps
 
-  // Drive encoder configuration
-  public static final double driveEncoderPositionFactor = (2 * Math.PI) / driveMotorReduction; 
-  public static final double driveEncoderVelocityFactor = (2 * Math.PI) / 60.0 / driveMotorReduction;
+  // Encoder conversion factors (motor rotations → wheel radians)
+  public static final double driveEncoderPositionFactor = 
+      (2.0 * Math.PI) / driveMotorReduction; // radians per motor rotation
+  public static final double driveEncoderVelocityFactor = 
+      (2.0 * Math.PI) / 60.0 / driveMotorReduction; // rad/s per motor RPM
 
-  // Drive PID configuration (Mapped from your Translation P/I/D)
-  public static final double driveKp = 0.009; // kTranslationP
-  public static final double driveKi = 0.0;  // kTranslationI
-  public static final double driveKd = 0.00;  // kTranslationD
-  public static final double driveKs = 0.0;  // Not provided in original
-  public static final double driveKv = 0.1;  // Not provided in original
+  // Drive PID (velocity control)
+  // Keep P low to avoid oscillation - feedforward does most of the work
+  public static final double driveKp = 0.1;
+  public static final double driveKi = 0.0;
+  public static final double driveKd = 0.0;
+
+  // Drive Feedforward
+  // kS: Voltage to overcome static friction (~0.1-0.2V typical)
+  // kV: Voltage per rad/s = 12V / freeWheelSpeed(rad/s)
+  //     Free wheel speed = 6784 RPM / 4.71 / 60 × 2π = 150.7 rad/s
+  //     kV = 12 / 150.7 = 0.0796 ≈ 0.08
+  public static final double driveKs = 0.12;
+  public static final double driveKv = 0.08;
+
+  // Simulation values
   public static final double driveSimP = 0.05;
   public static final double driveSimD = 0.0;
   public static final double driveSimKs = 0.0;
-  public static final double driveSimKv = 0.0789;
+  public static final double driveSimKv = 0.08;
 
-  // Turn motor configuration
-  public static final boolean turnInverted = false;
-  public static final int turnMotorCurrentLimit = 20;
-  public static final double turnMotorReduction = 9424.0 / 203.0;
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TURN MOTOR CONFIGURATION (NEO 550)
+  // ═══════════════════════════════════════════════════════════════════════════
   public static final DCMotor turnGearbox = DCMotor.getNeo550(1);
+  public static final int turnMotorCurrentLimit = 20; // Amps
+  public static final boolean turnInverted = false;
 
-  // Turn encoder configuration
+  // Turn encoder (absolute encoder outputs 0-1 rotations)
   public static final boolean turnEncoderInverted = true;
-  public static final double turnEncoderPositionFactor = 2 * Math.PI; // Rotations -> Radians
-  public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
+  public static final double turnEncoderPositionFactor = 2.0 * Math.PI; // rotations → radians
+  public static final double turnEncoderVelocityFactor = (2.0 * Math.PI) / 60.0; // RPM → rad/s
 
-  // Turn PID configuration
-  public static final double turnKp = 1.0;
+  // Turn PID (position control with wrapping)
+  // Higher P = snappier module rotation (but can oscillate if too high)
+  public static final double turnKp = 2.0;
+  public static final double turnKi = 0.0;
   public static final double turnKd = 0.0;
+  public static final double turnPIDMinInput = 0.0;
+  public static final double turnPIDMaxInput = 2.0 * Math.PI;
+
+  // Simulation values
   public static final double turnSimP = 8.0;
   public static final double turnSimD = 0.0;
-  public static final double turnPIDMinInput = 0; // Radians
-  public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
-  // PathPlanner configuration
-  public static final double robotMassKg = 24.088;
-  public static final double robotMOI = 6.883;
-  public static final double wheelCOF = 1.2;
-  
-  public static final RobotConfig ppConfig =
-      new RobotConfig(
-          robotMassKg,
-          robotMOI,
-          new ModuleConfig(
-              wheelRadiusMeters,
-              maxSpeedMetersPerSec,
-              wheelCOF,
-              driveGearbox.withReduction(driveMotorReduction),
-              driveMotorCurrentLimit,
-              1),
-          moduleTranslations);
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PATHPLANNER CONFIGURATION
+  // ═══════════════════════════════════════════════════════════════════════════
+  public static final double robotMassKg = 18.1437; // ~40 lbs need to change
+  public static final double robotMOI = 6.883;     // Moment of inertia (kg⋅m²)
+  public static final double wheelCOF = 1.2;       // Coefficient of friction
+
+  public static final RobotConfig ppConfig = new RobotConfig(
+      robotMassKg,
+      robotMOI,
+      new ModuleConfig(
+          wheelRadiusMeters,
+          maxSpeedMetersPerSec,
+          wheelCOF,
+          driveGearbox.withReduction(driveMotorReduction),
+          driveMotorCurrentLimit,
+          1),
+      moduleTranslations);
 }

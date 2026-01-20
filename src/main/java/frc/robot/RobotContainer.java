@@ -90,8 +90,8 @@ public class RobotContainer {
         // Vision subsystem with real Limelight cameras
         vision =
             new Vision(
-                new VisionIOLimelight(VisionConstants.FRONT_LIMELIGHT_NAME),
-                new VisionIOLimelight(VisionConstants.BACK_LIMELIGHT_NAME),
+                new VisionIOLimelight(VisionConstants.LEFT_LIMELIGHT_NAME),
+                new VisionIOLimelight(VisionConstants.RIGHT_LIMELIGHT_NAME),
                 drive);
         break;
 

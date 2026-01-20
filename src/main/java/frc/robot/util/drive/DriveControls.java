@@ -137,9 +137,8 @@ public class DriveControls {
         // Driver controls - Krithik's configuration
         DRIVE_FORWARD = () -> (-getY(m_rotator));
         DRIVE_STRAFE = () -> (-getX(m_rotator));
-          // Get linear velocity
         DRIVE_ROTATE = () -> (getTwist(m_rotator) / 2.0);
-        RESET_GYRO = m_translator.button(12);
+        RESET_GYRO = m_rotator.button(12);
 
         // Driver settings
         DRIVE_SLOW = m_translator.button(1);
