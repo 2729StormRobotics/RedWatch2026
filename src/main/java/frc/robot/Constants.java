@@ -57,11 +57,8 @@ public final class Constants {
 
   /** Available driver configurations */
   public enum Drivers {
-    DAN,
     KRITHIK,
-    AMOGH,
-    NITHILAN,
-    ASHLEIGH,
+    ZACH,
     YASHA,
     PROGRAMMERS
   }
@@ -69,9 +66,7 @@ public final class Constants {
   /** Available operator configurations */
   public enum Operators {
     KRITHIK,
-    AMOGH,
-    NITHILAN,
-    ASHLEIGH,
+    ZACH,
     YASHA,
     PROGRAMMERS
   }

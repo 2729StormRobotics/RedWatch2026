@@ -120,17 +120,17 @@ public final class DriveConstants {
 
   // Drive PID (velocity control)
   // Keep P low to avoid oscillation - feedforward does most of the work
-  public static final double driveKp = 0.1;
+  public static final double driveKp = 0.01;
   public static final double driveKi = 0.0;
-  public static final double driveKd = 0.0;
+  public static final double driveKd = 0.0075;
 
   // Drive Feedforward
   // kS: Voltage to overcome static friction (~0.1-0.2V typical)
   // kV: Voltage per rad/s = 12V / freeWheelSpeed(rad/s)
   //     Free wheel speed = 6784 RPM / 4.71 / 60 × 2π = 150.7 rad/s
   //     kV = 12 / 150.7 = 0.0796 ≈ 0.08
-  public static final double driveKs = 0.12;
-  public static final double driveKv = 0.08;
+  public static final double driveKs = 0.0;
+  public static final double driveKv = 0.00;
 
   // Simulation values
   public static final double driveSimP = 0.05;
