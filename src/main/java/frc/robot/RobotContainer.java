@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -31,34 +32,61 @@ import frc.robot.subsystems.LED.BlinkinLEDController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.GyroIOReal;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
-import frc.robot.subsystems.samplemotor.SampleMotor;
-import frc.robot.subsystems.samplemotor.SampleMotorIO;
-import frc.robot.subsystems.samplemotor.SampleMotorIOReal;
-import frc.robot.subsystems.samplemotor.SampleMotorIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOReal;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
+import frc.robot.subsystems.shooter.hood.HoodIO;
+import frc.robot.subsystems.shooter.hood.HoodIOReal;
+import frc.robot.subsystems.shooter.hood.HoodIOSim;
+import frc.robot.subsystems.shooter.turret.TurretIO;
+import frc.robot.subsystems.shooter.turret.TurretIOReal;
+import frc.robot.subsystems.shooter.turret.TurretIOSim;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOReal;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.kicker.Kicker;
+import frc.robot.subsystems.kicker.KickerIO;
+import frc.robot.subsystems.kicker.KickerIOReal;
+import frc.robot.subsystems.kicker.KickerIOSim;
+import frc.robot.subsystems.hopper.Hopper;
+import frc.robot.subsystems.hopper.HopperIO;
+import frc.robot.subsystems.hopper.HopperIOReal;
+import frc.robot.subsystems.hopper.HopperIOSim;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOReal;
+import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.util.PowerOrchestration;
 import frc.robot.util.drive.DriveControls;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and button mappings) should be declared here.
+ * Project Titan Robot Container.
+ * Orchestrates 17 motors across Drive, Shooter, Intake, Kicker, Hopper, and Climb.
  */
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  // private final SampleMotor sampleMotor;
   private final Vision vision;
+  private final Shooter shooter;
+  private final Intake intake;
+  private final Kicker kicker;
+  private final Hopper hopper;
+  private final Climb climb;
+
+  // Power Management
+  private final PowerOrchestration powerOrchestration = PowerOrchestration.getInstance();
 
   // LEDs
   private final BlinkinLEDController ledController = BlinkinLEDController.getInstance();
@@ -69,10 +97,6 @@ public class RobotContainer {
   // Field
   private final Field2d field;
 
-  /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
-   * Initializes subsystems based on the current robot mode (REAL, SIM, or REPLAY).
-   */
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
@@ -85,14 +109,17 @@ public class RobotContainer {
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
-        // sampleMotor = new SampleMotor(new SampleMotorIOReal());
         
-        // Vision subsystem with real Limelight cameras
-        vision =
-            new Vision(
+        vision = new Vision(
                 new VisionIOLimelight(VisionConstants.LEFT_LIMELIGHT_NAME),
                 new VisionIOLimelight(VisionConstants.RIGHT_LIMELIGHT_NAME),
                 drive);
+        
+        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal());
+        intake = new Intake(new IntakeIOReal());
+        kicker = new Kicker(new KickerIOReal(), shooter);
+        hopper = new Hopper(new HopperIOReal());
+        climb = new Climb(new ClimbIOReal());
         break;
 
       case SIM:
@@ -105,14 +132,13 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        // sampleMotor = new SampleMotor(new SampleMotorIOSim());
         
-        // Vision subsystem with simulation IO (no vision data)
-        vision =
-            new Vision(
-                new VisionIOSim(),
-                new VisionIOSim(),
-                drive);
+        vision = new Vision(new VisionIOSim(), new VisionIOSim(), drive);
+        shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim());
+        intake = new Intake(new IntakeIOSim());
+        kicker = new Kicker(new KickerIOSim(), shooter);
+        hopper = new Hopper(new HopperIOSim());
+        climb = new Climb(new ClimbIOSim());
         break;
 
       default:
@@ -132,106 +158,111 @@ public class RobotContainer {
                 new VisionIO() {},
                 new VisionIO() {},
                 drive);
+        shooter = new Shooter(new FlywheelIO() {}, new HoodIO() {}, new TurretIO() {});
+        intake = new Intake(new IntakeIO() {});
+        kicker = new Kicker(new KickerIO() {}, shooter);
+        hopper = new Hopper(new HopperIO() {});
+        climb = new Climb(new ClimbIO() {});
         break;
     }
 
     field = new Field2d();
     SmartDashboard.putData("Field", field);
 
-    System.out.println("[Init] Setting up Path Planner Logging");
-
-    // Logging callback for current robot pose
-    PathPlannerLogging.setLogCurrentPoseCallback(
-        (pose) -> {
+    // Logging callbacks for PathPlanner
+    PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
           field.setRobotPose(pose);
           Logger.recordOutput("PathPlanner/RobotPose", pose);
-        });
+    });
 
-    // Logging callback for target robot pose
-    PathPlannerLogging.setLogTargetPoseCallback(
-        (pose) -> {
+    PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
           field.getObject("target pose").setPose(pose);
           Logger.recordOutput("PathPlanner/TargetPose", pose);
-        });
+    });
 
-    // Logging callback for the active path, this is sent as a list of poses
-    PathPlannerLogging.setLogActivePathCallback(
-        (poses) -> {
-          field.getObject("path").setPoses(poses);
-          Logger.recordOutput("PathPlanner/ActivePath", poses.toArray(new Pose2d[0]));
-        });
-
-    // Set up auto routines chooser
-    System.out.println("[Init] Setting up Logged Auto Chooser");
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    // Set up SysId routines for drive characterization
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    // Configure the button bindings
     configureButtonBindings();
   }
-  /**
-   * Resets the gyro yaw angle to zero.
-   * Useful for resetting the robot's heading reference.
-   */
-  public void reset() {
-    // drive.();
+  
+  public void updatePowerOrchestration() {
+    powerOrchestration.periodic();
   }
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
+
   private void configureButtonBindings() {
-    // Configure drive controls based on driver preferences
+    // Configure controls based on active driver profile (e.g., Krithik)
     DriveControls.configureControls();
 
-    // Set LED to orange on initialization
     ledController.orange();
 
-    // Add command scheduler to SmartDashboard for debugging
-    SmartDashboard.putData("commandscheduler", CommandScheduler.getInstance());
-
-    // Set default drive command - field-relative joystick drive
+    // --- Drive Bindings ---
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(drive, DRIVE_FORWARD, DRIVE_STRAFE, DRIVE_ROTATE));
 
-    // Button bindings
-    // Reset gyro when button is pressed
-    RESET_GYRO.onTrue(
-        new InstantCommand(
-            () -> {
-              drive.resetYaw();
-            },
-            drive));
+    RESET_GYRO.onTrue(new InstantCommand(drive::resetYaw, drive));
+    
+    // "The Brick" mode - locks swerve modules to resist defense
+    DRIFT_BRACE.whileTrue(Commands.run(drive::stopWithX, drive));
 
-    // Additional drive controls can be added here as needed
-    // DRIVE_SLOW.onTrue(new InstantCommand(DriveCommands::toggleSlowMode));
-    // DRIVE_STOP.onTrue(new InstantCommand(() -> { drive.stopWithX(); drive.resetYaw(); }, drive));
+    // --- Intake & Hopper ("Touch it, Own it" + "Fullness Detection") ---
+    INTAKE_COLLECT.whileTrue(
+        Commands.sequence(
+            Commands.runOnce(intake::deploy, intake),
+            Commands.parallel(
+                Commands.run(intake::intake, intake),
+                hopper.runCommand(8.0)
+            )
+        ).until(intake::isGamePieceDetected)
+         .andThen(Commands.runOnce(intake::retract, intake))
+         .andThen(Commands.runOnce(() -> m_operator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0)))
+         .andThen(Commands.waitSeconds(0.5))
+         .andThen(Commands.runOnce(() -> m_operator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)))
+    );
+
+    INTAKE_EJECT.whileTrue(
+        Commands.parallel(
+            Commands.run(intake::eject, intake),
+            hopper.runCommand(-8.0),
+            Commands.run(kicker::reverse, kicker)
+        )
+    );
+
+    HOPPER_AGITATE.whileTrue(hopper.runCommand(8.0));
+
+    // --- Shooter & Scoring (AutoScore + CRT Resets) ---
+    
+    // Main Scoring Command: Wait for shooter readiness, then fire kicker
+    AUTO_SCORE.whileTrue(
+        Commands.parallel(
+            Commands.run(() -> {
+                // Coordinate aim uses MegaTag2 vision and Move-and-Shoot vectors
+                shooter.enableMoveAndShoot(new Pose2d(), drive.getChassisSpeeds());
+            }, shooter),
+            Commands.sequence(
+                Commands.waitUntil(shooter::isReadyToFire),
+                kicker.fireCommand()
+            )
+        )
+    );
+
+    // Toggle Move-and-Shoot (Vector Compensation)
+    MOVE_AND_SHOOT.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot(new Pose2d(), drive.getChassisSpeeds())));
+    MOVE_AND_SHOOT.onFalse(new InstantCommand(() -> shooter.disableMoveAndShoot()));
+
+    // Manual CRT Turret Reset
+    RESET_TURRET.onTrue(new InstantCommand(() -> shooter.setTurretAngle(0.0), shooter));
+
+    MANUAL_SHOOT.whileTrue(Commands.run(kicker::fire, kicker));
+
+    // --- Climb ---
+    CLIMB_SEQUENCE.whileTrue(Commands.run(climb::climb, climb));
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
+  public void reset() {
+    drive.resetYaw();
+    shooter.setTurretAngle(0.0);
+  }
+
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }

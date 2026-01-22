@@ -134,7 +134,43 @@ public final class Constants {
     /** Sample motor CAN ID */
     public static final int SAMPLE_MOTOR_CAN_ID = 20;
 
-    // Note: Game-specific subsystem CAN IDs should be added here when the 2026 game is announced
+    // Drive subsystem (IDs 1-8)
+    // Drive motors: 1, 3, 5, 7 (Vortex)
+    // Steer motors: 2, 4, 6, 8 (550)
+    
+    // Shooter subsystem
+    /** Flywheel leader motor CAN ID */
+    public static final int FLYWHEEL_LEADER_ID = 9;
+    /** Flywheel follower motor CAN ID */
+    public static final int FLYWHEEL_FOLLOWER_ID = 10;
+    /** Hood motor CAN ID */
+    public static final int HOOD_MOTOR_ID = 11;
+    /** Turret motor CAN ID */
+    public static final int TURRET_MOTOR_ID = 12;
+    
+    // Intake subsystem
+    /** Intake pivot motor CAN ID */
+    public static final int INTAKE_PIVOT_ID = 13;
+    /** Intake roller motor CAN ID */
+    public static final int INTAKE_ROLLER_ID = 14;
+    
+    // Kicker subsystem
+    /** Kicker motor CAN ID */
+    public static final int KICKER_MOTOR_ID = 15;
+    
+    // Hopper/Indexer subsystem
+    /** Hopper motor CAN ID */
+    public static final int HOPPER_MOTOR_ID = 16;
+    
+    // Climb subsystem
+    /** Climb motor CAN ID */
+    public static final int CLIMB_MOTOR_ID = 17;
+    
+    // Digital inputs
+    /** Intake beam break sensor DIO port */
+    public static final int INTAKE_BEAM_BREAK_PORT = 0;
+    /** Hopper beam break sensor DIO port */
+    public static final int HOPPER_BEAM_BREAK_PORT = 1;
   }
 
   /** Mathematical constant PI */

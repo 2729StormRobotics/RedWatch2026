@@ -109,6 +109,11 @@ public class Robot extends LoggedRobot {
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
+    // Update power orchestration
+    if (robotContainer != null) {
+      robotContainer.updatePowerOrchestration();
+    }
+
     SmartDashboard.putNumber(
       "CAN Utilization %", RobotController.getCANStatus().percentBusUtilization * 100.0);
     SmartDashboard.putNumber("Voltage", RobotController.getBatteryVoltage());
