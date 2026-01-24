@@ -204,6 +204,11 @@ public class Drive extends SubsystemBase {
         // Fetch the MegaTag 2 Estimate (if pipeline is configured for it)
         LimelightHelpers.PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(camName);
 
+        if (mt2Estimate == null) {
+          continue;
+        }
+
+
         // CHECK 1: Do we have a valid target?
         if (mt2Estimate.tagCount == 0) {
             continue; // Skip this camera, it sees nothing
