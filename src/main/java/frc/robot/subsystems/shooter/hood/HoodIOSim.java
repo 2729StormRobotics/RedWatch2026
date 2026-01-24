@@ -41,31 +41,46 @@ public class HoodIOSim implements HoodIO {
             ARM_LENGTH_M,
             MIN_ANGLE_RAD,
             MAX_ANGLE_RAD,
-            true, // Simulate gravity
+            false, // Simulate gravity
             MIN_ANGLE_RAD); // Starting angle
+    
+    // Initialize current angle from simulation
+    currentAngle = armSim.getAngleRads();
+    // Initialize setpoint to current angle to prevent initial jump
+    angleSetpoint = currentAngle;
+    
+    // Set initial voltage to 0 to ensure simulation is ready
+    armSim.setInputVoltage(0.0);
   }
 
   @Override
   public void updateInputs(HoodIOInputs inputs) {
-    // Update simulation with timestep
+    // Get current angle BEFORE updating (for control calculation)
+    currentAngle = armSim.getAngleRads();
+    
+    // Calculate control voltage with damping to prevent oscillation
+    double error = angleSetpoint - currentAngle;
+    double kP = 10.0;
+    double kD = 0.1; // Damping term to reduce oscillation
+    double velocity = armSim.getVelocityRadPerSec();
+    
+    // No gravity feedforward since gravity is disabled
+    appliedVolts = MathUtil.clamp(kP * error - kD * velocity, -12.0, 12.0);
+    
+    // Set voltage BEFORE updating simulation
+    armSim.setInputVoltage(appliedVolts);
+    
+    // Update simulation (uses voltage we just set)
     armSim.update(LOOP_PERIOD_SECS);
     
-    // Simple position controller simulation
-    if (angleSetpoint != 0.0) {
-      double error = angleSetpoint - currentAngle;
-      double kP = 2.0; // Simple P controller for simulation
-      appliedVolts = MathUtil.clamp(kP * error, -12.0, 12.0);
-      armSim.setInputVoltage(appliedVolts);
-    }
-    
+    // Get updated angle after simulation step
     currentAngle = armSim.getAngleRads();
 
-    // Update inputs from simulation
-    // Absolute encoder position (0-1 range) based on current angle
-    inputs.absolutePositionRotations = (currentAngle % (2.0 * Math.PI)) / (2.0 * Math.PI);
-    if (inputs.absolutePositionRotations < 0.0) {
-      inputs.absolutePositionRotations += 1.0;
-    }
+    // Update inputs
+    // Convert angle to 0-1 range for absolute encoder
+    // Clamp to valid range to prevent issues
+    double angleNormalized = MathUtil.clamp(currentAngle, MIN_ANGLE_RAD, MAX_ANGLE_RAD);
+    inputs.absolutePositionRotations = (angleNormalized - MIN_ANGLE_RAD) / (MAX_ANGLE_RAD - MIN_ANGLE_RAD);
     inputs.motorPositionRotations = currentAngle / (2.0 * Math.PI);
     inputs.motorVelocityRotationsPerSec = armSim.getVelocityRadPerSec() / (2.0 * Math.PI);
     inputs.appliedVolts = appliedVolts;
@@ -87,7 +102,8 @@ public class HoodIOSim implements HoodIO {
 
   @Override
   public void stop() {
-    angleSetpoint = 0.0;
+    // Hold current position instead of going to zero
+    angleSetpoint = currentAngle;
     appliedVolts = 0.0;
     armSim.setInputVoltage(0.0);
   }

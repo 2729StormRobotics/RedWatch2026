@@ -12,7 +12,7 @@
         },
         {
           "decKey": 69,
-          "incKey": 82
+          "incKey": 81
         }
       ],
       "axisCount": 3,
@@ -38,23 +38,17 @@
       "povCount": 1
     },
     {
-      "axisConfig": [
-        {
-          "decKey": 74,
-          "incKey": 76
-        },
-        {
-          "decKey": 73,
-          "incKey": 75
-        }
-      ],
       "axisCount": 2,
-      "buttonCount": 4,
+      "buttonCount": 8,
       "buttonKeys": [
-        77,
-        44,
-        46,
-        47
+        89,
+        85,
+        73,
+        79,
+        72,
+        74,
+        75,
+        76
       ],
       "povCount": 0
     },
@@ -91,6 +85,7 @@
     {
       "guid": "Keyboard0"
     },
+    {},
     {
       "guid": "Keyboard1"
     }

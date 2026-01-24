@@ -26,6 +26,9 @@ public class ClimbIOSim implements ClimbIO {
     inputs.currentAmps = Math.abs(motorSim.getCurrentDrawAmps());
     inputs.temperatureCelsius = 25.0;
     inputs.lockEngaged = lockEngaged;
+    // Convert motor position (rotations) to meters
+    // This is a placeholder - adjust based on actual mechanism geometry
+    inputs.positionMeters = motorSim.getAngularPositionRotations() * 0.01; // Placeholder: 0.01 m per rotation
   }
 
   @Override

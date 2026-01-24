@@ -192,7 +192,11 @@ public final class Constants {
   /** Current limit for standard NEO motors in amps */
   public static final int NEO_CURRENT_LIMIT = 40;
 
+  public static boolean disableHAL = false;
 
+  public static void disableHAL() {
+    disableHAL = true;
+  }
   /** Constants for vision processing and AprilTag detection */
   public static class VisionConstants {
     // Camera configuration

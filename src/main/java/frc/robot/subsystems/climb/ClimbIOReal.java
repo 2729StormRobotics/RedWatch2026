@@ -34,6 +34,13 @@ public class ClimbIOReal implements ClimbIO {
     ifOk(motor, motor::getOutputCurrent, (value) -> inputs.currentAmps = value);
     ifOk(motor, motor::getMotorTemperature, (value) -> inputs.temperatureCelsius = value);
     inputs.lockEngaged = false; // Would read from actual lock sensor
+    // TODO: Convert encoder position to meters based on actual mechanism geometry
+    // For now, using a placeholder conversion (adjust based on actual gear ratio and lead screw pitch)
+    ifOk(motor, this::getPosition, (value) -> {
+      // Assuming encoder rotations, convert to meters
+      // This is a placeholder - adjust based on actual mechanism
+      inputs.positionMeters = value * 0.01; // Placeholder: 0.01 m per rotation
+    });
   }
 
   @Override
@@ -44,6 +51,10 @@ public class ClimbIOReal implements ClimbIO {
   @Override
   public void setLock(boolean engaged) {
     // Would control solenoid/servo here
+  }
+
+  public double getPosition() {
+    return 0;
   }
 
   @Override

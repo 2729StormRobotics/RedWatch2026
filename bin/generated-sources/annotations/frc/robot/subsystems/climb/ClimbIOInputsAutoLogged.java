@@ -12,6 +12,7 @@ public class ClimbIOInputsAutoLogged extends ClimbIO.ClimbIOInputs implements Lo
     table.put("CurrentAmps", currentAmps);
     table.put("TemperatureCelsius", temperatureCelsius);
     table.put("LockEngaged", lockEngaged);
+    table.put("PositionMeters", positionMeters);
   }
 
   @Override
@@ -20,6 +21,7 @@ public class ClimbIOInputsAutoLogged extends ClimbIO.ClimbIOInputs implements Lo
     currentAmps = table.get("CurrentAmps", currentAmps);
     temperatureCelsius = table.get("TemperatureCelsius", temperatureCelsius);
     lockEngaged = table.get("LockEngaged", lockEngaged);
+    positionMeters = table.get("PositionMeters", positionMeters);
   }
 
   public ClimbIOInputsAutoLogged clone() {
@@ -28,6 +30,7 @@ public class ClimbIOInputsAutoLogged extends ClimbIO.ClimbIOInputs implements Lo
     copy.currentAmps = this.currentAmps;
     copy.temperatureCelsius = this.temperatureCelsius;
     copy.lockEngaged = this.lockEngaged;
+    copy.positionMeters = this.positionMeters;
     return copy;
   }
 }

@@ -31,6 +31,7 @@ public class FlywheelIOSim implements FlywheelIO {
   private double appliedVolts = 0.0;
   private double velocitySetpoint = 0.0;
   private double currentVelocity = 0.0;
+  private double positionRotations = 0.0;
 
   public FlywheelIOSim() {
     // Create flywheel simulation using NEO Vortex motor model
@@ -48,19 +49,27 @@ public class FlywheelIOSim implements FlywheelIO {
     // Update simulation with timestep
     flywheelSim.update(LOOP_PERIOD_SECS);
     
+    // Get current velocity from simulation
+    currentVelocity = flywheelSim.getAngularVelocityRadPerSec() / (2.0 * Math.PI); // Convert to RPS
+    
     // Simple velocity controller simulation
-    if (velocitySetpoint != 0.0) {
+    // Only control if setpoint is non-zero or there's a significant error
+    if (Math.abs(velocitySetpoint) > 0.001 || Math.abs(currentVelocity - velocitySetpoint) > 0.1) {
       double error = velocitySetpoint - currentVelocity;
       double kP = 0.1; // Simple P controller for simulation
       appliedVolts = MathUtil.clamp(kP * error + kF * velocitySetpoint, -12.0, 12.0);
       flywheelSim.setInputVoltage(appliedVolts);
+    } else {
+      // At setpoint or zero setpoint - stop
+      appliedVolts = 0.0;
+      flywheelSim.setInputVoltage(0.0);
     }
-    
-    currentVelocity = flywheelSim.getAngularVelocityRadPerSec() / (2.0 * Math.PI); // Convert to RPS
+
+    // Update position by integrating velocity
+    positionRotations += currentVelocity * LOOP_PERIOD_SECS;
 
     // Update inputs from simulation
-    // integrate again
-    inputs.leaderPositionRotations += (flywheelSim.getAngularVelocityRPM() / 60.0) * 0.02;;
+    inputs.leaderPositionRotations = positionRotations;
     inputs.leaderVelocityRotationsPerSec = currentVelocity;
     inputs.leaderAppliedVolts = appliedVolts;
     inputs.leaderCurrentAmps = Math.abs(flywheelSim.getCurrentDrawAmps() / 2.0); // Split between two motors

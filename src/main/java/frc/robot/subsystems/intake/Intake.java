@@ -14,11 +14,16 @@
 package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 /**
  * Intake subsystem with pivot (NEO) and roller (Vortex) motors.
@@ -43,6 +48,11 @@ public class Intake extends SubsystemBase {
           IntakeConstants.kMaxAcceleration)
   );
 
+  // Mechanism visualization
+  private final LoggedMechanism2d mechanism = new LoggedMechanism2d(3.0, 3.0);
+  private final LoggedMechanismRoot2d root;
+  private final LoggedMechanismLigament2d pivotArm;
+
   /**
    * Creates a new Intake subsystem.
    *
@@ -50,6 +60,20 @@ public class Intake extends SubsystemBase {
    */
   public Intake(IntakeIO io) {
     this.io = io;
+    
+    // Set up mechanism visualization
+    // Root at center-bottom of canvas
+    root = mechanism.getRoot("IntakeRoot", 1.5, 2.5);
+    // Pivot arm that rotates outward (0° = horizontal right, 90° = down)
+    // When retracted (0 rotations), arm points down (90°)
+    // When deployed (1 rotation), arm rotates outward (0°)
+    pivotArm = root.append(
+        new LoggedMechanismLigament2d(
+            "PivotArm",
+            0.8, // Length in mechanism units
+            90.0, // Initial angle (pointing down when retracted)
+            6.0, // Width
+            new Color8Bit(Color.kBlue)));
   }
 
   @Override
@@ -77,6 +101,15 @@ public class Intake extends SubsystemBase {
 
     // Apply desired roller percent
     io.setRollerPercent(desiredRollerPercent);
+
+    // Update mechanism visualization
+    // Convert pivot position (rotations) to angle (degrees)
+    // 0 rotations = 90° (pointing down), 1 rotation = 0° (pointing right/outward)
+    double angleDegrees = 90.0 - (inputs.pivotPositionRotations * 360.0);
+    pivotArm.setAngle(angleDegrees);
+    
+    // Log mechanism
+    Logger.recordOutput("Intake/Mechanism", mechanism);
   }
 
   /** Deploys the intake. */

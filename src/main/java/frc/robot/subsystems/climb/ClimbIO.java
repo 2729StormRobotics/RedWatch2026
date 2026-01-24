@@ -9,6 +9,8 @@ public interface ClimbIO {
     public double currentAmps = 0.0;
     public double temperatureCelsius = 0.0;
     public boolean lockEngaged = false;
+    /** Position in meters (0.0 = fully retracted, positive = extended) */
+    public double positionMeters = 0.0;
   }
 
   public default void updateInputs(ClimbIOInputs inputs) {}

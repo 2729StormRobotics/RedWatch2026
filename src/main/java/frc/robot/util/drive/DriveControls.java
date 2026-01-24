@@ -1,6 +1,5 @@
 package frc.robot.util.drive;
 
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -11,6 +10,7 @@ import java.util.function.DoubleSupplier;
 /**
  * Centralized control configuration for driver and operator inputs for FRC 2026.
  * Maps physical controller inputs to logical control actions for the 17-motor Project Titan bot.
+ * Updated to support both physical Xbox/Joysticks and Simulation GUI buttons.
  */
 public class DriveControls {
   // --- Controllers ---
@@ -21,17 +21,20 @@ public class DriveControls {
   /** Rotator joystick for rotation control (Port 1) */
   public static final CommandGenericHID m_rotator;
 
-  /** Weapons/operator controller for subsystem controls (Port 2) */
-  public static final CommandXboxController m_operator = new CommandXboxController(2);
+  /** Weapons/operator controller (Port 2) - Standard Xbox layout in Real, Generic in Sim */
+  public static final CommandGenericHID m_operator;
 
   // Static initializer to set up controllers based on mode
   static {
     if (Constants.currentMode == Constants.Mode.REAL) {
       m_translator = new CommandJoystick(0);
       m_rotator = new CommandJoystick(1);
+      m_operator = new CommandXboxController(2);
     } else {
-      m_translator = new CommandGenericHID(0);
-      m_rotator = new CommandGenericHID(1);
+      // In SIM, use GenericHID for all to ensure the Sim GUI "Buttons" work reliably
+      m_translator = new CommandGenericHID(1);
+      m_rotator = new CommandGenericHID(0);
+      m_operator = new CommandGenericHID(2);
     }
   }
 
@@ -72,55 +75,73 @@ public class DriveControls {
   public static Trigger DRIVE_SLOW;
   public static Trigger RESET_GYRO;
   public static Trigger FIELD_RELATIVE_TOGGLE;
-  public static Trigger DRIFT_BRACE; // "The Brick" mode
+  public static Trigger DRIFT_BRACE; 
 
-  // Shooter & Scoring (The "Insane" Commands)
-  public static Trigger AUTO_SCORE;      // Coordinates Turret/Flywheel/Hood + Kicker
-  public static Trigger MOVE_AND_SHOOT;  // Toggles vector compensation
-  public static Trigger MANUAL_SHOOT;    // Force Kicker
-  public static Trigger RESET_TURRET;    // Re-run CRT logic
+  // Shooter & Scoring
+  public static Trigger AUTO_SCORE;      
+  public static Trigger MOVE_AND_SHOOT;  
+  public static Trigger MANUAL_SHOOT;    
+  public static Trigger RESET_TURRET;    
 
   // Intake & Hopper
-  public static Trigger INTAKE_COLLECT;  // IntelligentCollection (Touch it, Own it)
-  public static Trigger INTAKE_EJECT;    // EmergencyEject
-  public static Trigger HOPPER_AGITATE;  // Manual "Pulse-and-Shake"
+  public static Trigger INTAKE_COLLECT;  
+  public static Trigger INTAKE_EJECT;    
+  public static Trigger HOPPER_AGITATE;  
 
   // Climb
   public static Trigger CLIMB_SEQUENCE;
 
   /**
-   * Configures all controls based on the current driver and operator settings.
+   * Configures all controls. 
+   * Handles the abstraction between Real (Xbox axis/buttons) and Sim (Generic GUI buttons).
    */
   public static void configureControls() {
-    // --- Operator Controls (Common to all drivers) ---
-    AUTO_SCORE = m_operator.rightTrigger();
-    INTAKE_COLLECT = m_operator.leftTrigger();
-    INTAKE_EJECT = m_operator.b();
-    HOPPER_AGITATE = m_operator.x();
-    CLIMB_SEQUENCE = m_operator.start();
-    MANUAL_SHOOT = m_operator.rightBumper();
-    MOVE_AND_SHOOT = m_operator.y();
+    // --- Operator Mapping ---
+    if (Constants.currentMode == Constants.Mode.REAL && m_operator instanceof CommandXboxController xbox) {
+      // High-fidelity mapping for the actual Xbox Controller
+      AUTO_SCORE = xbox.rightTrigger();
+      INTAKE_COLLECT = xbox.leftTrigger();
+      INTAKE_EJECT = xbox.b();
+      HOPPER_AGITATE = xbox.x();
+      CLIMB_SEQUENCE = xbox.start();
+      MANUAL_SHOOT = xbox.rightBumper();
+      MOVE_AND_SHOOT = xbox.y();
+    } else {
+      // Simulation Mapping: Using specific button IDs makes it easy to click in the Sim GUI
+      // Buttons 1-10 on Joystick Port 2
+      AUTO_SCORE = m_operator.button(1);      // Trigger Button 1
+      INTAKE_COLLECT = m_operator.button(2);  // Trigger Button 2
+      INTAKE_EJECT = m_operator.button(3);
+      HOPPER_AGITATE = m_operator.button(4);
+      MANUAL_SHOOT = m_operator.button(5);
+      MOVE_AND_SHOOT = m_operator.button(6);
+      RESET_TURRET = m_operator.button(7);
+      CLIMB_SEQUENCE = m_operator.button(8);
+    }
 
     // --- Driver Specific Configurations ---
     switch (Constants.driver) {
       case KRITHIK:
-        // Movement mapped to the Rotator stick
         DRIVE_FORWARD = () -> (-getY(m_rotator));
         DRIVE_STRAFE = () -> (-getX(m_rotator));
-        DRIVE_ROTATE = () -> (getTwist(m_rotator) * 0.5); // Half-speed rotation sensitivity
+        DRIVE_ROTATE = () -> (getTwist(m_rotator) * 0.5);
         
         RESET_GYRO = m_rotator.button(12);
-        DRIFT_BRACE = m_rotator.button(1); // Thumb button for "Brick" mode
+        DRIFT_BRACE = m_rotator.button(1); 
         
-        // Settings on Translator stick
         DRIVE_SLOW = m_translator.button(1);
         FIELD_RELATIVE_TOGGLE = m_translator.button(2);
-        RESET_TURRET = m_translator.button(7);
+        
+        // In simulation, ensure the reset button is easy to find
+        if (Constants.currentMode == Constants.Mode.SIM) {
+            RESET_TURRET = m_translator.button(10);
+        } else {
+            RESET_TURRET = m_translator.button(7);
+        }
         break;
 
       case PROGRAMMERS:
       default:
-        // Standard Tank/Swerve split
         DRIVE_FORWARD = () -> (-getY(m_translator));
         DRIVE_STRAFE = () -> (-getX(m_translator));
         DRIVE_ROTATE = () -> (-getTwist(m_rotator));
@@ -129,7 +150,12 @@ public class DriveControls {
         DRIVE_SLOW = m_translator.button(1);
         FIELD_RELATIVE_TOGGLE = m_translator.button(2);
         DRIFT_BRACE = m_translator.button(3);
-        RESET_TURRET = m_operator.back();
+        
+        if (Constants.currentMode != Constants.Mode.SIM && m_operator instanceof CommandXboxController xbox) {
+             RESET_TURRET = xbox.back();
+        } else {
+             RESET_TURRET = m_operator.button(9);
+        }
         break;
     }
   }

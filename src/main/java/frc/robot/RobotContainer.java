@@ -17,16 +17,12 @@ import static frc.robot.util.drive.DriveControls.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.LED.BlinkinLEDController;
 import frc.robot.subsystems.drive.Drive;
@@ -115,7 +111,7 @@ public class RobotContainer {
                 new VisionIOLimelight(VisionConstants.RIGHT_LIMELIGHT_NAME),
                 drive);
         
-        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal());
+        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive);
         intake = new Intake(new IntakeIOReal());
         kicker = new Kicker(new KickerIOReal(), shooter);
         hopper = new Hopper(new HopperIOReal());
@@ -134,7 +130,7 @@ public class RobotContainer {
                 new ModuleIOSim());
         
         vision = new Vision(new VisionIOSim(), new VisionIOSim(), drive);
-        shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim());
+        shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim(), drive);
         intake = new Intake(new IntakeIOSim());
         kicker = new Kicker(new KickerIOSim(), shooter);
         hopper = new Hopper(new HopperIOSim());
@@ -158,7 +154,7 @@ public class RobotContainer {
                 new VisionIO() {},
                 new VisionIO() {},
                 drive);
-        shooter = new Shooter(new FlywheelIO() {}, new HoodIO() {}, new TurretIO() {});
+        shooter = new Shooter(new FlywheelIO() {}, new HoodIO() {}, new TurretIO() {}, drive);
         intake = new Intake(new IntakeIO() {});
         kicker = new Kicker(new KickerIO() {}, shooter);
         hopper = new Hopper(new HopperIO() {});
@@ -235,8 +231,8 @@ public class RobotContainer {
     AUTO_SCORE.whileTrue(
         Commands.parallel(
             Commands.run(() -> {
-                // Coordinate aim uses MegaTag2 vision and Move-and-Shoot vectors
-                shooter.enableMoveAndShoot(new Pose2d(), drive.getChassisSpeeds());
+                // Coordinate aim uses robot pose to calculate heading to hub
+                shooter.enableMoveAndShoot();
             }, shooter),
             Commands.sequence(
                 Commands.waitUntil(shooter::isReadyToFire),
@@ -246,7 +242,7 @@ public class RobotContainer {
     );
 
     // Toggle Move-and-Shoot (Vector Compensation)
-    MOVE_AND_SHOOT.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot(new Pose2d(), drive.getChassisSpeeds())));
+    MOVE_AND_SHOOT.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
     MOVE_AND_SHOOT.onFalse(new InstantCommand(() -> shooter.disableMoveAndShoot()));
 
     // Manual CRT Turret Reset
