@@ -19,8 +19,10 @@ import java.util.List;
 
 import static edu.wpi.first.units.Units.*;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.util.PathPlannerLogging;
 
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,7 +32,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -149,6 +154,8 @@ public class RobotContainer {
         break;
 
       case SIM:
+
+        edu.wpi.first.wpilibj.simulation.DriverStationSim.setAllianceStationId(Constants.SIM_STATION_ID);
         // create a maple-sim swerve drive simulation instance
         this.driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig,
             new Pose2d(3, 3, new Rotation2d()));
@@ -215,6 +222,14 @@ public class RobotContainer {
     field = new Field2d();
     SmartDashboard.putData("Field", field);
 
+    // Register Named Commands
+    NamedCommands.registerCommand("ClimbExtend", climb.climbCommand());
+    NamedCommands.registerCommand("ClimbRetract", climb.retractCommand());
+    NamedCommands.registerCommand("IntakeDeploy", intake.deployCommand());
+    NamedCommands.registerCommand("IntakeRetract", intake.retractCommand());
+    NamedCommands.registerCommand("PrepShooter", shooter.prepCommand());
+    NamedCommands.registerCommand("StartShots5seconds", shooter.shootforseconds(intake, kicker, 5));
+
     // Logging callbacks for PathPlanner
     PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
       field.setRobotPose(pose);
@@ -270,51 +285,14 @@ public class RobotContainer {
     // --- Shooter & Scoring (AutoScore + CRT Resets) ---
 
     // Main Scoring Command: Wait for shooter readiness, then fire kicker
-    if (Constants.currentMode == Constants.Mode.SIM) {
-      AUTO_SCORE.whileTrue(
-          Commands.parallel(
-              // Always keep aiming while the button is held
-              Commands.run(shooter::enableMoveAndShoot, shooter),
-
-              // Repeating sequence for the actual "shots"
-              Commands.repeatingSequence(
-                  // 1. Wait until the shooter is physically ready
-                  Commands.waitUntil(()->true),
-
-                  // 2. Fire the hardware/kicker and physics sim simultaneously
-                  Commands.parallel(
-                      kicker.fireCommand().withTimeout(0.1), // Quick pulse of the kicker
-                      Commands.runOnce(this::launchSimulatedFuel)),
-
-                  // 3. The "Stagger" delay (e.g., 0.1s = 10 balls per second)
-                  Commands.waitSeconds(0.2))));
-    } else {
-      AUTO_SCORE.whileTrue(
-          Commands.parallel(
-              Commands.run(() -> {
-                // Coordinate aim uses robot pose to calculate heading to hub
-                shooter.enableMoveAndShoot();
-              }, shooter),
-              Commands.sequence(
-                  Commands.waitUntil(shooter::isReadyToFire),
-                  kicker.fireCommand())));
-    }
+    AUTO_SCORE.whileTrue(shooter.autoScoreCommand(intake, kicker));
 
     // Toggle Move-and-Shoot (Vector Compensation)
     MOVE_AND_SHOOT.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
     MOVE_AND_SHOOT.onFalse(new InstantCommand(() -> shooter.disableMoveAndShoot()));
-
     MANUAL_SHOOT.whileTrue(Commands.run(kicker::fire, kicker));
 
     // --- Climb ---
-    // CLIMB_SEQUENCE.whileTrue(climb.climbCommand());
-    // CLIMB_SEQUENCE.onFalse(Commands.run(()-> {climb.lock();},
-    // climb).withTimeout(0.1));
-
-    // CLIMB_RETRACT.whileTrue(climb.climbRetractCommand());
-    // CLIMB_RETRACT.onFalse(Commands.run(()-> {climb.lock();},
-    // climb).withTimeout(0.1));
-
     CLIMB_SEQUENCE.whileTrue(climb.climbCommand().withTimeout(1));
     CLIMB_RETRACT.whileTrue(climb.retractCommand().withTimeout(1));
   }
@@ -328,11 +306,28 @@ public class RobotContainer {
     return autoChooser.get();
   }
 
+  // SIM STUFF
+
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM)
       return;
+    boolean isRed = getAlliance() == Alliance.Red;
 
-    drive.setPose(new Pose2d(3, 3, new Rotation2d()));
+
+    Logger.recordOutput("FieldSimulation/Alliance", isRed);
+
+    // Start 3 meters from the Blue wall, facing 0 degrees
+    Pose2d startPose = new Pose2d(3.0, 3.0, new Rotation2d(0));
+
+    if (isRed) {
+      // Mirror the X coordinate and flip the rotation by 180 degrees
+      startPose = new Pose2d(
+          FieldConstants.fieldLength - startPose.getX(),
+          startPose.getY(),
+          startPose.getRotation().plus(Rotation2d.fromDegrees(180)));
+    }
+
+    drive.setPose(startPose);
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 
@@ -346,40 +341,9 @@ public class RobotContainer {
         "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
   }
 
-  private void launchSimulatedFuel() {
-    if (Constants.currentMode != Constants.Mode.SIM || driveSimulation == null || !intake.decrementBall())
-      return;
-
-    // 1. Gather current robot state
-    var robotPose = driveSimulation.getSimulatedDriveTrainPose();
-    ChassisSpeeds chassisSpeeds = driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative();
-
-    // 2. Calculate launch parameters
-    // We combine robot rotation + turret rotation for the total field-relative
-    // heading
-    Rotation2d totalHeader = robotPose.getRotation().plus(Rotation2d.fromRadians(shooter.getTurretCurrentAngle()));
-
-    GamePieceProjectile fuelProjectile = new GamePieceProjectile(
-        Constants.FUEL_INFO,
-        robotPose.getTranslation(),
-        new Translation2d(0.1, 0), // Shooter offset from robot center (meters)
-        chassisSpeeds, // Adds robot inertia to the ball
-        totalHeader,
-        Distance.ofBaseUnits(0.5, Meters), // Launch height (meters)
-        LinearVelocity.ofBaseUnits(
-            shooter.getFlywheelVelocity() / 4, MetersPerSecond), // Convert RPM to meters/sec (example scaling)
-        Angle.ofBaseUnits((Math.PI / 2) - ((Math.PI / 10) + shooter.getHoodCurrentAngle()), Radians) // Vertical launch
-                                                                                                     // angle
-    );
-
-    // 3. Optional: Configure scoring visualization
-    fuelProjectile.withProjectileTrajectoryDisplayCallBack(
-        (poses) -> Logger.recordOutput("Sim/FuelTrajectory", poses.toArray(new Pose3d[0])),
-        (poses) -> Logger.recordOutput("Sim/FuelTrajectoryMiss", poses.toArray(new Pose3d[0])));
-
-    fuelProjectile.enableBecomesGamePieceOnFieldAfterTouchGround();
-    // 4. Register with the arena
-    SimulatedArena.getInstance().addGamePieceProjectile(fuelProjectile);
+    /** * Returns the current alliance, defaulting to the simulation constant if FMS is disconnected.
+   */
+  private Alliance getAlliance() {
+      return DriverStation.getAlliance().orElse(DriverStationSim.getAllianceStationId() == AllianceStationID.Red1 ? Alliance.Red : Alliance.Blue);
   }
-
 }

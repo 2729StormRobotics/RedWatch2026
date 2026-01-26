@@ -11,6 +11,7 @@ import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation.GamePieceI
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -34,6 +35,9 @@ public final class Constants {
 
   /** Robot mode configuration - can be overridden for testing */
   public static final Mode mode = Mode.REAL;
+
+  public static final AllianceStationID SIM_STATION_ID = AllianceStationID.Red1;
+
 
   /** Current driver configuration */
   public static final Drivers driver = Drivers.KRITHIK;
@@ -273,7 +277,7 @@ public final class Constants {
         new Translation3d(
             Units.inchesToMeters(4.75),  // X: forward/back
             Units.inchesToMeters(0),     // Y: left/right
-            Units.inchesToMeters(16.25)), // Z: height
+            Units.inchesToMeters(14.25)), // Z: height
         new Rotation3d(0.0, 0.0, -Math.PI / 2.0));
 
     /** Transform from turret pivot to hood pivot point */
@@ -282,7 +286,7 @@ public final class Constants {
             Units.inchesToMeters(0.5), // X: forward from turret pivot
             Units.inchesToMeters(4.0), // Y: left/right
             Units.inchesToMeters(4.0)), // Z: height
-        new Rotation3d(0.0, 0.0, 0.0));
+        new Rotation3d(Units.degreesToRadians(18),0.0, 0.0));
 
     /** Intake Pivot: Mounted forward of robot center */
     public static final Transform3d robotToIntakePivot = new Transform3d(
