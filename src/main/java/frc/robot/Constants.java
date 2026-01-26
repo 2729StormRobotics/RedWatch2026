@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.subsystems.intake.IntakeConstants;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -260,38 +261,50 @@ public final class Constants {
     // is announced
   }
 
+  /** Physical and Visual offsets for 3D Mechanisms */
   public static final class MechanismConstants {
-    // Shooter
+    /** Shooter: Turret base position relative to robot center */
     public static final Transform3d robotToTurret = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(4.750), // X: forward/back (adjust based on your robot)
-            Units.inchesToMeters(0), // Y: left/right (adjust based on your robot)
-            Units.inchesToMeters(16.25)), // Z: height (adjust based on your robot)
-        new Rotation3d(0.0, 0.0, -Math.PI / 2));
+            Units.inchesToMeters(4.75),  // X: forward/back
+            Units.inchesToMeters(0),     // Y: left/right
+            Units.inchesToMeters(16.25)), // Z: height
+        new Rotation3d(0.0, 0.0, -Math.PI / 2.0));
 
     /** Transform from turret pivot to hood pivot point */
     public static final Transform3d turretToHood = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(0.5), // X: forward from turret (0.105m)
-            Units.inchesToMeters(4), // Y: left/right
-            Units.inchesToMeters(4)), // Z: height (0.092m)
-        new Rotation3d(0.0, 0.0, 0)); // Hood rotated 180° around Z
+            Units.inchesToMeters(0.5), // X: forward from turret pivot
+            Units.inchesToMeters(4.0), // Y: left/right
+            Units.inchesToMeters(4.0)), // Z: height
+        new Rotation3d(0.0, 0.0, 0.0));
 
-    // Intake (Pivot ID 13)
+    /** Intake Pivot: Mounted forward of robot center */
     public static final Transform3d robotToIntakePivot = new Transform3d(
-        new Translation3d(Units.inchesToMeters(12), 0, Units.inchesToMeters(5)),
-        new Rotation3d());
+        new Translation3d(
+            Units.inchesToMeters(-10.752), // X: forward/back
+            Units.inchesToMeters(0.0),  // Y: left/right
+            Units.inchesToMeters(10.105)), // Z: height
+        new Rotation3d(-Units.degreesToRadians(IntakeConstants.DEPLOYED_POSITION_degrees),0,-Math.PI/2));
 
-    // Hopper (Linked to Intake)
+    /** Hopper: Base position for linked floor extension (254-style linkage) */
     public static final Transform3d robotToHopperBase = new Transform3d(
-        new Translation3d(Units.inchesToMeters(5), 0, Units.inchesToMeters(4)),
-        new Rotation3d());
-    public static final double kMaxHopperExtensionMeters = Units.inchesToMeters(4.0);
+        new Translation3d(
+            Units.inchesToMeters(3), // X: forward/back
+            Units.inchesToMeters(-0.125), // Y: left/right
+            Units.inchesToMeters(16.496)), // Z: height
+        new Rotation3d(0,0,-Math.PI/2));
+    
+    /** Maximum distance the hopper floor extends when intake is fully deployed */
+    public static final double kMaxHopperExtensionMeters = Units.inchesToMeters(10.0);
 
-    // Climb (Telescoping ID 17)
+    /** Climb: Telescoping arm base position relative to robot center */
     public static final Transform3d robotToClimbBase = new Transform3d(
-        new Translation3d(Units.inchesToMeters(-10), 0, Units.inchesToMeters(10)),
-        new Rotation3d());
+        new Translation3d(
+            Units.inchesToMeters(0), // X: forward/back (negative is back)
+            Units.inchesToMeters(0),   // Y: left/right
+            Units.inchesToMeters(-8)),
+        new Rotation3d(0,0,-Math.PI/2));
   }
 
 }

@@ -202,13 +202,8 @@ public class RobotContainer {
 
     // --- Intake & Hopper ("Touch it, Own it" + "Fullness Detection") ---
     INTAKE_COLLECT.whileTrue(
-        Commands.sequence(
-            Commands.runOnce(intake::deploy, intake),
-            Commands.parallel(
-                Commands.run(intake::intake, intake),
-                hopper.runCommand(8.0)
-            )
-        ).until(intake::isGamePieceDetected)
+        Commands.run(intake::deploy, intake)
+        .andThen(Commands.runOnce(intake::intake, intake).withTimeout(2))
          .andThen(Commands.runOnce(intake::retract, intake))
          .andThen(Commands.runOnce(() -> m_operator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0)))
          .andThen(Commands.waitSeconds(0.5))
@@ -217,7 +212,7 @@ public class RobotContainer {
 
     INTAKE_EJECT.whileTrue(
         Commands.parallel(
-            Commands.run(intake::eject, intake),
+            Commands.run(intake::retract, intake),
             hopper.runCommand(-8.0),
             Commands.run(kicker::reverse, kicker)
         )
@@ -245,13 +240,18 @@ public class RobotContainer {
     MOVE_AND_SHOOT.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
     MOVE_AND_SHOOT.onFalse(new InstantCommand(() -> shooter.disableMoveAndShoot()));
 
-    // Manual CRT Turret Reset
-    RESET_TURRET.onTrue(new InstantCommand(() -> shooter.setTurretAngle(0.0), shooter));
 
     MANUAL_SHOOT.whileTrue(Commands.run(kicker::fire, kicker));
 
     // --- Climb ---
-    CLIMB_SEQUENCE.whileTrue(Commands.run(climb::climb, climb));
+    // CLIMB_SEQUENCE.whileTrue(climb.climbCommand());
+    // CLIMB_SEQUENCE.onFalse(Commands.run(()-> {climb.lock();}, climb).withTimeout(0.1));
+
+    // CLIMB_RETRACT.whileTrue(climb.climbRetractCommand());
+    // CLIMB_RETRACT.onFalse(Commands.run(()-> {climb.lock();}, climb).withTimeout(0.1));
+
+    CLIMB_SEQUENCE.whileTrue(climb.climbCommand().withTimeout(1));
+    CLIMB_RETRACT.whileTrue(climb.retractCommand().withTimeout(1));
   }
 
   public void reset() {

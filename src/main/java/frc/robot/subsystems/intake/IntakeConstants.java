@@ -47,7 +47,8 @@ public final class IntakeConstants {
   public static final double kMaxAcceleration = 4.0; // rotations per second squared
   
   /** Deployed position in rotations */
-  public static final double DEPLOYED_POSITION = 1.0;
+  public static final double DEPLOYED_POSITION_degrees = 142;
+  public static final double DEPLOYED_POSITION = 1.0*(DEPLOYED_POSITION_degrees/360);
   
   /** Retracted position in rotations */
   public static final double RETRACTED_POSITION = 0.0;

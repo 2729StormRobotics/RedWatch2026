@@ -13,7 +13,6 @@ import java.util.function.DoubleSupplier;
 
 public class ClimbIOReal implements ClimbIO {
   private final SparkMax motor;
-  // Lock mechanism would be a solenoid or servo - simplified here
 
   public ClimbIOReal() {
     motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
@@ -23,38 +22,33 @@ public class ClimbIOReal implements ClimbIO {
         .smartCurrentLimit(CURRENT_LIMIT_AMPS)
         .inverted(MOTOR_INVERTED)
         .voltageCompensation(12.0);
+    
+    // Configure encoder for standard rotations
+    config.encoder.positionConversionFactor(1.0);
+    
     tryUntilOk(motor, 5, () -> motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
   public void updateInputs(ClimbIOInputs inputs) {
     sparkStickyFault = false;
+    
     ifOk(motor, new DoubleSupplier[] {motor::getAppliedOutput, motor::getBusVoltage}, 
         (values) -> inputs.appliedVolts = values[0] * values[1]);
     ifOk(motor, motor::getOutputCurrent, (value) -> inputs.currentAmps = value);
     ifOk(motor, motor::getMotorTemperature, (value) -> inputs.temperatureCelsius = value);
-    inputs.lockEngaged = false; // Would read from actual lock sensor
-    // TODO: Convert encoder position to meters based on actual mechanism geometry
-    // For now, using a placeholder conversion (adjust based on actual gear ratio and lead screw pitch)
-    ifOk(motor, this::getPosition, (value) -> {
-      // Assuming encoder rotations, convert to meters
-      // This is a placeholder - adjust based on actual mechanism
-      inputs.positionMeters = value * 0.01; // Placeholder: 0.01 m per rotation
+    
+    // FIX: Read the actual encoder position from the motor
+    ifOk(motor, motor.getEncoder()::getPosition, (value) -> {
+      // Conversion from rotations to meters
+      // Example: 1 rotation = 0.01 meters (adjust for your lead screw or winch)
+      inputs.positionMeters = value * 0.01; 
     });
   }
 
   @Override
   public void setVoltage(double volts) {
     motor.setVoltage(volts);
-  }
-
-  @Override
-  public void setLock(boolean engaged) {
-    // Would control solenoid/servo here
-  }
-
-  public double getPosition() {
-    return 0;
   }
 
   @Override

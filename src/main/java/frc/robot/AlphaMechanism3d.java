@@ -23,14 +23,10 @@ public class AlphaMechanism3d {
     return instance;
   }
 
-  // Shooter State
+  // Subsystem States
   private Rotation2d turretAngle = new Rotation2d();
   private Rotation2d hoodAngle = new Rotation2d();
-
-  // Intake & Hopper State
   private Rotation2d intakeAngle = new Rotation2d();
-
-  // Climb State
   private double climbExtensionMeters = 0.0;
 
   public void setShooter(Rotation2d turret, Rotation2d hood) {
@@ -52,7 +48,7 @@ public class AlphaMechanism3d {
   public void log() {
     Pose3d robotRoot = new Pose3d();
 
-    // --- SHOOTER HIERARCHY ---
+    // 1. Turret & Hood
     Pose3d turretPose = robotRoot
         .transformBy(MechanismConstants.robotToTurret)
         .transformBy(new Transform3d(new Translation3d(), new Rotation3d(0, 0, turretAngle.getRadians())));
@@ -61,24 +57,28 @@ public class AlphaMechanism3d {
         .transformBy(MechanismConstants.turretToHood)
         .transformBy(new Transform3d(new Translation3d(), new Rotation3d(0, -hoodAngle.getRadians(), 0)));
 
-    // --- INTAKE & LINKED HOPPER ---
+    // 2. Intake Pivot
+    // Retracted is 0 rotations (pointing down/in), Deployed is 1.0 rotations (out).
     Pose3d intakePose = robotRoot
         .transformBy(MechanismConstants.robotToIntakePivot)
-        .transformBy(new Transform3d(new Translation3d(), new Rotation3d(0, intakeAngle.getRadians(), 0)));
+        .transformBy(new Transform3d(new Translation3d(), new Rotation3d(intakeAngle.getRadians(), 0, 0)));
 
-    // Hopper is mechanically linked. When intake is 90 deg (deployed), hopper is max extension.
-    // Logic: Extension = Deployed_Pos * sin(Intake_Angle)
-    double hopperExtension = MechanismConstants.kMaxHopperExtensionMeters * Math.sin(intakeAngle.getRadians());
+    // 3. Linked Hopper (254-style floor extension)
+    // The hopper floor slides out as a function of the intake pivot angle.
+    // If intake is 1.0 rotations (deployed), the hopper is fully extended.
+    double extensionPercent = Math.min(1.0, Math.max(0.0, intakeAngle.getRotations())); 
+    double hopperExtensionX = extensionPercent * MechanismConstants.kMaxHopperExtensionMeters*3;
+
     Pose3d hopperPose = robotRoot
         .transformBy(MechanismConstants.robotToHopperBase)
-        .transformBy(new Transform3d(new Translation3d(hopperExtension, 0, 0), new Rotation3d()));
+        .transformBy(new Transform3d(new Translation3d(0, -hopperExtensionX, 0), new Rotation3d()));
 
-    // --- CLIMB ---
+    // 4. Climb
     Pose3d climbPose = robotRoot
         .transformBy(MechanismConstants.robotToClimbBase)
         .transformBy(new Transform3d(new Translation3d(0, 0, climbExtensionMeters), new Rotation3d()));
 
-    // Log everything to one array for AdvantageScope "Components"
+    // Log to AdvantageScope "Components"
     Logger.recordOutput("Mechanisms/ComponentPoses", new Pose3d[] {
       turretPose, 
       hoodPose, 

@@ -80,8 +80,7 @@ public class DriveControls {
   // Shooter & Scoring
   public static Trigger AUTO_SCORE;      
   public static Trigger MOVE_AND_SHOOT;  
-  public static Trigger MANUAL_SHOOT;    
-  public static Trigger RESET_TURRET;    
+  public static Trigger MANUAL_SHOOT;      
 
   // Intake & Hopper
   public static Trigger INTAKE_COLLECT;  
@@ -90,6 +89,7 @@ public class DriveControls {
 
   // Climb
   public static Trigger CLIMB_SEQUENCE;
+  public static Trigger CLIMB_RETRACT;  
 
   /**
    * Configures all controls. 
@@ -106,17 +106,19 @@ public class DriveControls {
       CLIMB_SEQUENCE = xbox.start();
       MANUAL_SHOOT = xbox.rightBumper();
       MOVE_AND_SHOOT = xbox.y();
+      CLIMB_RETRACT = xbox.a();
     } else {
       // Simulation Mapping: Using specific button IDs makes it easy to click in the Sim GUI
       // Buttons 1-10 on Joystick Port 2
       AUTO_SCORE = m_operator.button(1);      // Trigger Button 1
-      INTAKE_COLLECT = m_operator.button(2);  // Trigger Button 2
-      INTAKE_EJECT = m_operator.button(3);
-      HOPPER_AGITATE = m_operator.button(4);
+      MOVE_AND_SHOOT = m_operator.button(2);
+      INTAKE_COLLECT = m_operator.button(3);  // Trigger Button 2
+      CLIMB_SEQUENCE = m_operator.button(4);
+      INTAKE_EJECT = m_operator.button(7);
+      HOPPER_AGITATE = m_operator.button(6);
       MANUAL_SHOOT = m_operator.button(5);
-      MOVE_AND_SHOOT = m_operator.button(6);
-      RESET_TURRET = m_operator.button(7);
-      CLIMB_SEQUENCE = m_operator.button(8);
+      CLIMB_RETRACT = m_operator.button(8);
+
     }
 
     // --- Driver Specific Configurations ---
@@ -132,12 +134,6 @@ public class DriveControls {
         DRIVE_SLOW = m_translator.button(1);
         FIELD_RELATIVE_TOGGLE = m_translator.button(2);
         
-        // In simulation, ensure the reset button is easy to find
-        if (Constants.currentMode == Constants.Mode.SIM) {
-            RESET_TURRET = m_translator.button(10);
-        } else {
-            RESET_TURRET = m_translator.button(7);
-        }
         break;
 
       case PROGRAMMERS:
@@ -151,11 +147,6 @@ public class DriveControls {
         FIELD_RELATIVE_TOGGLE = m_translator.button(2);
         DRIFT_BRACE = m_translator.button(3);
         
-        if (Constants.currentMode != Constants.Mode.SIM && m_operator instanceof CommandXboxController xbox) {
-             RESET_TURRET = xbox.back();
-        } else {
-             RESET_TURRET = m_operator.button(9);
-        }
         break;
     }
   }

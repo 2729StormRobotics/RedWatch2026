@@ -42,10 +42,7 @@ public class IntelligentCollection {
                 hopper.runCommand(8.0) // Run hopper at 8V
             )
         ),
-        // Wait until full (either intake beam break or hopper full)
-        Commands.waitUntil(() -> 
-            intake.isGamePieceDetected() || hopper.isFull()
-        ),
+        
         // Stop both systems
         Commands.parallel(
             Commands.runOnce(() -> intake.stopRoller()),

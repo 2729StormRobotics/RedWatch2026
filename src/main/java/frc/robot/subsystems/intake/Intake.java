@@ -1,35 +1,19 @@
-// Copyright 2021-2024 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.AlphaMechanism3d;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
-/**
- * Intake subsystem with pivot (NEO) and roller (Vortex) motors.
- * Implements "Touch it, Own it" auto-retraction using beam-break inputs.
- * Updated for WPILib 2026 stateless TrapezoidProfile.
- */
 public class Intake extends SubsystemBase {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
@@ -38,145 +22,82 @@ public class Intake extends SubsystemBase {
   private double desiredRollerPercent = 0.0;
   private boolean autoRetractEnabled = true;
 
-  // Track the current state of the motion profile
   private TrapezoidProfile.State m_lastState = new TrapezoidProfile.State(0.0, 0.0);
   
-  // 2026 API: Constructor only takes constraints
   private final TrapezoidProfile m_profile = new TrapezoidProfile(
       new TrapezoidProfile.Constraints(
           IntakeConstants.kMaxVelocity,
           IntakeConstants.kMaxAcceleration)
   );
 
-  // Mechanism visualization
+  // 2D Visualization
   private final LoggedMechanism2d mechanism = new LoggedMechanism2d(3.0, 3.0);
   private final LoggedMechanismRoot2d root;
   private final LoggedMechanismLigament2d pivotArm;
 
-  /**
-   * Creates a new Intake subsystem.
-   *
-   * @param io The IO implementation (real hardware or simulation)
-   */
   public Intake(IntakeIO io) {
     this.io = io;
     
-    // Set up mechanism visualization
-    // Root at center-bottom of canvas
     root = mechanism.getRoot("IntakeRoot", 1.5, 2.5);
-    // Pivot arm that rotates outward (0° = horizontal right, 90° = down)
-    // When retracted (0 rotations), arm points down (90°)
-    // When deployed (1 rotation), arm rotates outward (0°)
     pivotArm = root.append(
         new LoggedMechanismLigament2d(
             "PivotArm",
-            0.8, // Length in mechanism units
-            90.0, // Initial angle (pointing down when retracted)
-            6.0, // Width
+            0.8, 
+            90.0, 
+            6.0, 
             new Color8Bit(Color.kBlue)));
   }
 
   @Override
   public void periodic() {
-    // Update inputs from hardware
     io.updateInputs(inputs);
-
-    // Process inputs for logging
     Logger.processInputs("Intake", inputs);
 
-    // "Touch it, Own it" auto-retraction logic
     if (autoRetractEnabled && inputs.beamBreakTriggered) {
-      // Game piece detected - automatically retract
       retract();
     }
 
-    // Apply desired pivot position using ProfiledPID
     TrapezoidProfile.State goal = new TrapezoidProfile.State(desiredPivotPosition, 0.0);
-    
-    // 2026 API Fix: calculate(timeStep, current, goal)
     m_lastState = m_profile.calculate(0.020, m_lastState, goal);
     
-    // Push the profile setpoint to hardware
     io.setPivotPosition(m_lastState.position);
-
-    // Apply desired roller percent
     io.setRollerPercent(desiredRollerPercent);
 
-    // Update mechanism visualization
-    // Convert pivot position (rotations) to angle (degrees)
-    // 0 rotations = 90° (pointing down), 1 rotation = 0° (pointing right/outward)
+    // Update 2D Mechanism
     double angleDegrees = 90.0 - (inputs.pivotPositionRotations * 360.0);
     pivotArm.setAngle(angleDegrees);
+    Logger.recordOutput("Intake/angle", angleDegrees);
+
+    // --- 3D VISUALIZATION INTEGRATION ---
+    // Pass the rotation to the master visualizer. 
+    // This will also trigger the hopper extension logic.
+    AlphaMechanism3d.getInstance().setIntake(Rotation2d.fromRotations(inputs.pivotPositionRotations));
     
-    // Log mechanism
-    Logger.recordOutput("Intake/Mechanism", mechanism);
+    // In a multi-subsystem bot, only one subsystem needs to call log() 
+    // to push the final Pose3d array to AdvantageScope.
+    AlphaMechanism3d.getInstance().log();
   }
 
-  /** Deploys the intake. */
-  public void deploy() {
-    desiredPivotPosition = IntakeConstants.DEPLOYED_POSITION;
-  }
-
-  /** Retracts the intake. */
-  public void retract() {
+  public void deploy() { desiredPivotPosition = IntakeConstants.DEPLOYED_POSITION; }
+  public void retract() { 
     desiredPivotPosition = IntakeConstants.RETRACTED_POSITION;
-    desiredRollerPercent = 0.0; // Stop roller when retracting
-  }
-
-  /** Sets the roller speed for intaking. */
-  public void intake() {
-    desiredRollerPercent = IntakeConstants.INTAKE_ROLLER_SPEED;
-  }
-
-  /** Sets the roller speed for ejecting. */
-  public void eject() {
-    desiredRollerPercent = IntakeConstants.EJECT_ROLLER_SPEED;
-  }
-
-  /** Stops the roller. */
-  public void stopRoller() {
     desiredRollerPercent = 0.0;
   }
+  public void intake() { desiredRollerPercent = IntakeConstants.INTAKE_ROLLER_SPEED; }
+  public void eject() { desiredRollerPercent = IntakeConstants.EJECT_ROLLER_SPEED; }
+  public void stopRoller() { desiredRollerPercent = 0.0; }
 
-  /** Checks if the intake is deployed. */
   @AutoLogOutput(key = "Intake/IsDeployed")
   public boolean isDeployed() {
-    double error = Math.abs(inputs.pivotPositionRotations - IntakeConstants.DEPLOYED_POSITION);
-    return error < IntakeConstants.POSITION_TOLERANCE;
+    return Math.abs(inputs.pivotPositionRotations - IntakeConstants.DEPLOYED_POSITION) < IntakeConstants.POSITION_TOLERANCE;
   }
 
-  /** Checks if a game piece is detected (beam break triggered). */
-  @AutoLogOutput(key = "Intake/GamePieceDetected")
-  public boolean isGamePieceDetected() {
-    return inputs.beamBreakTriggered;
-  }
-
-  /** Enables or disables auto-retraction. */
-  public void setAutoRetractEnabled(boolean enabled) {
-    this.autoRetractEnabled = enabled;
-  }
-
-  /** Stops all intake motors. */
   public void stop() {
     retract();
     io.stop();
   }
 
-  /** Command to deploy the intake. */
-  public Command deployCommand() {
-    return Commands.runOnce(this::deploy, this);
-  }
-
-  /** Command to retract the intake. */
-  public Command retractCommand() {
-    return Commands.runOnce(this::retract, this);
-  }
-
-  /** Command to run the intake. */
-  public Command intakeCommand() {
-    return Commands.run(() -> {
-      deploy();
-      intake();
-    }, this);
-  }
+  public Command deployCommand() { return Commands.runOnce(this::deploy, this); }
+  public Command retractCommand() { return Commands.runOnce(this::retract, this); }
+  public Command intakeCommand() { return Commands.run(() -> { deploy(); intake(); }, this); }
 }
