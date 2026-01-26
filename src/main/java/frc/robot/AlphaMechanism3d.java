@@ -1,82 +1,90 @@
-// Copyright 2021-2024 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.shooter.ShooterConstants;
+import edu.wpi.first.math.util.Units;
+import frc.robot.Constants.MechanismConstants;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * 3D mechanism visualization for the shooter subsystem.
- * Based on Mechanical Advantage's AlphaMechanism3d pattern.
+ * Master 3D mechanism visualization for Project Titan.
+ * Logic is Robot-Relative to prevent double-transforming in AdvantageScope.
  */
 public class AlphaMechanism3d {
-  private static AlphaMechanism3d measured;
+  private static AlphaMechanism3d instance;
 
-  public static AlphaMechanism3d getMeasured() {
-    if (measured == null) {
-      measured = new AlphaMechanism3d();
+  public static AlphaMechanism3d getInstance() {
+    if (instance == null) {
+      instance = new AlphaMechanism3d();
     }
-    return measured;
+    return instance;
   }
 
-  private Rotation2d turretAngle = Rotation2d.kZero; // Robot-relative
-  private Rotation2d hoodAngle = Rotation2d.kZero; // Relative to the ground
+  // Shooter State
+  private Rotation2d turretAngle = new Rotation2d();
+  private Rotation2d hoodAngle = new Rotation2d();
 
-  public void setTurretAngle(Rotation2d angle) {
-    this.turretAngle = angle;
+  // Intake & Hopper State
+  private Rotation2d intakeAngle = new Rotation2d();
+
+  // Climb State
+  private double climbExtensionMeters = 0.0;
+
+  public void setShooter(Rotation2d turret, Rotation2d hood) {
+    this.turretAngle = turret;
+    this.hoodAngle = hood;
   }
 
-  public void setHoodAngle(Rotation2d angle) {
-    this.hoodAngle = angle;
+  public void setIntake(Rotation2d intake) {
+    this.intakeAngle = intake;
+  }
+
+  public void setClimb(double meters) {
+    this.climbExtensionMeters = meters;
   }
 
   /**
-   * Log the component poses in field coordinates.
-   * The poses are transformed from robot-relative to field-relative so they move with the robot.
-   * Based on Mechanical Advantage's AlphaMechanism3d pattern.
-   *
-   * @param key The logging key prefix
-   * @param drive Drive subsystem to get robot pose
+   * Logs all component poses relative to Robot Origin (0,0,0).
    */
-  public void log(String key, Drive drive) {
-    // Get robot pose in field coordinates
-    Pose2d robotPose2d = drive.getPose();
-    Pose3d robotPose = new Pose3d(robotPose2d);
+  public void log() {
+    Pose3d robotRoot = new Pose3d();
 
-    // Build turret pose: robot -> turret base -> turret with rotation
-    // Start from robot pose, apply robotToTurret transform, then apply turret rotation
-    Pose3d turretPose = robotPose
-        .transformBy(ShooterConstants.robotToTurret)
-        .transformBy(new Transform3d(
-            Translation3d.kZero,
-            new Rotation3d(0.0, 0.0, turretAngle.getRadians())));
+    // --- SHOOTER HIERARCHY ---
+    Pose3d turretPose = robotRoot
+        .transformBy(MechanismConstants.robotToTurret)
+        .transformBy(new Transform3d(new Translation3d(), new Rotation3d(0, 0, turretAngle.getRadians())));
 
-    // Build hood pose: turret -> hood (with rotation)
-    Pose3d hoodPose = turretPose.transformBy(
-        new Transform3d(
-            ShooterConstants.turretToHood.getTranslation(),
-            new Rotation3d(0.0, -hoodAngle.getRadians(), Math.PI)));
+    Pose3d hoodPose = turretPose
+        .transformBy(MechanismConstants.turretToHood)
+        .transformBy(new Transform3d(new Translation3d(), new Rotation3d(0, -hoodAngle.getRadians(), 0)));
 
-    // Log component poses as array (in field coordinates)
-    Logger.recordOutput(key + "/Components", new Pose3d[] {turretPose, hoodPose});
-    
+    // --- INTAKE & LINKED HOPPER ---
+    Pose3d intakePose = robotRoot
+        .transformBy(MechanismConstants.robotToIntakePivot)
+        .transformBy(new Transform3d(new Translation3d(), new Rotation3d(0, intakeAngle.getRadians(), 0)));
+
+    // Hopper is mechanically linked. When intake is 90 deg (deployed), hopper is max extension.
+    // Logic: Extension = Deployed_Pos * sin(Intake_Angle)
+    double hopperExtension = MechanismConstants.kMaxHopperExtensionMeters * Math.sin(intakeAngle.getRadians());
+    Pose3d hopperPose = robotRoot
+        .transformBy(MechanismConstants.robotToHopperBase)
+        .transformBy(new Transform3d(new Translation3d(hopperExtension, 0, 0), new Rotation3d()));
+
+    // --- CLIMB ---
+    Pose3d climbPose = robotRoot
+        .transformBy(MechanismConstants.robotToClimbBase)
+        .transformBy(new Transform3d(new Translation3d(0, 0, climbExtensionMeters), new Rotation3d()));
+
+    // Log everything to one array for AdvantageScope "Components"
+    Logger.recordOutput("Mechanisms/ComponentPoses", new Pose3d[] {
+      turretPose, 
+      hoodPose, 
+      intakePose, 
+      hopperPose, 
+      climbPose
+    });
   }
 }

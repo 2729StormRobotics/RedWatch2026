@@ -6,15 +6,22 @@ package frc.robot;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants. This class should not be used for any other purpose. All constants should be declared
+ * The Constants class provides a convenient place for teams to hold robot-wide
+ * numerical or boolean
+ * constants. This class should not be used for any other purpose. All constants
+ * should be declared
  * globally (i.e. public static). Do not put anything functional in this class.
  *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
+ * <p>
+ * It is advised to statically import this class (or one of its inner classes)
+ * wherever the
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
@@ -28,7 +35,9 @@ public final class Constants {
   /** Current operator configuration */
   public static final Operators operator = Operators.KRITHIK;
 
-  /** Current robot mode (automatically determined based on runtime environment) */
+  /**
+   * Current robot mode (automatically determined based on runtime environment)
+   */
   public static final Mode currentMode = getRobotMode();
 
   /** Enable tuning mode for PID and other parameters */
@@ -98,7 +107,6 @@ public final class Constants {
     return Mode.REAL;
   }
 
-
   /** Constants for NEO motor specifications */
   public static final class NeoMotorConstants {
     /** Free speed of NEO motor in RPM */
@@ -137,7 +145,7 @@ public final class Constants {
     // Drive subsystem (IDs 1-8)
     // Drive motors: 1, 3, 5, 7 (Vortex)
     // Steer motors: 2, 4, 6, 8 (550)
-    
+
     // Shooter subsystem
     /** Flywheel leader motor CAN ID */
     public static final int FLYWHEEL_LEADER_ID = 9;
@@ -147,25 +155,25 @@ public final class Constants {
     public static final int HOOD_MOTOR_ID = 11;
     /** Turret motor CAN ID */
     public static final int TURRET_MOTOR_ID = 12;
-    
+
     // Intake subsystem
     /** Intake pivot motor CAN ID */
     public static final int INTAKE_PIVOT_ID = 13;
     /** Intake roller motor CAN ID */
     public static final int INTAKE_ROLLER_ID = 14;
-    
+
     // Kicker subsystem
     /** Kicker motor CAN ID */
     public static final int KICKER_MOTOR_ID = 15;
-    
+
     // Hopper/Indexer subsystem
     /** Hopper motor CAN ID */
     public static final int HOPPER_MOTOR_ID = 16;
-    
+
     // Climb subsystem
     /** Climb motor CAN ID */
     public static final int CLIMB_MOTOR_ID = 17;
-    
+
     // Digital inputs
     /** Intake beam break sensor DIO port */
     public static final int INTAKE_BEAM_BREAK_PORT = 0;
@@ -197,6 +205,7 @@ public final class Constants {
   public static void disableHAL() {
     disableHAL = true;
   }
+
   /** Constants for vision processing and AprilTag detection */
   public static class VisionConstants {
     // Camera configuration
@@ -247,6 +256,42 @@ public final class Constants {
     /** Tolerance for AprilTag alignment in meters */
     public static final double aprilTagAlignTolerance = 0.5;
 
-    // Note: Game-specific AprilTag heights should be added here when the 2026 game is announced
+    // Note: Game-specific AprilTag heights should be added here when the 2026 game
+    // is announced
   }
+
+  public static final class MechanismConstants {
+    // Shooter
+    public static final Transform3d robotToTurret = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(4.750), // X: forward/back (adjust based on your robot)
+            Units.inchesToMeters(0), // Y: left/right (adjust based on your robot)
+            Units.inchesToMeters(16.25)), // Z: height (adjust based on your robot)
+        new Rotation3d(0.0, 0.0, -Math.PI / 2));
+
+    /** Transform from turret pivot to hood pivot point */
+    public static final Transform3d turretToHood = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(0.5), // X: forward from turret (0.105m)
+            Units.inchesToMeters(4), // Y: left/right
+            Units.inchesToMeters(4)), // Z: height (0.092m)
+        new Rotation3d(0.0, 0.0, 0)); // Hood rotated 180° around Z
+
+    // Intake (Pivot ID 13)
+    public static final Transform3d robotToIntakePivot = new Transform3d(
+        new Translation3d(Units.inchesToMeters(12), 0, Units.inchesToMeters(5)),
+        new Rotation3d());
+
+    // Hopper (Linked to Intake)
+    public static final Transform3d robotToHopperBase = new Transform3d(
+        new Translation3d(Units.inchesToMeters(5), 0, Units.inchesToMeters(4)),
+        new Rotation3d());
+    public static final double kMaxHopperExtensionMeters = Units.inchesToMeters(4.0);
+
+    // Climb (Telescoping ID 17)
+    public static final Transform3d robotToClimbBase = new Transform3d(
+        new Translation3d(Units.inchesToMeters(-10), 0, Units.inchesToMeters(10)),
+        new Rotation3d());
+  }
+
 }

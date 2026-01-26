@@ -4,7 +4,7 @@
     "position": [
       0.0,
       0.0,
-      0.025
+      -0.025
     ],
     "rotations": [
       {
@@ -13,7 +13,7 @@
       },
       {
         "axis": "z",
-        "degrees": 0
+        "degrees": -90
       }
     ],
     "cameras": [

@@ -26,19 +26,19 @@ public final class ShooterConstants {
   public static final Transform3d robotToTurret =
       new Transform3d(
           new Translation3d(
-              Units.inchesToMeters(0), // X: forward/back (adjust based on your robot)
+              Units.inchesToMeters(4.750), // X: forward/back (adjust based on your robot)
               Units.inchesToMeters(0), // Y: left/right (adjust based on your robot)
-              Units.inchesToMeters(0)), // Z: height (adjust based on your robot)
-          new Rotation3d(0.0, 0.0, 0.0));
+              Units.inchesToMeters(16.25)), // Z: height (adjust based on your robot)
+          new Rotation3d(0.0, 0.0, -Math.PI/2));
 
   /** Transform from turret pivot to hood pivot point */
   public static final Transform3d turretToHood =
       new Transform3d(
           new Translation3d(
-              Units.inchesToMeters(6.23), // X: forward from turret (0.105m)
-              Units.inchesToMeters(0.0), // Y: left/right
-              Units.inchesToMeters(3.260)), // Z: height (0.092m)
-          new Rotation3d(0.0, 0.0, Math.PI)); // Hood rotated 180° around Z
+              Units.inchesToMeters(0.5), // X: forward from turret (0.105m)
+              Units.inchesToMeters(4), // Y: left/right
+              Units.inchesToMeters(4)), // Z: height (0.092m)
+          new Rotation3d(0.0, 0.0, 0)); // Hood rotated 180° around Z
 
   private ShooterConstants() {}
 }

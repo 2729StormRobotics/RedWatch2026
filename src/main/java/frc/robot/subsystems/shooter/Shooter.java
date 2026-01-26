@@ -67,7 +67,7 @@ public class Shooter extends SubsystemBase {
   private boolean moveAndShootEnabled = false;
 
   // 3D Mechanism visualization
-  private final AlphaMechanism3d mechanism3d = AlphaMechanism3d.getMeasured();
+  private final AlphaMechanism3d mechanism3d = AlphaMechanism3d.getInstance();
 
   /**
    * Creates a new Shooter super-subsystem.
@@ -120,11 +120,9 @@ public class Shooter extends SubsystemBase {
 
     // Update 3D mechanism visualization
     // Turret angle is robot-relative (0° = robot forward, positive = CCW)
-    mechanism3d.setTurretAngle(new Rotation2d(getTurretCurrentAngle()));
-    // Hood angle is relative to ground (0° = horizontal, positive = up)
-    mechanism3d.setHoodAngle(new Rotation2d(getHoodCurrentAngle()));
+    mechanism3d.setShooter(new Rotation2d(getTurretCurrentAngle()),new Rotation2d(getHoodCurrentAngle()));
     // Log the mechanism poses
-    mechanism3d.log("Shooter", drive);
+    mechanism3d.log();
   }
 
   /**

@@ -44,7 +44,7 @@ public final class HoodConstants {
   public static final double MIN_ANGLE_RAD = Units.degreesToRadians(0.0);
   
   /** Maximum hood angle in radians */
-  public static final double MAX_ANGLE_RAD = Units.degreesToRadians(45.0);
+  public static final double MAX_ANGLE_RAD = Units.degreesToRadians(30.0);
   
   /** Gear ratio (motor rotations per hood rotation) */
   public static final double GEAR_RATIO = 25.0;
