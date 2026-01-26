@@ -1,0 +1,34 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x000000013101bfc8, pid=76248, tid=259
+#
+# JRE version: OpenJDK Runtime Environment Temurin-17.0.16+8 (17.0.16+8) (build 17.0.16+8)
+# Java VM: OpenJDK 64-Bit Server VM Temurin-17.0.16+8 (17.0.16+8, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, bsd-aarch64)
+# Problematic frame:
+# C  [libhalsim_gui.dylib+0x1bfc8]  std::__1::__function::__func<halsimgui::NetworkTablesSimGui::Initialize()::$_0, std::__1::allocator<halsimgui::NetworkTablesSimGui::Initialize()::$_0>, void ()>::operator()()+0x8
+#
+# No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   https://github.com/adoptium/adoptium-support/issues
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -agentlib:jdwp=transport=dt_socket,server=n,suspend=y,address=localhost:49316 -Djava.library.path=/Users/krithikalluri/Documents/GitHub/RedWatch2026/build/jni/release -XX:+ShowCodeDetailsInExceptionMessages frc.robot.Main
+
+Host: "Mac15,10" arm64, 14 cores, 36G, Darwin 25.2.0, macOS 26.2 (25C56)
+Time: Mon Jan 26 02:23:35 2026 EST elapsed time: 40.830512 seconds (0d 0h 0m 40s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000000102961f10):  JavaThread "main" [_thread_in_native, id=259, stack(0x000000016cd38000,0x000000016d534000)]
+
+Stack: [0x000000016cd38000,0x000000016d534000],  sp=0x000000016d52fe00,  free space=8159k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [libhalsim_gui.dylib+0x1bfc8]  std::__1::__function::__func<halsimgui::NetworkTablesSimGui::Initialize()::$_0, std::__1::allocator<halsimgui::NetworkTablesSimGui::Initialize()::$_0>, void ()>::operator()()+0x8
+C  [libhalsim_gui.dylib+0xae1bc]  wpi::gui::PlatformRenderFrame()+0x258
+C  [libhalsim_gui.dylib+0x9b438]  wpi::gui::Main()+0x180

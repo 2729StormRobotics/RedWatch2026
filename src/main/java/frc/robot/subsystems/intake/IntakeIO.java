@@ -81,4 +81,8 @@ public interface IntakeIO {
    * Stops both motors.
    */
   public default void stop() {}
+  /**
+   * for simulation only.
+   */
+  public default boolean decrementBall() {return false;}
 }

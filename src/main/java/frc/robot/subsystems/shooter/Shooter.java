@@ -33,6 +33,8 @@ import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.AlphaMechanism3d;
+
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -66,6 +68,9 @@ public class Shooter extends SubsystemBase {
   // Move-and-Shoot state
   private boolean moveAndShootEnabled = false;
 
+  //Sim?
+  private AbstractDriveTrainSimulation driveTrainSimulation;
+
   // 3D Mechanism visualization
   private final AlphaMechanism3d mechanism3d = AlphaMechanism3d.getInstance();
 
@@ -77,11 +82,12 @@ public class Shooter extends SubsystemBase {
    * @param turretIO Turret IO implementation
    * @param drive Drive subsystem for robot pose
    */
-  public Shooter(FlywheelIO flywheelIO, HoodIO hoodIO, TurretIO turretIO, Drive drive) {
+  public Shooter(FlywheelIO flywheelIO, HoodIO hoodIO, TurretIO turretIO, Drive drive, AbstractDriveTrainSimulation driveTrainSimulation) {
     this.flywheelIO = flywheelIO;
     this.hoodIO = hoodIO;
     this.turretIO = turretIO;
     this.drive = drive;
+    this.driveTrainSimulation = driveTrainSimulation;
   }
 
   @Override
@@ -130,23 +136,27 @@ public class Shooter extends SubsystemBase {
    * Calculates heading to hub and adjusts turret/hood/flywheel accordingly.
    */
   private void updateMoveAndShoot() {
-    // Get current robot pose
-    Pose2d robotPose = drive.getPose();
+    // --- START MODIFICATION: SIM-AWARE POSE RETRIEVAL ---
+    Pose2d robotPose;
+    ChassisSpeeds robotVelocity;
+
+    if (frc.robot.Constants.currentMode == frc.robot.Constants.Mode.SIM && driveTrainSimulation != null) {
+      // Use Ground Truth from MapleSim for perfect simulation tracking
+      robotPose = driveTrainSimulation.getSimulatedDriveTrainPose();
+      robotVelocity = driveTrainSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative();
+    } else {
+      // Use Estimated Pose (Odometry/Vision) for Real or Replay
+      robotPose = drive.getPose();
+      robotVelocity = drive.getChassisSpeeds();
+    }
+    // --- END MODIFICATION ---
     
     // Get hub center position (alliance-relative)
     Translation2d hubCenter;
     boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-    if (isRed) {
-      // Red alliance - use opposite hub -- TODO
-      hubCenter = new Translation2d(
-          FieldConstants.Hub.topCenterPoint.getX(),
-          FieldConstants.Hub.topCenterPoint.getY());
-    } else {
-      // Blue alliance - use near hub
-      hubCenter = new Translation2d(
-          FieldConstants.Hub.topCenterPoint.getX(),
-          FieldConstants.Hub.topCenterPoint.getY());
-    }
+    
+    // Note: In 2026 REBUILT, ensure FieldConstants.Hub reflects the target you want to hit
+    hubCenter = FieldConstants.Hub.topCenterPoint.toTranslation2d();
     
     // Calculate vector from robot to hub (in field coordinates)
     Translation2d robotToHub = hubCenter.minus(robotPose.getTranslation());
@@ -154,7 +164,6 @@ public class Shooter extends SubsystemBase {
     // Check if target is valid (non-zero distance)
     double distanceToHub = robotToHub.getNorm();
     if (distanceToHub < 0.01) {
-      // Robot is at hub center - disable move-and-shoot
       disableMoveAndShoot();
       return;
     }
@@ -163,30 +172,26 @@ public class Shooter extends SubsystemBase {
     Rotation2d headingToHub = robotToHub.getAngle();
     
     // Calculate required turret angle relative to robot forward direction
-    // Turret angle = field heading to hub - robot rotation
-    // This gives us the angle the turret needs to rotate relative to robot forward (0° = forward, positive = CCW)
     Rotation2d robotRotation = robotPose.getRotation();
     Rotation2d turretRotation = headingToHub.minus(robotRotation);
     
-    // Normalize to [-π, π] range and clamp to turret limits
+    // Normalize and clamp
     double turretAngle = MathUtil.inputModulus(turretRotation.getRadians(), -Math.PI, Math.PI);
     turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
     setTurretAngle(turretAngle);
     
-    // Get robot velocity for move-and-shoot compensation
-    ChassisSpeeds robotVelocity = drive.getChassisSpeeds();
-    
-    // Calculate required flywheel RPM based on distance and velocity
+    // Calculate required flywheel RPM (now using field-relative velocity for better compensation)
     double requiredRPM = calculateRequiredRPM(distanceToHub, robotVelocity);
-    setFlywheelVelocity(requiredRPM / 60.0); // Convert RPM to RPS
+    setFlywheelVelocity(requiredRPM / 60.0); 
     
-    // Calculate required hood angle based on distance
+    // Calculate required hood angle
     setHoodAngleFromDistance(distanceToHub);
     
     // Log target information
     Logger.recordOutput("Shooter/TargetDistance", distanceToHub);
     Logger.recordOutput("Shooter/TargetHeading", headingToHub.getDegrees());
     Logger.recordOutput("Shooter/TurretSetpoint", Math.toDegrees(turretAngle));
+    Logger.recordOutput("Shooter/SimPoseUsed", frc.robot.Constants.currentMode == frc.robot.Constants.Mode.SIM);
   }
 
   /**

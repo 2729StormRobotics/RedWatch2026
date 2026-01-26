@@ -97,7 +97,12 @@ public class Intake extends SubsystemBase {
     io.stop();
   }
 
+  public boolean decrementBall() {
+    return io.decrementBall();
+  }
+  
   public Command deployCommand() { return Commands.runOnce(this::deploy, this); }
   public Command retractCommand() { return Commands.runOnce(this::retract, this); }
   public Command intakeCommand() { return Commands.run(() -> { deploy(); intake(); }, this); }
+
 }

@@ -3,6 +3,11 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+import static edu.wpi.first.units.Units.*;
+
+import org.dyn4j.geometry.Convex;
+import org.dyn4j.geometry.Geometry;
+import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation.GamePieceInfo;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -307,4 +312,13 @@ public final class Constants {
         new Rotation3d(0,0,-Math.PI/2));
   }
 
+  public static final GamePieceInfo FUEL_INFO = new GamePieceInfo(
+    "Fuel",                                 // type
+    Geometry.createCircle(Inches.toBaseUnits(4.5)),    // shape (4.5" diameter ball)
+    Inches.of(4.5),                         // gamePieceHeight
+    Pounds.of(0.25),                        // gamePieceMass
+    0.1,                                    // linearDamping (air resistance simulation)
+    0.1,                                    // angularDamping
+    0.75                                    // coefficientOfRestitution (how bouncy it is)
+);
 }

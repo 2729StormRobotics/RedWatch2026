@@ -13,7 +13,13 @@
 
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.*;
+
 import static frc.robot.subsystems.intake.IntakeConstants.*;
+
+import org.ironmaple.simulation.IntakeSimulation;
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -34,7 +40,9 @@ public class IntakeIOSim implements IntakeIO {
   private double rollerAppliedVolts = 0.0;
   private boolean beamBreakTriggered = false;
 
-  public IntakeIOSim() {
+  private final IntakeSimulation intakeSimulation;
+
+  public IntakeIOSim(AbstractDriveTrainSimulation driveTrain) {
     // Create pivot arm simulation using NEO motor model
     pivotSim =
         new SingleJointedArmSim(
@@ -48,6 +56,20 @@ public class IntakeIOSim implements IntakeIO {
             RETRACTED_POSITION * 2.0 * Math.PI); // Starting position
     
     pivotController = new PIDController(kP, kI, kD);
+
+    this.intakeSimulation = IntakeSimulation.OverTheBumperIntake(
+        // Specify the type of game pieces that the intake can collect
+        "Fuel",
+        // Specify the drivetrain to which this intake is attached
+        driveTrain,
+        // Width of the intake
+        Meters.of(0.7),
+        // The extension length of the intake beyond the robot's frame (when activated)
+        Meters.of(0.2),
+        // The intake is mounted on the back side of the chassis
+        IntakeSimulation.IntakeSide.BACK,
+        // The intake can hold up to 1 note
+        50);
   }
 
   @Override
@@ -69,7 +91,7 @@ public class IntakeIOSim implements IntakeIO {
     // Simulate beam break (triggered when intake is deployed and has been running)
     beamBreakTriggered = (pivotSim.getAngleRads() > DEPLOYED_POSITION * 0.8 * 2.0 * Math.PI) 
         && (Math.abs(rollerAppliedVolts) > 0.1);
-
+    Logger.recordOutput("Intake/ballsCollected", intakeSimulation.getGamePiecesAmount());
     // Update inputs from simulation
     inputs.pivotPositionRotations = pivotSim.getAngleRads() / (2.0 * Math.PI);
     inputs.pivotVelocityRotationsPerSec = pivotSim.getVelocityRadPerSec() / (2.0 * Math.PI);
@@ -81,8 +103,21 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
+  public boolean decrementBall(){
+    return intakeSimulation.obtainGamePieceFromIntake();
+  }
+  @Override
   public void setPivotPosition(double positionRotations) {
     pivotPositionSetpoint = positionRotations;
+    if (positionRotations > 0.2) {
+      //deployed
+      intakeSimulation.startIntake(); // Extends the intake out from the chassis frame and starts detecting contacts with game pieces
+
+    } else {
+      //retracted
+      intakeSimulation.stopIntake();
+    }
+    
   }
 
   @Override

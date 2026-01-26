@@ -55,7 +55,7 @@ public class AlphaMechanism3d {
 
     Pose3d hoodPose = turretPose
         .transformBy(MechanismConstants.turretToHood)
-        .transformBy(new Transform3d(new Translation3d(), new Rotation3d(0, -hoodAngle.getRadians(), 0)));
+        .transformBy(new Transform3d(new Translation3d(), new Rotation3d(-hoodAngle.getRadians(), 0, 0)));
 
     // 2. Intake Pivot
     // Retracted is 0 rotations (pointing down/in), Deployed is 1.0 rotations (out).
