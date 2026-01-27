@@ -120,7 +120,7 @@ public final class DriveConstants {
 
   // Drive PID (velocity control)
   // Keep P low to avoid oscillation - feedforward does most of the work
-  public static final double driveKp = 0.01;
+  public static final double driveKp = 0.0045;
   public static final double driveKi = 0.0;
   public static final double driveKd = 0.0075;
 
@@ -129,8 +129,8 @@ public final class DriveConstants {
   // kV: Voltage per rad/s = 12V / freeWheelSpeed(rad/s)
   //     Free wheel speed = 6784 RPM / 4.71 / 60 × 2π = 150.7 rad/s
   //     kV = 12 / 150.7 = 0.0796 ≈ 0.08
-  public static final double driveKs = 0.0;
-  public static final double driveKv = 0.00;
+  public static final double driveKs = 0.05;
+  public static final double driveKv = 0.08;
 
   // Simulation values
   public static final double driveSimP = 0.05;
@@ -152,7 +152,7 @@ public final class DriveConstants {
 
   // Turn PID (position control with wrapping)
   // Higher P = snappier module rotation (but can oscillate if too high)
-  public static final double turnKp = 2.0;
+  public static final double turnKp = 1.0;
   public static final double turnKi = 0.0;
   public static final double turnKd = 0.0;
   public static final double turnPIDMinInput = 0.0;
