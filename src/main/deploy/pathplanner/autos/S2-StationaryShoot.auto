@@ -1,0 +1,1 @@
+{"version": "2025.0", "command": {"type": "sequential", "data": {"commands": [{"type": "named", "data": {"name": "PrepShooter"}}, {"type": "wait", "data": {"waitTime": 1.0}}, {"type": "named", "data": {"name": "StartShots5seconds"}}]}}, "resetOdom": true, "folder": "S2", "choreoAuto": false}

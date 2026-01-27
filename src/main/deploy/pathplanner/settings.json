@@ -3,8 +3,12 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "N1",
     "B1",
+    "B2",
+    "N1",
+    "N2",
+    "N3",
+    "B3",
     "S1",
     "S2",
     "S3"
