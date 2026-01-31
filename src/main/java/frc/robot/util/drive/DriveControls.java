@@ -127,6 +127,12 @@ public class DriveControls {
   /** Trigger for dynamic reverse test */
   public static Trigger DYNAMIC_REVERSE;
 
+  public static Trigger RUN_INTAKE;
+  public static Trigger REVERSE_INTAKE;
+
+  public static Trigger SET_INTAKE_OUT;
+  public static Trigger SET_INTAKE_IN;
+
   /**
    * Configures all controls based on the current driver and operator settings.
    * This method should be called during robot initialization.
@@ -166,5 +172,15 @@ public class DriveControls {
         DRIVE_ROBOT_RELATIVE = m_translator.button(4);
         break;
     }
+
+// Intake Controls (Operator - Xbox Controller)
+    // Run intake on bumpers
+    RUN_INTAKE = m_weaponsController.rightBumper();
+    REVERSE_INTAKE = m_weaponsController.leftBumper();
+    
+    // Deploy/Retract on A/B buttons
+    SET_INTAKE_OUT = m_weaponsController.a();
+    SET_INTAKE_IN = m_weaponsController.b();
+
   }
 }

@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -35,6 +36,9 @@ import frc.robot.subsystems.drive.GyroIOReal;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOReal;
+import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.samplemotor.SampleMotor;
 import frc.robot.subsystems.samplemotor.SampleMotorIO;
 import frc.robot.subsystems.samplemotor.SampleMotorIOReal;
@@ -47,6 +51,8 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.drive.DriveControls;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOReal;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -59,6 +65,7 @@ public class RobotContainer {
   private final Drive drive;
   // private final SampleMotor sampleMotor;
   private final Vision vision;
+  private final Intake intake;
 
   // LEDs
   private final BlinkinLEDController ledController = BlinkinLEDController.getInstance();
@@ -86,6 +93,8 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         // sampleMotor = new SampleMotor(new SampleMotorIOReal());
+
+        intake = new Intake(new IntakeIOReal());
         
         // Vision subsystem with real Limelight cameras
         vision =
@@ -93,6 +102,8 @@ public class RobotContainer {
                 new VisionIOLimelight(VisionConstants.LEFT_LIMELIGHT_NAME),
                 new VisionIOLimelight(VisionConstants.RIGHT_LIMELIGHT_NAME),
                 drive);
+        
+        // intake = new IntakeIOReal();
         break;
 
       case SIM:
@@ -106,7 +117,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         // sampleMotor = new SampleMotor(new SampleMotorIOSim());
-        
+        intake = new Intake(new IntakeIOSim());
         // Vision subsystem with simulation IO (no vision data)
         vision =
             new Vision(
@@ -132,6 +143,8 @@ public class RobotContainer {
                 new VisionIO() {},
                 new VisionIO() {},
                 drive);
+        
+        intake =  new Intake(new IntakeIOReal());
         break;
     }
 
@@ -206,8 +219,24 @@ public class RobotContainer {
     // Set LED to orange on initialization
     ledController.orange();
 
+     // Run Intake (Right Bumper): Deploy and run rollers while held. Stop rollers on release.
+    RUN_INTAKE.whileTrue(intake.intakeCommand());
+    RUN_INTAKE.onFalse(Commands.runOnce(() -> intake.stopRoller(), intake));
+
+    // Reverse Intake (Left Bumper): Eject (Reverse rollers) while held. Stop rollers on release.
+    REVERSE_INTAKE.whileTrue(Commands.run(() -> intake.eject(), intake));
+    REVERSE_INTAKE.onFalse(Commands.runOnce(() -> intake.stopRoller(), intake));
+
+    // Set Intake Out (A Button): Deploy intake pivot
+    SET_INTAKE_OUT.onTrue(intake.deployCommand());
+
+    // Set Intake In (B Button): Retract intake pivot and stop rollers
+    SET_INTAKE_IN.onTrue(intake.retractCommand());
+
     // Add command scheduler to SmartDashboard for debugging
     SmartDashboard.putData("commandscheduler", CommandScheduler.getInstance());
+
+    
 
     // Set default drive command - field-relative joystick drive
     drive.setDefaultCommand(
