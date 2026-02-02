@@ -6,8 +6,12 @@ package frc.robot;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.hal.AllianceStationID;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -36,6 +40,12 @@ public final class Constants {
 
   /** Enable tuning mode (duplicate - consider removing) */
   public static final boolean tuningMode = true;
+  
+  public static boolean disableHAL = false;
+
+  public static void disableHAL() {
+    disableHAL = true;
+  }
 
   /** Enable vision processing */
   public static final boolean useVision = true;
@@ -208,5 +218,53 @@ public final class Constants {
     public static final double aprilTagAlignTolerance = 0.5;
 
     // Note: Game-specific AprilTag heights should be added here when the 2026 game is announced
+
+
+
+  }
+
+  public static final class MechanismConstants {
+    /** Shooter: Turret base position relative to robot center */
+    public static final Transform3d robotToTurret = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(4.75),  // X: forward/back
+            Units.inchesToMeters(0),     // Y: left/right
+            Units.inchesToMeters(14.25)), // Z: height
+        new Rotation3d(0.0, 0.0, -Math.PI / 2.0));
+
+    /** Transform from turret pivot to hood pivot point */
+    public static final Transform3d turretToHood = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(0.5), // X: forward from turret pivot
+            Units.inchesToMeters(4.0), // Y: left/right
+            Units.inchesToMeters(4.0)), // Z: height
+        new Rotation3d(Units.degreesToRadians(18),0.0, 0.0));
+
+    /** Intake Pivot: Mounted forward of robot center */
+    // public static final Transform3d robotToIntakePivot = new Transform3d(
+    //     new Translation3d(
+    //         Units.inchesToMeters(-10.752), // X: forward/back
+    //         Units.inchesToMeters(0.0),  // Y: left/right
+    //         Units.inchesToMeters(10.105)), // Z: height
+    //     new Rotation3d(-Units.degreesToRadians(IntakeConstants.DEPLOYED_POSITION_degrees),0,-Math.PI/2));
+
+    /** Hopper: Base position for linked floor extension (254-style linkage) */
+    public static final Transform3d robotToHopperBase = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(3), // X: forward/back
+            Units.inchesToMeters(-0.125), // Y: left/right
+            Units.inchesToMeters(16.496)), // Z: height
+        new Rotation3d(0,0,-Math.PI/2));
+    
+    /** Maximum distance the hopper floor extends when intake is fully deployed */
+    public static final double kMaxHopperExtensionMeters = Units.inchesToMeters(10.0);
+
+    /** Climb: Telescoping arm base position relative to robot center */
+    public static final Transform3d robotToClimbBase = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(0), // X: forward/back (negative is back)
+            Units.inchesToMeters(0),   // Y: left/right
+            Units.inchesToMeters(-8)),
+        new Rotation3d(0,0,-Math.PI/2));
   }
 }

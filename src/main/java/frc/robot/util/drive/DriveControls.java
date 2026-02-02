@@ -127,6 +127,18 @@ public class DriveControls {
   /** Trigger for dynamic reverse test */
   public static Trigger DYNAMIC_REVERSE;
 
+  public static Trigger hoodTrigger;
+  public static Trigger reverseHoodTrigger;
+
+  public static Trigger flyWheelTrigger;
+  public static Trigger reverseFlyWheelTrigger; 
+
+  public static Trigger turretTrigger0;
+  public static Trigger turretTrigger90;
+  public static Trigger turretTrigger180;
+  public static Trigger turretTrigger270;
+
+
   /**
    * Configures all controls based on the current driver and operator settings.
    * This method should be called during robot initialization.
@@ -166,5 +178,18 @@ public class DriveControls {
         DRIVE_ROBOT_RELATIVE = m_translator.button(4);
         break;
     }
+
+
+    hoodTrigger = m_weaponsController.rightBumper();
+    reverseHoodTrigger = m_weaponsController.leftBumper();
+
+    flyWheelTrigger = m_weaponsController.a();
+    reverseFlyWheelTrigger = m_weaponsController.b();
+
+    turretTrigger0 = m_weaponsController.povUp();
+    turretTrigger90 = m_weaponsController.povDown();
+    turretTrigger180 = m_weaponsController.povLeft();
+    turretTriggernegative90 = m_weaponsController.povRight();
+
   }
 }

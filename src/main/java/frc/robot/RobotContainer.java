@@ -45,8 +45,22 @@ import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.drive.DriveControls;
+
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.flywheel.*;
+import frc.robot.subsystems.shooter.hood.*;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOReal;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
+import frc.robot.subsystems.shooter.hood.HoodIOReal;
+import frc.robot.subsystems.shooter.hood.HoodIOSim;
+import frc.robot.subsystems.shooter.turret.TurretIOReal;
+import frc.robot.subsystems.shooter.turret.TurretIOSim;
+import Math;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -59,6 +73,7 @@ public class RobotContainer {
   private final Drive drive;
   // private final SampleMotor sampleMotor;
   private final Vision vision;
+  private final Shooter shooter;
 
   // LEDs
   private final BlinkinLEDController ledController = BlinkinLEDController.getInstance();
@@ -86,7 +101,8 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         // sampleMotor = new SampleMotor(new SampleMotorIOReal());
-        
+        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive, new DriveTrainSi()); 
+
         // Vision subsystem with real Limelight cameras
         vision =
             new Vision(
@@ -105,6 +121,8 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
+
+        shooter = new Shooter(new HoodIOSim(), new FlywheelIOSim(), new TurretIOSim(), drive); 
         // sampleMotor = new SampleMotor(new SampleMotorIOSim());
         
         // Vision subsystem with simulation IO (no vision data)
@@ -125,7 +143,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         // sampleMotor = new SampleMotor(new SampleMotorIO() {});
-        
+        shooter = new Shooter(new HoodIOReal(), new FlywheelIOReal()); 
+
         // Vision subsystem with empty IO for replay
         vision =
             new Vision(
@@ -205,6 +224,44 @@ public class RobotContainer {
 
     // Set LED to orange on initialization
     ledController.orange();
+
+
+
+    hoodTrigger.whileTrue(
+        Commands.run(
+            () -> shooter.setHoodAngle(
+                shooter.getHoodCurrentAngle() + 0.02),
+            shooter));
+
+    // Hood reverse
+    reverseHoodTrigger.whileTrue(
+        Commands.run(
+            () -> shooter.setHoodAngle(
+                shooter.getHoodCurrentAngle() - 0.02),
+            shooter));
+
+     flyWheelTrigger.whileTrue(
+        Commands.run(
+            () -> shooter.setFlywheelVelocity(80),
+            shooter));
+
+    flyWheelTrigger.onFalse(
+        Commands.runOnce(shooter::stop, shooter));
+
+    // Flywheel reverse
+    reverseFlyWheelTrigger.whileTrue(
+        Commands.run(
+            () -> shooter.setFlywheelVelocity(-40),
+            shooter));
+
+    reverseFlyWheelTrigger.onFalse(
+        Commands.runOnce(shooter::stop, shooter));
+
+    turretTrigger0.onTrue(Commands.runOnce(setTurretAngle(0)));
+    turretTrigger180.onTrue(Commands.runOnce(setTurretAngle(Math.PI)));
+    turretTrigger270.onTrue(Commands.runOnce(setTurretAngle((3*Math.PI)/2)));
+    turretTriggernegative90.onTrue(Commands.runOnce(setTurretAngle(MATH.PI/2)));
+
 
     // Add command scheduler to SmartDashboard for debugging
     SmartDashboard.putData("commandscheduler", CommandScheduler.getInstance());
