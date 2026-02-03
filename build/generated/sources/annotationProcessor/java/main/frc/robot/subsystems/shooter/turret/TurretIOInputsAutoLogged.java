@@ -14,6 +14,12 @@ public class TurretIOInputsAutoLogged extends TurretIO.TurretIOInputs implements
     table.put("AppliedVolts", appliedVolts);
     table.put("CurrentAmps", currentAmps);
     table.put("TemperatureCelsius", temperatureCelsius);
+    table.put("AbsoluteEncoder19Pos", absoluteEncoder19Pos);
+    table.put("AbsoluteEncoder21Pos", absoluteEncoder21Pos);
+    table.put("AbsoluteAngleDeg", absoluteAngleDeg);
+    table.put("CrtError", crtError);
+    table.put("MotorPositionDeg", motorPositionDeg);
+    table.put("MotorVelocityDegPerSec", motorVelocityDegPerSec);
   }
 
   @Override
@@ -24,6 +30,12 @@ public class TurretIOInputsAutoLogged extends TurretIO.TurretIOInputs implements
     appliedVolts = table.get("AppliedVolts", appliedVolts);
     currentAmps = table.get("CurrentAmps", currentAmps);
     temperatureCelsius = table.get("TemperatureCelsius", temperatureCelsius);
+    absoluteEncoder19Pos = table.get("AbsoluteEncoder19Pos", absoluteEncoder19Pos);
+    absoluteEncoder21Pos = table.get("AbsoluteEncoder21Pos", absoluteEncoder21Pos);
+    absoluteAngleDeg = table.get("AbsoluteAngleDeg", absoluteAngleDeg);
+    crtError = table.get("CrtError", crtError);
+    motorPositionDeg = table.get("MotorPositionDeg", motorPositionDeg);
+    motorVelocityDegPerSec = table.get("MotorVelocityDegPerSec", motorVelocityDegPerSec);
   }
 
   public TurretIOInputsAutoLogged clone() {
@@ -34,6 +46,12 @@ public class TurretIOInputsAutoLogged extends TurretIO.TurretIOInputs implements
     copy.appliedVolts = this.appliedVolts;
     copy.currentAmps = this.currentAmps;
     copy.temperatureCelsius = this.temperatureCelsius;
+    copy.absoluteEncoder19Pos = this.absoluteEncoder19Pos;
+    copy.absoluteEncoder21Pos = this.absoluteEncoder21Pos;
+    copy.absoluteAngleDeg = this.absoluteAngleDeg;
+    copy.crtError = this.crtError;
+    copy.motorPositionDeg = this.motorPositionDeg;
+    copy.motorVelocityDegPerSec = this.motorVelocityDegPerSec;
     return copy;
   }
 }

@@ -105,13 +105,12 @@ public class Shooter extends SubsystemBase {
    * @param turretIO   Turret IO implementation
    * @param drive      Drive subsystem for robot pose
    */
-  public Shooter(FlywheelIO flywheelIO, HoodIO hoodIO, TurretIO turretIO, Drive drive,
-      AbstractDriveTrainSimulation driveTrainSimulation) {
+  public Shooter(FlywheelIO flywheelIO, HoodIO hoodIO, TurretIO turretIO, Drive drive) {
     this.flywheelIO = flywheelIO;
     this.hoodIO = hoodIO;
     this.turretIO = turretIO;
     this.drive = drive;
-    this.driveTrainSimulation = driveTrainSimulation;
+    // this.driveTrainSimulation = driveTrainSimulation;
 
     this.setDefaultCommand(idleFlywheelCommand());
   }

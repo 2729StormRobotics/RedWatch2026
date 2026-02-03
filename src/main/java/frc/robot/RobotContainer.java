@@ -14,6 +14,7 @@
 package frc.robot;
 
 import static frc.robot.util.drive.DriveControls.*;
+import java.lang.constant.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -62,7 +63,7 @@ import frc.robot.subsystems.shooter.hood.HoodIOSim;
 import frc.robot.subsystems.shooter.turret.TurretIOReal;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
 import edu.wpi.first.wpilibj2.command.Command;
-import Math;
+;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -103,7 +104,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         // sampleMotor = new SampleMotor(new SampleMotorIOReal());
-        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive, new DriveTrainSim()); 
+        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive); 
 
         // Vision subsystem with real Limelight cameras
         vision =
@@ -124,7 +125,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
 
-        shooter = new Shooter(new HoodIOSim(), new FlywheelIOSim(), new TurretIOSim(), drive, ); 
+        shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim(), drive); 
         // sampleMotor = new SampleMotor(new SampleMotorIOSim());
         
         // Vision subsystem with simulation IO (no vision data)
@@ -145,7 +146,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         // sampleMotor = new SampleMotor(new SampleMotorIO() {});
-        shooter = new Shooter(new HoodIOReal(), new FlywheelIOReal()); 
+        shooter = new Shooter( new FlywheelIOReal(),new HoodIOReal(), new TurretIOReal(), drive); 
 
         // Vision subsystem with empty IO for replay
         vision =
