@@ -136,7 +136,7 @@ public class DriveControls {
   public static Trigger turretTrigger0;
   public static Trigger turretTrigger90;
   public static Trigger turretTrigger180;
-  public static Trigger turretTrigger270;
+  public static Trigger turretTriggerNegative90;
 
 
   /**
@@ -189,7 +189,7 @@ public class DriveControls {
     turretTrigger0 = m_weaponsController.povUp();
     turretTrigger90 = m_weaponsController.povDown();
     turretTrigger180 = m_weaponsController.povLeft();
-    turretTriggernegative90 = m_weaponsController.povRight();
+    turretTriggerNegative90 = m_weaponsController.povRight();
 
   }
 }

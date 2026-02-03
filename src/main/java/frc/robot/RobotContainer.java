@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -60,6 +61,7 @@ import frc.robot.subsystems.shooter.hood.HoodIOReal;
 import frc.robot.subsystems.shooter.hood.HoodIOSim;
 import frc.robot.subsystems.shooter.turret.TurretIOReal;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
+import edu.wpi.first.wpilibj2.command.Command;
 import Math;
 
 /**
@@ -101,7 +103,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         // sampleMotor = new SampleMotor(new SampleMotorIOReal());
-        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive, new DriveTrainSi()); 
+        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive, new DriveTrainSim()); 
 
         // Vision subsystem with real Limelight cameras
         vision =
@@ -122,7 +124,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
 
-        shooter = new Shooter(new HoodIOSim(), new FlywheelIOSim(), new TurretIOSim(), drive); 
+        shooter = new Shooter(new HoodIOSim(), new FlywheelIOSim(), new TurretIOSim(), drive, ); 
         // sampleMotor = new SampleMotor(new SampleMotorIOSim());
         
         // Vision subsystem with simulation IO (no vision data)
@@ -257,10 +259,10 @@ public class RobotContainer {
     reverseFlyWheelTrigger.onFalse(
         Commands.runOnce(shooter::stop, shooter));
 
-    turretTrigger0.onTrue(Commands.runOnce(setTurretAngle(0)));
-    turretTrigger180.onTrue(Commands.runOnce(setTurretAngle(Math.PI)));
-    turretTrigger270.onTrue(Commands.runOnce(setTurretAngle((3*Math.PI)/2)));
-    turretTriggernegative90.onTrue(Commands.runOnce(setTurretAngle(MATH.PI/2)));
+    turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(0)));
+    turretTrigger180.onTrue(Commands.runOnce(() ->shooter.setTurretAngle(Math.PI)));
+    turretTriggerNegative90.onTrue(Commands.runOnce(() ->shooter.setTurretAngle((3*Math.PI)/2)));
+    turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(Math.PI/2)));
 
 
     // Add command scheduler to SmartDashboard for debugging
