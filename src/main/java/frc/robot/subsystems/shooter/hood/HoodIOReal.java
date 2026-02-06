@@ -13,80 +13,86 @@
 
 package frc.robot.subsystems.shooter.hood;
 
-import static frc.robot.subsystems.shooter.hood.HoodConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkClosedLoopController;
 import edu.wpi.first.math.MathUtil;
 import java.util.function.DoubleSupplier;
 
 /**
- * Real hardware implementation of HoodIO using SparkMax motor controller with absolute encoder.
+ * Real hardware implementation of HoodIO using logic from the Hood subsystem.
+ * This implementation uses the internal relative encoder for position control.
  */
 public class HoodIOReal implements HoodIO {
+  // Hardcoded constants from the Hood subsystem
+  private static final int MOTOR_ID = 12;
+  private static final boolean INVERTED = false;
+  private static final int CURRENT_LIMIT_AMPS = 40;
+  private static final double kP = 0.03;
+  private static final double kI = 0.0;
+  private static final double kD = 0.0;
+
+  // Soft limits from Hood subsystem
+  private static final double FORWARD_SOFT_LIMIT = -1.0;
+  private static final double REVERSE_SOFT_LIMIT = -37.0;
+
   private final SparkMax motor;
-  private final RelativeEncoder relativeEncoder;
-  private final AbsoluteEncoder absoluteEncoder;
+  private final RelativeEncoder internalEncoder;
   private final SparkClosedLoopController positionController;
-  
-  private double angleSetpoint = 0.0;
-  private double absoluteEncoderZeroOffset = 0.0; // Calibrated zero position
 
   public HoodIOReal() {
     motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
-    relativeEncoder = motor.getEncoder();
-    absoluteEncoder = motor.getAbsoluteEncoder();
+    internalEncoder = motor.getEncoder();
     positionController = motor.getClosedLoopController();
-    
-    // Configure motor
+
     SparkMaxConfig config = new SparkMaxConfig();
     config
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(CURRENT_LIMIT_AMPS)
-        .inverted(MOTOR_INVERTED)
+        .inverted(INVERTED)
         .voltageCompensation(12.0);
-    config
-        .absoluteEncoder
-        .inverted(false)
-        .positionConversionFactor(2.0 * Math.PI) // Convert to radians
-        .averageDepth(2);
-    config
-        .closedLoop
-        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+
+    // Soft limits configuration as requested
+    config.softLimit
+        .forwardSoftLimitEnabled(true)
+        .forwardSoftLimit(FORWARD_SOFT_LIMIT)
+        .reverseSoftLimitEnabled(true)
+        .reverseSoftLimit(REVERSE_SOFT_LIMIT);
+
+    // Maintain 1.0 factor to keep "rotations" unit consistent with Hood subsystem logic
+    config.encoder
+        .positionConversionFactor(1.0)
+        .velocityConversionFactor(1.0);
+
+    config.closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(kP, kI, kD);
-    config
-        .encoder
-        .positionConversionFactor(2.0 * Math.PI)
-        .velocityConversionFactor(2.0 * Math.PI / 60.0); // Convert RPM to rad/s
+
     tryUntilOk(
         motor,
         5,
         () ->
             motor.configure(
                 config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-    
-    // Calibrate absolute encoder zero position (should be done at startup when hood is at min position)
-    // For now, assume zero is at the absolute encoder's zero position
-    absoluteEncoderZeroOffset = 0.0;
+
+    // Zero the encoder on startup as per the original subsystem logic
+    tryUntilOk(motor, 5, () -> internalEncoder.setPosition(0.0));
   }
 
   @Override
   public void updateInputs(HoodIOInputs inputs) {
-    sparkStickyFault = false;
-    ifOk(motor, absoluteEncoder::getPosition, (value) -> inputs.absolutePositionRotations = value);
-    ifOk(motor, relativeEncoder::getPosition, (value) -> inputs.motorPositionRotations = value);
-    ifOk(motor, relativeEncoder::getVelocity, (value) -> inputs.motorVelocityRotationsPerSec = value);
+    ifOk(motor, internalEncoder::getPosition, (value) -> inputs.motorPositionRotations = value);
+    ifOk(motor, internalEncoder::getVelocity, (value) -> inputs.motorVelocityRotationsPerSec = value);
     ifOk(
         motor,
         new DoubleSupplier[] {motor::getAppliedOutput, motor::getBusVoltage},
@@ -95,32 +101,30 @@ public class HoodIOReal implements HoodIO {
     ifOk(motor, motor::getMotorTemperature, (value) -> inputs.temperatureCelsius = value);
   }
 
+  /**
+   * Sets the target position in rotations.
+   * Note: The input is clamped between the soft limits defined in the subsystem logic.
+   */
   @Override
-  public void setAngle(double angleRadians) {
-    angleSetpoint = MathUtil.clamp(angleRadians, MIN_ANGLE_RAD, MAX_ANGLE_RAD);
+  public void setAngle(double targetRotations) {
+    // Clamping to ensure we don't exceed soft limits even in code
+    // Note: Forward limit is -1.0 (higher value) and Reverse is -37.0 (lower value)
+    double clampedTarget = MathUtil.clamp(targetRotations, REVERSE_SOFT_LIMIT, FORWARD_SOFT_LIMIT);
     
-    // Convert angle to absolute encoder position
-    // Assuming the absolute encoder is directly coupled to the hood
-    double absolutePosition = (angleSetpoint / (2.0 * Math.PI)) + absoluteEncoderZeroOffset;
-    
-    // Wrap to 0-1 range
-    absolutePosition = absolutePosition % 1.0;
-    if (absolutePosition < 0.0) {
-      absolutePosition += 1.0;
-    }
-    
-    positionController.setSetpoint(absolutePosition * 2.0 * Math.PI, ControlType.kPosition);
+    positionController.setReference(
+        clampedTarget, 
+        ControlType.kPosition, 
+        ClosedLoopSlot.kSlot0
+    );
   }
 
   @Override
   public void setVoltage(double volts) {
-    angleSetpoint = 0.0;
     motor.setVoltage(volts);
   }
 
   @Override
   public void stop() {
-    angleSetpoint = 0.0;
-    motor.set(0.0);
+    motor.stopMotor();
   }
 }
