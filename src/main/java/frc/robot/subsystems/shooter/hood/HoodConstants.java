@@ -21,7 +21,7 @@ import edu.wpi.first.math.util.Units;
  */
 public final class HoodConstants {
   /** CAN ID */
-  public static final int MOTOR_ID = 11;
+  public static final int MOTOR_ID = 12;
   
   /** Current limit for NEO 550 motors in amps */
   public static final int CURRENT_LIMIT_AMPS = 25;
@@ -33,7 +33,7 @@ public final class HoodConstants {
   public static final int ABSOLUTE_ENCODER_TEETH = 21;
   
   /** Position PID constants */
-  public static final double kP = 0.5;
+  public static final double kP = 0.03;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
   
@@ -57,6 +57,9 @@ public final class HoodConstants {
   
   /** Mass of the hood in kg (for simulation) */
   public static final double MASS_KG = 0.5;
+  // private final int CURRENT_LIMIT_AMPS = 40; 
+
+  private double positionSetpointRotations = 0.0;
   
   private HoodConstants() {}
 }

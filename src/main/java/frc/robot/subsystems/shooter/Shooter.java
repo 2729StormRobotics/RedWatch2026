@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -36,6 +37,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -43,6 +45,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.AlphaMechanism3d;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
@@ -105,12 +108,12 @@ public class Shooter extends SubsystemBase {
    * @param turretIO   Turret IO implementation
    * @param drive      Drive subsystem for robot pose
    */
-  public Shooter(FlywheelIO flywheelIO, HoodIO hoodIO, TurretIO turretIO, Drive drive) {
+  public Shooter(FlywheelIO flywheelIO, HoodIO hoodIO, TurretIO turretIO, Drive drive, SwerveDriveSimulation driveTrainSimulation) {
     this.flywheelIO = flywheelIO;
     this.hoodIO = hoodIO;
     this.turretIO = turretIO;
     this.drive = drive;
-    // this.driveTrainSimulation = driveTrainSimulation;
+    this.driveTrainSimulation = driveTrainSimulation;
 
     this.setDefaultCommand(idleFlywheelCommand());
   }
@@ -118,14 +121,17 @@ public class Shooter extends SubsystemBase {
 @Override
   public void periodic() {
     // Update inputs from hardware
-    flywheelIO.updateInputs(flywheelInputs);
-    hoodIO.updateInputs(hoodInputs);
+    flywheelIO.updateInputs(flywheelInputs); 
+    hoodIO.updateInputs(hoodInputs); 
     turretIO.updateInputs(turretInputs);
 
     // Process inputs for logging
     Logger.processInputs("Shooter/Flywheel", flywheelInputs);
     Logger.processInputs("Shooter/Hood", hoodInputs);
     Logger.processInputs("Shooter/Turret", turretInputs);
+    SmartDashboard.putNumber("Hood/Position", hoodIO.getPosition());
+    SmartDashboard.putNumber("Hood/Setpoint", hoodIO.positionSetpointRotations);
+    SmartDashboard.putBoolean("Hood/AtSetpoint", hoodIO.isAtPosition(hoodIO.positionSetpointRotations)); 
 
     if (moveAndShootEnabled) {
       updateMoveAndShoot(prep);
@@ -564,4 +570,21 @@ public class Shooter extends SubsystemBase {
 //     // 4. Register with the arena
 //     SimulatedArena.getInstance().addGamePieceProjectile(fuelProjectile);
 //   }
+
+    public Command runPositionCommand(double ticks) {
+    return run(() -> hoodIO.setPosition(-ticks)).withName("HoodPosition: " + -ticks);
+  }
+
+  public Command runPositionCommandConstant(CommandXboxController m_operatorController) {
+    SmartDashboard.putNumber("Hood/leftx", (m_operatorController.getLeftX()));
+        SmartDashboard.putNumber("Hood/ly", (m_operatorController.getLeftY()));
+        SmartDashboard.putNumber("Hood/rx", (m_operatorController.getRightX()));
+        SmartDashboard.putNumber("Hood/ry", (m_operatorController.getRightY()));
+        SmartDashboard.putNumber("Hood/rt", (m_operatorController.getRightTriggerAxis()));
+    return new RepeatCommand(run(() -> hoodIO.setPosition(-(19+(-m_operatorController.getLeftY()*18)))).withName("HoodPosition: " + -(19+(-m_operatorController.getRightY()*18))));
+  }
+
+  public Command stopCommand() {
+    return runOnce(this::stop).withName("HoodStop");
+  }
 }

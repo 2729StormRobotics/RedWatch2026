@@ -20,6 +20,7 @@ import org.littletonrobotics.junction.AutoLog;
  * Follows the AdvantageKit IO pattern for proper logging and simulation support.
  */
 public interface HoodIO {
+  public double positionSetpointRotations = 0;
   /**
    * Auto-logged inputs for the hood.
    * All fields in this class are automatically logged by AdvantageKit.
@@ -43,6 +44,8 @@ public interface HoodIO {
     
     /** Motor temperature in Celsius */
     public double temperatureCelsius = 0.0;
+
+    
   }
 
   /**
@@ -59,6 +62,13 @@ public interface HoodIO {
    * @param angleRadians Target angle in radians
    */
   public default void setAngle(double angleRadians) {}
+
+  public default boolean isAtPosition(double target) {return true;}
+
+  public default double getPosition() {return 0.0;}
+
+
+  public default void setPosition(double targetRotations) {}
 
   /**
    * Sets the hood to run at a specific voltage.

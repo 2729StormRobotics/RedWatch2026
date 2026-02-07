@@ -49,6 +49,7 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.drive.DriveControls;
 
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -62,8 +63,27 @@ import frc.robot.subsystems.shooter.hood.HoodIOReal;
 import frc.robot.subsystems.shooter.hood.HoodIOSim;
 import frc.robot.subsystems.shooter.turret.TurretIOReal;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
-import edu.wpi.first.wpilibj2.command.Command;
-;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOReal;
+import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.kicker.kicker;
+import frc.robot.subsystems.kicker.kickerConstants;
+import frc.robot.subsystems.kicker.kickerIO;
+import frc.robot.subsystems.kicker.kickerIOReal;
+import frc.robot.subsystems.kicker.kickerIOSim;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOReal;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.hopper.Hopper;
+import frc.robot.subsystems.hopper.HopperIO;
+import frc.robot.subsystems.hopper.HopperIOReal;
+import frc.robot.subsystems.hopper.HopperIOSim;
+import frc.robot.subsystems.hopper.HopperConstants;
+
+
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -77,6 +97,10 @@ public class RobotContainer {
   // private final SampleMotor sampleMotor;
   private final Vision vision;
   private final Shooter shooter;
+  private final Climb climb;
+  private final kicker kicker;
+  private final Intake intake;
+  private final Hopper hopper;
 
   // LEDs
   private final BlinkinLEDController ledController = BlinkinLEDController.getInstance();
@@ -87,6 +111,8 @@ public class RobotContainer {
   // Field
   private final Field2d field;
 
+  private SwerveDriveSimulation driveSimulation = null;
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    * Initializes subsystems based on the current robot mode (REAL, SIM, or REPLAY).
@@ -95,7 +121,6 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        // Create vision IO first (dummy for Drive constructor - Vision subsystem handles actual vision)
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -103,8 +128,11 @@ public class RobotContainer {
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
-        // sampleMotor = new SampleMotor(new SampleMotorIOReal());
-        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive); 
+        shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive, driveSimulation); 
+        climb = new Climb(new ClimbIOReal());
+        kicker = new kicker(new kickerIOReal());
+        intake = new Intake(new IntakeIOReal());
+        hopper = new Hopper(new HopperIOReal());
 
         // Vision subsystem with real Limelight cameras
         vision =
@@ -116,7 +144,6 @@ public class RobotContainer {
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
-        // Create vision IO first (dummy for Drive constructor - Vision subsystem handles actual vision)
         drive =
             new Drive(
                 new GyroIO() {},
@@ -125,8 +152,11 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
 
-        shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim(), drive); 
-        // sampleMotor = new SampleMotor(new SampleMotorIOSim());
+        shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim(), drive, driveSimulation); 
+        climb = new Climb(new ClimbIOSim());
+        kicker = new kicker(new kickerIOSim());
+        intake = new Intake(new IntakeIOSim(driveSimulation));
+        hopper = new Hopper(new HopperIOSim());
         
         // Vision subsystem with simulation IO (no vision data)
         vision =
@@ -145,8 +175,12 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        // sampleMotor = new SampleMotor(new SampleMotorIO() {});
-        shooter = new Shooter( new FlywheelIOReal(),new HoodIOReal(), new TurretIOReal(), drive); 
+        shooter = new Shooter( new FlywheelIOReal(),new HoodIOReal(), new TurretIOReal(), drive, driveSimulation); 
+        climb = new Climb(new ClimbIO() {});
+        kicker = new kicker(new kickerIOReal());
+        intake = new Intake(new IntakeIO() {});
+        hopper = new Hopper(new HopperIOReal());
+
 
         // Vision subsystem with empty IO for replay
         vision =
@@ -209,18 +243,7 @@ public class RobotContainer {
   public void reset() {
     // drive.();
   }
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
+
   private void configureButtonBindings() {
     // Configure drive controls based on driver preferences
     DriveControls.configureControls();
@@ -229,41 +252,63 @@ public class RobotContainer {
     ledController.orange();
 
 
+      TICK_2_HOOD
+            .onTrue(shooter.runPositionCommand(2).andThen(shooter.stopCommand()));
 
-    hoodTrigger.whileTrue(
-        Commands.run(
-            () -> shooter.setHoodAngle(
-                shooter.getHoodCurrentAngle() + 0.02),
-            shooter));
+      TICK_37_HOOD
+            .onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
 
-    // Hood reverse
-    reverseHoodTrigger.whileTrue(
-        Commands.run(
-            () -> shooter.setHoodAngle(
-                shooter.getHoodCurrentAngle() - 0.02),
-            shooter));
+        
+      MOVE_HOOD
+            .onTrue(shooter.runPositionCommand( (19+(MOVE_HOOD_JOYSTICK * 18)) ));
+      shooter.setDefaultCommand(shooter.runPositionCommandConstant(DriveControls.m_weaponsController));
 
      flyWheelTrigger.whileTrue(
-        Commands.run(
-            () -> shooter.setFlywheelVelocity(80),
-            shooter));
+        Commands.parallel(
+            Commands.run(() -> shooter.setFlywheelVelocity(80), shooter),
+            Commands.run(() -> kicker.setVoltage(80), kicker)
+        ));
 
     flyWheelTrigger.onFalse(
-        Commands.runOnce(shooter::stop, shooter));
+        Commands.parallel(
+            Commands.runOnce(shooter::stop, shooter),
+            Commands.runOnce(kicker::stop, kicker)
+        ));
 
     // Flywheel reverse
     reverseFlyWheelTrigger.whileTrue(
-        Commands.run(
-            () -> shooter.setFlywheelVelocity(-40),
-            shooter));
+        Commands.parallel(
+            Commands.run(() -> shooter.setFlywheelVelocity(-40), shooter),
+            Commands.run(() -> kicker.setVoltage(-40), kicker)
+        ));
+
 
     reverseFlyWheelTrigger.onFalse(
-        Commands.runOnce(shooter::stop, shooter));
+      Commands.parallel(
+            Commands.runOnce(shooter::stop, shooter),
+            Commands.runOnce(kicker::stop, kicker)
+    ));
 
     turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(0)));
     turretTrigger180.onTrue(Commands.runOnce(() ->shooter.setTurretAngle(Math.PI)));
     turretTriggerNegative90.onTrue(Commands.runOnce(() ->shooter.setTurretAngle((3*Math.PI)/2)));
     turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(Math.PI/2)));
+
+    // Climb Controls
+    EXTEND_CLIMBER.whileTrue(climb.climbCommand());
+    EXTEND_CLIMBER.onFalse(climb.stopCommand());
+
+    RETRACT_CLIMBER.whileTrue(climb.retractCommand());
+    RETRACT_CLIMBER.onFalse(climb.stopCommand());
+
+    // Intake Controls
+    INTAKE.whileTrue(intake.intakeCommand());
+    INTAKE.onFalse(intake.stopCommand());
+    EXTEND_INTAKE.onTrue(intake.deployCommand());
+
+    HopperTrigger.whileTrue(hopper.runContinuous());
+    HopperTrigger.onFalse(hopper.stopCommand());
+
 
 
     // Add command scheduler to SmartDashboard for debugging
@@ -281,10 +326,6 @@ public class RobotContainer {
               drive.resetYaw();
             },
             drive));
-
-    // Additional drive controls can be added here as needed
-    // DRIVE_SLOW.onTrue(new InstantCommand(DriveCommands::toggleSlowMode));
-    // DRIVE_STOP.onTrue(new InstantCommand(() -> { drive.stopWithX(); drive.resetYaw(); }, drive));
   }
 
   /**

@@ -85,6 +85,13 @@ public class DriveControls {
   /** Empty double supplier that always returns 0.0 */
   private static final DoubleSupplier EMPTY_DOUBLE_SUPPLIER = () -> 0.0;
 
+  public static Trigger TICK_2_HOOD;
+  public static Trigger TICK_37_HOOD;
+  public static Trigger MOVE_HOOD;
+  public static double MOVE_HOOD_JOYSTICK;
+  public static Trigger EXTEND_CLIMBER;
+  public static Trigger RETRACT_CLIMBER;
+
   // Drive controls
   /** Forward/backward drive input */
   public static DoubleSupplier DRIVE_FORWARD;
@@ -97,6 +104,7 @@ public class DriveControls {
 
   /** Trigger to enable slow mode */
   public static Trigger DRIVE_SLOW;
+  public static Trigger EXTEND_INTAKE;
 
   /** Trigger to stop drive and reset gyro */
   public static Trigger DRIVE_STOP;
@@ -117,6 +125,7 @@ public class DriveControls {
   // SysId controls
   /** Trigger for quasistatic forward test */
   public static Trigger QUASISTATIC_FORWARD;
+  public static Trigger INTAKE;
 
   /** Trigger for quasistatic reverse test */
   public static Trigger QUASISTATIC_REVERSE;
@@ -137,6 +146,9 @@ public class DriveControls {
   public static Trigger turretTrigger90;
   public static Trigger turretTrigger180;
   public static Trigger turretTriggerNegative90;
+
+  public static Trigger HopperTrigger;
+  public static Trigger ReverseHopperTrigger;
 
 
   /**
@@ -190,6 +202,21 @@ public class DriveControls {
     turretTrigger90 = m_weaponsController.povDown();
     turretTrigger180 = m_weaponsController.povLeft();
     turretTriggerNegative90 = m_weaponsController.povRight();
+
+
+    TICK_2_HOOD = m_weaponsController.x();
+    TICK_37_HOOD = m_weaponsController.y();
+    MOVE_HOOD = m_weaponsController.rightBumper();
+    MOVE_HOOD_JOYSTICK = m_weaponsController.getRightY();
+    EXTEND_CLIMBER = m_weaponsController.rightTrigger();
+    RETRACT_CLIMBER = m_weaponsController.leftTrigger();
+    EXTEND_INTAKE = m_translator.button(8);
+    INTAKE = m_translator.button(7);
+
+    HopperTrigger = m_translator.button(6);
+    ReverseHopperTrigger = m_translator.button(5);
+
+    
 
   }
 }
