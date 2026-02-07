@@ -21,7 +21,7 @@ import edu.wpi.first.math.util.Units;
  */
 public final class HoodConstants {
   /** CAN ID */
-  public static final int MOTOR_ID = 12;
+  public static final int MOTOR_ID = 11;
   
   /** Current limit for NEO 550 motors in amps */
   public static final int CURRENT_LIMIT_AMPS = 25;
