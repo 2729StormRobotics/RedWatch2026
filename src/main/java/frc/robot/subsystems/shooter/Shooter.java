@@ -93,6 +93,7 @@ public class Shooter extends SubsystemBase {
 
   // Move-and-Shoot state
   private boolean moveAndShootEnabled = false;
+  private boolean depotAimModeEnabled = false;
 
   // Sim?
   private AbstractDriveTrainSimulation driveTrainSimulation;
@@ -134,7 +135,11 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("Hood/AtSetpoint", hoodIO.isAtPosition(hoodIO.positionSetpointRotations)); 
 
     if (moveAndShootEnabled) {
-      updateMoveAndShoot(prep);
+      if (depotAimModeEnabled) {
+        updateDepotAim(prep);
+      } else {
+        updateMoveAndShoot(prep);
+      }
     }
     // 3. Trench Safety Override
     // If we are under the trench, we OVERWRITE the hood setpoint calculated by
@@ -172,11 +177,11 @@ public class Shooter extends SubsystemBase {
   }
 
   /**
-   * Updates Move-and-Shoot calculations based on robot pose and velocity.
-   * Calculates heading to hub and adjusts turret/hood/flywheel accordingly.
+   * Shared aiming logic for a given field-relative target point.
+   * Calculates heading to target and adjusts turret/hood/flywheel accordingly.
    */
-  private void updateMoveAndShoot(boolean isPrep) {
-    // --- START MODIFICATION: SIM-AWARE POSE RETRIEVAL ---
+  private void updateAimToTarget(Translation2d targetPoint, boolean isPrep) {
+    // --- SIM-AWARE POSE RETRIEVAL ---
     Pose2d robotPose;
     ChassisSpeeds robotVelocity;
 
@@ -189,35 +194,19 @@ public class Shooter extends SubsystemBase {
       robotPose = drive.getPose();
       robotVelocity = drive.getChassisSpeeds();
     }
-    // --- END MODIFICATION ---
-
-    // Get hub center position (alliance-relative)
-    Translation2d hubCenter;
-
-    //seems to always be false
-    boolean isFlipped =
-                  DriverStation.getAlliance().isPresent()
-                      && DriverStation.getAlliance().get() == Alliance.Red;
-    // Note: In 2026 REBUILT, ensure FieldConstants.Hub reflects the target you want
-    // to hit
-    if (isFlipped) {
-      hubCenter = FieldConstants.Hub.oppTopCenterPoint.toTranslation2d();
-    } else {
-      hubCenter = FieldConstants.Hub.topCenterPoint.toTranslation2d();
-    }
 
     // Calculate vector from robot to hub (in field coordinates)
-    Translation2d robotToHub = hubCenter.minus(robotPose.getTranslation());
+    Translation2d robotToTarget = targetPoint.minus(robotPose.getTranslation());
 
     // Check if target is valid (non-zero distance)
-    double distanceToHub = robotToHub.getNorm();
+    double distanceToHub = robotToTarget.getNorm();
     if (distanceToHub < 0.01) {
       disableMoveAndShoot();
       return;
     }
 
     // Calculate heading to hub in field coordinates
-    Rotation2d headingToHub = robotToHub.getAngle();
+    Rotation2d headingToHub = robotToTarget.getAngle();
 
     // Calculate required turret angle relative to robot forward direction
     Rotation2d robotRotation = robotPose.getRotation();
@@ -240,6 +229,38 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/TargetHeading", headingToHub.getDegrees());
     Logger.recordOutput("Shooter/TurretSetpoint", Math.toDegrees(turretAngle));
     Logger.recordOutput("Shooter/SimPoseUsed", frc.robot.Constants.currentMode == frc.robot.Constants.Mode.SIM);
+  }
+
+  /**
+   * Updates Move-and-Shoot calculations targeting the hub.
+   */
+  private void updateMoveAndShoot(boolean isPrep) {
+    // Get hub center position (alliance-relative)
+    Translation2d hubCenter;
+
+    boolean isFlipped =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+
+    if (isFlipped) {
+      hubCenter = FieldConstants.Hub.oppTopCenterPoint.toTranslation2d();
+    } else {
+      hubCenter = FieldConstants.Hub.topCenterPoint.toTranslation2d();
+    }
+
+    updateAimToTarget(hubCenter, isPrep);
+  }
+
+  /**
+   * Updates aiming calculations targeting our depot (for passes to our side).
+   * Uses alliance-flipped depot center so it always represents "our" depot.
+   */
+  private void updateDepotAim(boolean isPrep) {
+    Translation2d depotCenter =
+        frc.robot.util.drive.AllianceFlipUtil
+            .apply(FieldConstants.Depot.depotCenter)
+            .toTranslation2d();
+    updateAimToTarget(depotCenter, isPrep);
   }
 
   private boolean isUnderTrench() {
@@ -304,6 +325,23 @@ public class Shooter extends SubsystemBase {
    */
   public void disableMoveAndShoot() {
     this.moveAndShootEnabled = false;
+  }
+
+  /**
+   * Enables depot-aim mode (aims at our depot instead of the hub).
+   * Also turns on move-and-shoot so pose-based aiming is active.
+   */
+  public void enableDepotAim() {
+    this.depotAimModeEnabled = true;
+    this.enableMoveAndShoot();
+  }
+
+  /**
+   * Disables depot-aim mode. Does not automatically disable move-and-shoot,
+   * so other aim modes (like hub aiming) can still be used.
+   */
+  public void disableDepotAim() {
+    this.depotAimModeEnabled = false;
   }
 
   // ========== Flywheel Methods ==========

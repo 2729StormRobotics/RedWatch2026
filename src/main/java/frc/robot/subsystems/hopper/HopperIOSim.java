@@ -1,6 +1,7 @@
 package frc.robot.subsystems.hopper;
 
-import static frc.robot.subsystems.climb.ClimbConstants.*;
+
+import static frc.robot.subsystems.shooter.turret.TurretConstants.MOI_KG_M2;
 
 import org.littletonrobotics.junction.Logger;
 
