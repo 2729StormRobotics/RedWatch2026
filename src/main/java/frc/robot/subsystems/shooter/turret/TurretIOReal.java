@@ -61,6 +61,7 @@ public class TurretIOReal implements TurretIO {
 
   private double targetAngleDegrees = 0.0;
   private boolean isClosedLoop = false;
+  private double lastAbsoluteAngleDeg = 0.0;
 
   public TurretIOReal() {
     motor = new SparkMax(12, MotorType.kBrushless);
@@ -117,6 +118,7 @@ public class TurretIOReal implements TurretIO {
     double[] crtResult = calculateCrtAngle(inputs.absoluteEncoder19Pos, inputs.absoluteEncoder21Pos);
     inputs.absoluteAngleDeg = crtResult[0];
     inputs.crtError = crtResult[1];
+    lastAbsoluteAngleDeg = inputs.absoluteAngleDeg;
 
     ifOk(motor, internalEncoder::getPosition, (val) -> inputs.motorPositionDeg = val);
     ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
@@ -164,7 +166,9 @@ public class TurretIOReal implements TurretIO {
   @Override
   public void setAngle(double degrees) {
     if (!isClosedLoop) {
-      m_pidController.reset(internalEncoder.getPosition());
+      // Sync internal encoder to absolute position before starting closed loop
+      internalEncoder.setPosition(lastAbsoluteAngleDeg);
+      m_pidController.reset(lastAbsoluteAngleDeg);
       isClosedLoop = true;
     }
     targetAngleDegrees = degrees;
