@@ -4,7 +4,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -13,17 +13,17 @@ import com.revrobotics.spark.SparkBase;
 import java.util.function.Supplier;
 
 public class kickerIOReal implements kickerIO {
-  private final SparkMax motor;
+  private final SparkFlex motor;
   private final RelativeEncoder encoder;
 
   public kickerIOReal() {
     // Use the constant from KickerConstants
-    motor = new SparkMax(kickerConstants.MOTOR_ID, MotorType.kBrushless);
+    motor = new SparkFlex(kickerConstants.MOTOR_ID, MotorType.kBrushless);
     encoder = motor.getEncoder();
 
     SparkMaxConfig config = new SparkMaxConfig();
     config
-        .idleMode(IdleMode.kBrake)
+        .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(kickerConstants.CURRENT_LIMIT_AMPS)
         .inverted(kickerConstants.MOTOR_INVERTED)
         .voltageCompensation(12.0);

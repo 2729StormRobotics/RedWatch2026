@@ -27,6 +27,8 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import java.util.function.DoubleSupplier;
 
@@ -34,8 +36,8 @@ import java.util.function.DoubleSupplier;
  * Real hardware implementation of IntakeIO using SparkMax motor controllers.
  */
 public class IntakeIOReal implements IntakeIO {
-  private final SparkMax pivotMotor;
-  private final SparkMax rollerMotor;
+  private final SparkFlex pivotMotor;
+  private final SparkFlex rollerMotor;
   private final RelativeEncoder pivotEncoder;
   private final SparkClosedLoopController pivotController;
   
@@ -43,12 +45,12 @@ public class IntakeIOReal implements IntakeIO {
 
   public IntakeIOReal() {
     // Create pivot motor
-    pivotMotor = new SparkMax(PIVOT_MOTOR_ID, MotorType.kBrushless);
+    pivotMotor = new SparkFlex(PIVOT_MOTOR_ID, MotorType.kBrushless);
     pivotEncoder = pivotMotor.getEncoder();
     pivotController = pivotMotor.getClosedLoopController();
     
     // Create roller motor
-    rollerMotor = new SparkMax(ROLLER_MOTOR_ID, MotorType.kBrushless);
+    rollerMotor = new SparkFlex(ROLLER_MOTOR_ID, MotorType.kBrushless);
     
     // Create beam break sensor
 

@@ -3,7 +3,7 @@ package frc.robot.subsystems.kicker;
 
 public final class kickerConstants {
   /** CAN ID */
-  public static final int MOTOR_ID = 15;
+  public static final int MOTOR_ID = 17;
   
   /** Current limit for NEO 550 motors in amps */
   public static final int CURRENT_LIMIT_AMPS = 25;
