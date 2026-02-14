@@ -59,10 +59,10 @@ import frc.robot.subsystems.shooter.hood.HoodIOReal;
 import frc.robot.subsystems.shooter.hood.HoodIOSim;
 import frc.robot.subsystems.shooter.turret.TurretIOReal;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
-import frc.robot.subsystems.climb.Climb;
-import frc.robot.subsystems.climb.ClimbIO;
-import frc.robot.subsystems.climb.ClimbIOReal;
-import frc.robot.subsystems.climb.ClimbIOSim;
+// import frc.robot.subsystems.climb.Climb;
+// import frc.robot.subsystems.climb.ClimbIO;
+// import frc.robot.subsystems.climb.ClimbIOReal;
+// import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.kicker.kicker;
 import frc.robot.subsystems.kicker.kickerConstants;
 import frc.robot.subsystems.kicker.kickerIO;
@@ -93,7 +93,7 @@ public class RobotContainer {
   // private final SampleMotor sampleMotor;
   private final Vision vision;
   private final Shooter shooter;
-  private final Climb climb;
+  // private final Climb climb;
   private final kicker kicker;
   private final Intake intake;
   private final Hopper hopper;
@@ -125,7 +125,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         shooter = new Shooter(new FlywheelIOReal(), new HoodIOReal(), new TurretIOReal(), drive, driveSimulation); 
-        climb = new Climb(new ClimbIOReal());
+        // climb = new Climb(new ClimbIOReal());
         kicker = new kicker(new kickerIOReal());
         intake = new Intake(new IntakeIOReal());
         hopper = new Hopper(new HopperIOReal());
@@ -149,7 +149,7 @@ public class RobotContainer {
                 new ModuleIOSim());
 
         shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim(), drive, driveSimulation); 
-        climb = new Climb(new ClimbIOSim());
+        // climb = new Climb(new ClimbIOSim());
         kicker = new kicker(new kickerIOSim());
         intake = new Intake(new IntakeIOSim(driveSimulation));
         hopper = new Hopper(new HopperIOSim());
@@ -172,7 +172,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         shooter = new Shooter( new FlywheelIOReal(),new HoodIOReal(), new TurretIOReal(), drive, driveSimulation); 
-        climb = new Climb(new ClimbIO() {});
+        // climb = new Climb(new ClimbIO() {});
         kicker = new kicker(new kickerIOReal());
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIOReal());
@@ -262,7 +262,7 @@ public class RobotContainer {
      flyWheelTrigger.whileTrue(
         Commands.parallel(
             Commands.run(() -> shooter.setFlywheelVelocity(80), shooter),
-            Commands.run(() -> kicker.setVoltage(80), kicker)
+            Commands.run(() -> kicker.setVoltage(1), kicker)
         ));
 
     flyWheelTrigger.onFalse(
@@ -275,7 +275,7 @@ public class RobotContainer {
     reverseFlyWheelTrigger.whileTrue(
         Commands.parallel(
             Commands.run(() -> shooter.setFlywheelVelocity(-40), shooter),
-            Commands.run(() -> kicker.setVoltage(-40), kicker)
+            Commands.run(() -> kicker.setVoltage(-0.5), kicker)
         ));
 
 
@@ -291,11 +291,11 @@ public class RobotContainer {
     turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(Math.PI/2)));
 
     // Climb Controls
-    EXTEND_CLIMBER.whileTrue(climb.climbCommand());
-    EXTEND_CLIMBER.onFalse(climb.stopCommand());
+    // EXTEND_CLIMBER.whileTrue(climb.climbCommand());
+    // EXTEND_CLIMBER.onFalse(climb.stopCommand());
 
-    RETRACT_CLIMBER.whileTrue(climb.retractCommand());
-    RETRACT_CLIMBER.onFalse(climb.stopCommand());
+    // RETRACT_CLIMBER.whileTrue(climb.retractCommand());
+    // RETRACT_CLIMBER.onFalse(climb.stopCommand());
 
     // Intake Controls
     INTAKE.whileTrue(intake.intakeCommand());

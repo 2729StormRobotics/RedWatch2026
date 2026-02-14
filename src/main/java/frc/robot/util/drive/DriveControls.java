@@ -76,7 +76,7 @@ public class DriveControls {
   }
 
   /** Weapons/operator controller for subsystem controls */
-  public static final CommandXboxController m_weaponsController = new CommandXboxController(0);
+  public static final CommandXboxController m_weaponsController = new CommandXboxController(2);
 
   // Useful for things that don't need to be triggered
   /** Empty trigger that never fires */
