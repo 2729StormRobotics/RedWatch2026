@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -35,17 +36,21 @@ public class HoodIOReal implements HoodIO {
 
     SparkMaxConfig config = new SparkMaxConfig();
     config
-        .idleMode(IdleMode.kBrake) 
+        .idleMode(IdleMode.kCoast) 
         .smartCurrentLimit(HoodConstants.CURRENT_LIMIT_AMPS)
         .inverted(HoodConstants.MOTOR_INVERTED) // Fixed name
         .voltageCompensation(12.0);
 
     // SOFT LIMITS
     config.softLimit
-        .forwardSoftLimitEnabled(true)
-        .forwardSoftLimit(-1.0)
-        .reverseSoftLimitEnabled(true)
-        .reverseSoftLimit(-37.0);
+    .forwardSoftLimitEnabled(true)
+    .reverseSoftLimit(-1.0)
+    .reverseSoftLimitEnabled(true)
+    .forwardSoftLimit(-37.0);
+        // .forwardSoftLimitEnabled(true)
+        // .forwardSoftLimit(-1.0)
+        // .reverseSoftLimitEnabled(true)
+        // .reverseSoftLimit(-37.0);
 
     config.encoder
         .positionConversionFactor(1.0)
@@ -65,7 +70,8 @@ public class HoodIOReal implements HoodIO {
     tryUntilOk(motor, 5, () -> encoder.setPosition(0.0));
     
     // Initial target
-    this.positionSetpointRotations = 15;
+    // this.positionSetpointRotations = 15;
+    this.setPosition(-15);
   }
 
   public static void tryUntilOk(SparkBase spark, int maxAttempts, Supplier<REVLibError> command) {
@@ -74,11 +80,20 @@ public class HoodIOReal implements HoodIO {
     }
   }
 
+  @Override
   public void setPosition(double targetRotations) {
     this.positionSetpointRotations = targetRotations;
-    positionController.setReference(targetRotations, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+    positionController.setSetpoint(targetRotations, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+  }
+  @Override
+  public void setAngle(double angle){
+    setPosition(angle);
   }
 
+  @Override
+  public void setPercent(double percent) {
+    motor.set(percent);
+  }
   public boolean isAtPosition(double target) {
     return Math.abs(getPosition() - target) < 1.0; 
   }
@@ -90,6 +105,20 @@ public class HoodIOReal implements HoodIO {
   public void stop() {
     this.positionSetpointRotations = getPosition();
     motor.stopMotor();
+  }
+  @Override
+  public void updateInputs(HoodIOInputs inputs) {
+    // 1. Calculate control voltage (Simulating the SparkMax internal PID)
+    // 2. Update Physics
+    // motor.setInputVoltage(appliedVolts);
+    // armSim.update(LOOP_PERIOD_SECS);
+
+    // 3. Update IO Inputs
+    // Convert Mechanism Radians -> Motor Rotations
+    inputs.motorPositionRotations = getPosition();
+    inputs.motorVelocityRotationsPerSec = encoder.getVelocity();
+    inputs.currentAmps = Math.abs(motor.getBusVoltage()*motor.getAppliedOutput());
+    inputs.temperatureCelsius = 25.0;
   }
 
 }

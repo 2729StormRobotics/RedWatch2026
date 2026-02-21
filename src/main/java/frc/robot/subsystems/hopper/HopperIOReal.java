@@ -25,7 +25,7 @@ public class HopperIOReal implements HopperIO {
 
     SparkMaxConfig config = new SparkMaxConfig();
     config
-        .idleMode(IdleMode.kBrake)
+        .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(HopperConstants.CURRENT_LIMIT_AMPS)
         .inverted(HopperConstants.MOTOR_INVERTED)
         .voltageCompensation(12.0);

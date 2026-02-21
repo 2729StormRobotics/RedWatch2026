@@ -158,10 +158,10 @@ public class Shooter extends SubsystemBase {
     }
 
     // Always update hood setpoint
-    hoodIO.setAngle(desiredHoodAngle);
+    // hoodIO.setAngle(desiredHoodAngle);
 
     // Always update turret setpoint
-    turretIO.setAngle(desiredTurretAngle);
+    // turretIO.setAngle(desiredTurretAngle);
 
     // Log shooter state
     Logger.recordOutput("Shooter/ReadyToFire", isReadyToFire());
@@ -213,9 +213,9 @@ public class Shooter extends SubsystemBase {
     Rotation2d turretRotation = headingToHub.minus(robotRotation);
 
     // Normalize and clamp
-    double turretAngle = MathUtil.inputModulus(turretRotation.getRadians(), -Math.PI, Math.PI);
-    turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
-    setTurretAngle(turretAngle);
+    // double turretAngle = MathUtil.inputModulus(turretRotation.getRadians(), -Math.PI, Math.PI);
+    // turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
+    // setTurretAngle(turretAngle);
 
     // Calculate required flywheel RPM (now using field-relative velocity for better
     // compensation)
@@ -227,7 +227,7 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/isPrep", isPrep);
     Logger.recordOutput("Shooter/TargetDistance", distanceToHub);
     Logger.recordOutput("Shooter/TargetHeading", headingToHub.getDegrees());
-    Logger.recordOutput("Shooter/TurretSetpoint", Math.toDegrees(turretAngle));
+    // Logger.recordOutput("Shooter/TurretSetpoint", Math.toDegrees(turretAngle));
     Logger.recordOutput("Shooter/SimPoseUsed", frc.robot.Constants.currentMode == frc.robot.Constants.Mode.SIM);
   }
 
@@ -380,6 +380,7 @@ public class Shooter extends SubsystemBase {
    */
   public void setHoodAngle(double angleRadians) {
     desiredHoodAngle = angleRadians;
+    hoodIO.setAngle(angleRadians);
   }
 
   /**
@@ -410,9 +411,9 @@ public class Shooter extends SubsystemBase {
     // Simulation: absolutePositionRotations is (angle - MIN) / (MAX - MIN)
     // So: angle = absolutePositionRotations * (MAX - MIN) + MIN
     double normalized = hoodInputs.absolutePositionRotations;
-    double angle = normalized * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD)
-        + HoodConstants.MIN_ANGLE_RAD;
-    return angle;
+    // double angle = normalized * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD)
+    //     + HoodConstants.MIN_ANGLE_RAD;
+    return normalized;
   }
 
   /**
@@ -514,15 +515,15 @@ public class Shooter extends SubsystemBase {
   public void stop() {
     desiredFlywheelVelocity = 0.0;
     desiredHoodAngle = getHoodCurrentAngle(); // Hold current position
-    desiredTurretAngle = getTurretCurrentAngle(); // Hold current position
+    // desiredTurretAngle = getTurretCurrentAngle(); // Hold current position
     flywheelIO.stop();
     hoodIO.stop();
-    turretIO.stop();
+    // turretIO.stop();
   }
 
   public Command idleFlywheelCommand() {
     return Commands.run(() -> {
-      this.setFlywheelVelocity(50);
+      this.setFlywheelVelocity(0);
     }, this);
   }
 
@@ -625,4 +626,16 @@ public class Shooter extends SubsystemBase {
   public Command stopCommand() {
     return runOnce(this::stop).withName("HoodStop");
   }
+
+  public Command runHoodCommand() {
+    return runOnce(() -> hoodIO.setPercent(0.05)).withName("HoodStop");
+  }
+  public Command reverseHoodCommand() {
+    return runOnce(() -> hoodIO.setPercent(-0.05)).withName("HoodStop");
+  }
+
+  public Command stopHoodCommand() {
+    return runOnce(() -> hoodIO.setPercent(0)).withName("HoodStop");
+  }
+
 }

@@ -69,6 +69,7 @@ public interface HoodIO {
 
 
   public default void setPosition(double targetRotations) {}
+    public default void setPercent(double percebt) {}
 
   /**
    * Sets the hood to run at a specific voltage.

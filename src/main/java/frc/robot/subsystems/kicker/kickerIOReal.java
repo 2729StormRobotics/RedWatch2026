@@ -47,8 +47,8 @@ public class kickerIOReal implements kickerIO {
 
    
   @Override
-  public void setVoltage(double volts) {
-    motor.set(-volts);
+  public void setPercentIO(double percent) {
+    motor.set(-percent);
   }
 
   @Override

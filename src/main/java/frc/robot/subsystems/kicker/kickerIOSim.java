@@ -59,7 +59,7 @@ public class kickerIOSim implements kickerIO {
   }
 
   @Override
-  public void setVoltage(double volts) {
+  public void setPercentIO(double volts) {
     // Correctly clamp and store intended voltage
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
   }

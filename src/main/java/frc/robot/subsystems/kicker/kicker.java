@@ -18,8 +18,8 @@ public class kicker extends SubsystemBase {
     Logger.processInputs("Kicker", inputs);
   }
 
-  public void setVoltage(double volts) {
-    io.setVoltage(volts);
+  public void setPercent(double percent) {
+    io.setPercentIO(percent);
   }
 
   public void stop() {
@@ -30,7 +30,7 @@ public class kicker extends SubsystemBase {
    * Returns a command that runs the kicker at a constant voltage.
    */
   public Command runContinuous() {
-    return this.run(() -> this.setVoltage(kickerConstants.KICK_VOLTAGE))
+    return this.run(() -> this.setPercent(kickerConstants.KICK_VOLTAGE))
         .finallyDo(this::stop);
   }
 
@@ -38,7 +38,7 @@ public class kicker extends SubsystemBase {
    * Returns a command that runs the kicker in reverse (for clearing jams).
    */
   public Command reverse() {
-    return this.run(() -> this.setVoltage(kickerConstants.REVERSE_VOLTAGE))
+    return this.run(() -> this.setPercent(kickerConstants.REVERSE_VOLTAGE))
         .finallyDo(this::stop);
   }
 }

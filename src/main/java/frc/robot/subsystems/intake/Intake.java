@@ -9,6 +9,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.AlphaMechanism3d;
+
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
@@ -85,6 +88,7 @@ public class Intake extends SubsystemBase {
     desiredRollerPercent = 0.0;
   }
   public void intake() { desiredRollerPercent = IntakeConstants.INTAKE_ROLLER_SPEED; }
+  public void intake(double pwr) { desiredRollerPercent = pwr; }
   public void eject() { desiredRollerPercent = IntakeConstants.EJECT_ROLLER_SPEED; }
   public void stopRoller() { desiredRollerPercent = 0.0; }
 
@@ -104,6 +108,7 @@ public class Intake extends SubsystemBase {
   public Command deployCommand() { return Commands.runOnce(this::deploy, this); }
   public Command retractCommand() { return Commands.runOnce(this::retract, this); }
   public Command intakeCommand() { return Commands.run(() -> { intake(); }, this); }
+  public Command intakeCommandTrigger(DoubleSupplier pwr) { return Commands.run(() -> { intake(pwr.getAsDouble()); }, this); }
     public Command stopCommand() { return Commands.run(() -> { stop(); }, this); }
 
 }

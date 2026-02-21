@@ -16,7 +16,7 @@ public interface kickerIO {
   default void updateInputs(kickerIOInputs inputs) {}
 
   /** Run the motor at the specified voltage. */
-  default void setVoltage(double volts) {}
+  default void setPercentIO(double volts) {}
 
   /** Stop the motor. */
   default void stop() {}

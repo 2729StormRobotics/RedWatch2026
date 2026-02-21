@@ -126,7 +126,7 @@ public class DriveControls {
   // SysId controls
   /** Trigger for quasistatic forward test */
   public static Trigger QUASISTATIC_FORWARD;
-  public static Trigger INTAKE;
+  public static DoubleSupplier INTAKE;
   public static Trigger RETRACT_INTAKE;
 
   /** Trigger for quasistatic reverse test */
@@ -168,7 +168,7 @@ public class DriveControls {
         DRIVE_STRAFE = () -> (-getX(m_translator));
         DRIVE_ROTATE = () -> (-getTwist(m_translator));
         RESET_GYRO = m_translator.button(12);
-
+        
         // Driver settings
         DRIVE_SLOW = m_translator.button(1);
         DRIVE_STOP = m_translator.button(2);
@@ -197,9 +197,9 @@ public class DriveControls {
     }
 
 
-    hoodTrigger = m_weaponsController.rightBumper();
+    hoodTrigger = m_weaponsController.leftTrigger();
     reverseHoodTrigger = m_weaponsController.leftBumper();
-
+    INTAKE = () -> (m_weaponsController.getRightTriggerAxis());
     flyWheelTrigger = m_weaponsController.a();
     reverseFlyWheelTrigger = m_weaponsController.b();
     stopFlyWheelTrigger = m_translator.button(11);
@@ -210,15 +210,15 @@ public class DriveControls {
     turretTriggerNegative90 = m_weaponsController.povRight();
 
 
-    TICK_2_HOOD = m_weaponsController.x();
-    TICK_37_HOOD = m_weaponsController.y();
+    EXTEND_INTAKE = m_weaponsController.x();
+    RETRACT_INTAKE = m_weaponsController.y();
     MOVE_HOOD = m_weaponsController.rightBumper();
     MOVE_HOOD_JOYSTICK = m_weaponsController.getRightY();
-    EXTEND_CLIMBER = m_weaponsController.rightTrigger();
-    RETRACT_CLIMBER = m_weaponsController.leftTrigger();
-    EXTEND_INTAKE = m_translator.button(8);
-    RETRACT_INTAKE = m_translator.button(9);
-    INTAKE = m_translator.button(7);
+    // EXTEND_CLIMBER = m_weaponsController.rightTrigger();
+    // RETRACT_CLIMBER = m_weaponsController.leftTrigger();
+    // EXTEND_INTAKE = m_translator.button(8);
+    // RETRACT_INTAKE = m_translator.button(9);
+    // INTAKE = m_weaponsController.rightTrigger();
 
 
     HopperTrigger = m_translator.button(6);

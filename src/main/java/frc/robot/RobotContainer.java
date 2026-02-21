@@ -92,9 +92,9 @@ public class RobotContainer {
   private final Drive drive;
   // private final SampleMotor sampleMotor;
   private final Vision vision;
-  // private final Shooter shooter;
+  private final Shooter shooter;
   // private final Climb climb;
-  // private final kicker kicker;
+  private final kicker kicker;
   private final Intake intake;
   private final Hopper hopper;
 
@@ -125,10 +125,10 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
                 
-        // HoodIOReal hoodioreal = new HoodIOReal(); 
-        // shooter = new Shooter( new FlywheelIOReal(),hoodioreal, new TurretIOReal(hoodioreal.motor), drive, driveSimulation); 
+        HoodIOReal hoodioreal = new HoodIOReal(); 
+        shooter = new Shooter( new FlywheelIOReal(),hoodioreal, new TurretIOReal(hoodioreal.motor), drive, driveSimulation); 
         // // climb = new Climb(new ClimbIOReal());
-        // kicker = new kicker(new kickerIOReal());
+        kicker = new kicker(new kickerIOReal());
         intake = new Intake(new IntakeIOReal());
         hopper = new Hopper(new HopperIOReal());
 
@@ -150,9 +150,9 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
 
-        // shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim(), drive, driveSimulation); 
+        shooter = new Shooter(new FlywheelIOSim(), new HoodIOSim(), new TurretIOSim(), drive, driveSimulation); 
         // // climb = new Climb(new ClimbIOSim());
-        // kicker = new kicker(new kickerIOSim());
+        kicker = new kicker(new kickerIOSim());
         intake = new Intake(new IntakeIOSim(driveSimulation));
         hopper = new Hopper(new HopperIOSim());
         
@@ -173,10 +173,10 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        // HoodIOReal hoodioreals = new HoodIOReal(); 
-        // shooter = new Shooter( new FlywheelIOReal(),hoodioreals, new TurretIOReal(hoodioreals.motor), drive, driveSimulation); 
+        HoodIOReal hoodioreals = new HoodIOReal(); 
+        shooter = new Shooter( new FlywheelIOReal(),hoodioreals, new TurretIOReal(hoodioreals.motor), drive, driveSimulation); 
         // // climb = new Climb(new ClimbIO() {});
-        // kicker = new kicker(new kickerIOReal());
+        kicker = new kicker(new kickerIOReal());
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIOReal());
 
@@ -258,21 +258,29 @@ public class RobotContainer {
     //         .onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
 
         
-    //   MOVE_HOOD
-    //         .onTrue(shooter.runPositionCommand( (19+(MOVE_HOOD_JOYSTICK * 18)) ));
-    //   shooter.setDefaultCommand(shooter.runPositionCommandConstant(DriveControls.m_weaponsController));
+      // MOVE_HOOD
+      //       .onTrue(shooter.runPositionCommand( (19+(MOVE_HOOD_JOYSTICK * 18)) ));
+      // shooter.setDefaultCommand(shooter.runPositionCommandConstant(DriveControls.m_weaponsController));
 
-    //  flyWheelTrigger.whileTrue(
-    //     Commands.parallel(
-    //         Commands.run(() -> shooter.setFlywheelVelocity(80), shooter),
-    //         Commands.run(() -> kicker.setVoltage(1), kicker)
-    //     ));
+      MOVE_HOOD.whileTrue(shooter.runHoodCommand());
+      MOVE_HOOD.onFalse(shooter.stopHoodCommand());
 
-    // flyWheelTrigger.onFalse(
-    //     Commands.parallel(
-    //         Commands.runOnce(shooter::stop, shooter),
-    //         Commands.runOnce(kicker::stop, kicker)
-    //     ));
+      reverseHoodTrigger.whileTrue(shooter.reverseHoodCommand());
+      reverseHoodTrigger.onFalse(shooter.stopHoodCommand());
+
+      hoodTrigger.onTrue(shooter.runPositionCommand(-15));
+
+     flyWheelTrigger.whileTrue(
+        Commands.parallel(
+            Commands.run(() -> shooter.setFlywheelVelocity(250), shooter),
+            Commands.run(() -> kicker.setPercent(1), kicker)
+        ));
+
+    flyWheelTrigger.onFalse(
+        Commands.parallel(
+            Commands.runOnce(shooter::stop, shooter),
+            Commands.runOnce(kicker::stop, kicker)
+        ));
 
     // // Flywheel reverse
     // reverseFlyWheelTrigger.whileTrue(
@@ -288,10 +296,10 @@ public class RobotContainer {
     //         Commands.runOnce(kicker::stop, kicker)
     // ));
 
-    // turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(0)));
-    // turretTrigger180.onTrue(Commands.runOnce(() ->shooter.setTurretAngle(Math.PI)));
-    // turretTriggerNegative90.onTrue(Commands.runOnce(() ->shooter.setTurretAngle((3*Math.PI)/2)));
-    // turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(Math.PI/2)));
+    turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(0)));
+    turretTrigger180.onTrue(Commands.runOnce(() ->shooter.setTurretAngle(Math.PI)));
+    turretTriggerNegative90.onTrue(Commands.runOnce(() ->shooter.setTurretAngle((3*Math.PI)/2)));
+    turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(Math.PI/2)));
 
     // Climb Controls
     // EXTEND_CLIMBER.whileTrue(climb.climbCommand());
@@ -301,17 +309,18 @@ public class RobotContainer {
     // RETRACT_CLIMBER.onFalse(climb.stopCommand());
 
     // Intake Controls
-    INTAKE.whileTrue(intake.intakeCommand());
-    INTAKE.onFalse(intake.stopCommand());
-    INTAKE.whileTrue(hopper.runContinuous());
-    INTAKE.onFalse(hopper.stopCommand());
+    // INTAKE.whileTrue(intake.intakeCommand());
+    // INTAKE.onFalse(intake.stopCommand());
+    // INTAKE.whileTrue(hopper.runContinuous());
+    // INTAKE.onFalse(hopper.stopCommand());
+    intake.setDefaultCommand(intake.intakeCommandTrigger(INTAKE));
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 
-    // HopperTrigger.whileTrue(hopper.runContinuous());
-    // HopperTrigger.onFalse(hopper.stopCommand());
+    HopperTrigger.whileTrue(hopper.runContinuous());
 
-    // HopperStopTrigger.onTrue(hopper.stopCommand());
+
+    HopperStopTrigger.onTrue(hopper.stopCommand());
     // stopFlyWheelTrigger.onTrue(shooter.stopCommand());
 
 
