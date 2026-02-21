@@ -13,8 +13,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
@@ -41,16 +39,12 @@ public class HoodIOReal implements HoodIO {
         .inverted(HoodConstants.MOTOR_INVERTED) // Fixed name
         .voltageCompensation(12.0);
 
-    // SOFT LIMITS
+    // SOFT LIMITS (forward=-1 = max angle, reverse=-37 = min angle)
     config.softLimit
-    .forwardSoftLimitEnabled(true)
-    .reverseSoftLimit(-1.0)
-    .reverseSoftLimitEnabled(true)
-    .forwardSoftLimit(-37.0);
-        // .forwardSoftLimitEnabled(true)
-        // .forwardSoftLimit(-1.0)
-        // .reverseSoftLimitEnabled(true)
-        // .reverseSoftLimit(-37.0);
+        .forwardSoftLimitEnabled(true)
+        .forwardSoftLimit(-1.0)
+        .reverseSoftLimitEnabled(true)
+        .reverseSoftLimit(-37.0);
 
     config.encoder
         .positionConversionFactor(1.0)
@@ -60,6 +54,12 @@ public class HoodIOReal implements HoodIO {
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         // Using PID constants from HoodConstants
         .pid(HoodConstants.kP, HoodConstants.kI, HoodConstants.kD);
+
+    // Absolute encoder on data port (21T) - used by Turret for CRT multi-turn positioning
+    config.absoluteEncoder
+        .setSparkMaxDataPortConfig()
+        .positionConversionFactor(1.0)
+        .velocityConversionFactor(1.0);
 
     tryUntilOk(
         motor,
@@ -86,8 +86,11 @@ public class HoodIOReal implements HoodIO {
     positionController.setSetpoint(targetRotations, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
   @Override
-  public void setAngle(double angle){
-    setPosition(angle);
+  public void setAngle(double angleRadians) {
+    // Convert angle (radians) to motor rotations. Hardware mapping: 0° -> -37, 30° -> -1
+    double clamped = MathUtil.clamp(angleRadians, HoodConstants.MIN_ANGLE_RAD, HoodConstants.MAX_ANGLE_RAD);
+    double targetRotations = -37.0 + (clamped / HoodConstants.MAX_ANGLE_RAD) * 36.0;
+    setPosition(targetRotations);
   }
 
   @Override
@@ -108,17 +111,14 @@ public class HoodIOReal implements HoodIO {
   }
   @Override
   public void updateInputs(HoodIOInputs inputs) {
-    // 1. Calculate control voltage (Simulating the SparkMax internal PID)
-    // 2. Update Physics
-    // motor.setInputVoltage(appliedVolts);
-    // armSim.update(LOOP_PERIOD_SECS);
-
-    // 3. Update IO Inputs
-    // Convert Mechanism Radians -> Motor Rotations
-    inputs.motorPositionRotations = getPosition();
+    double pos = encoder.getPosition();
+    inputs.motorPositionRotations = pos;
     inputs.motorVelocityRotationsPerSec = encoder.getVelocity();
-    inputs.currentAmps = Math.abs(motor.getBusVoltage()*motor.getAppliedOutput());
-    inputs.temperatureCelsius = 25.0;
+    inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
+    inputs.currentAmps = motor.getOutputCurrent();
+    inputs.temperatureCelsius = motor.getMotorTemperature();
+    // Map motor rotations [-37, -1] to normalized [0, 1] for angle 0° to 30°
+    inputs.absolutePositionRotations = MathUtil.clamp((pos + 37.0) / 36.0, 0.0, 1.0);
   }
 
 }

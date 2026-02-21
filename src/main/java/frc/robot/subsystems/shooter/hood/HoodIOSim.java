@@ -65,11 +65,22 @@ public class HoodIOSim implements HoodIO {
 
     // 3. Update IO Inputs
     // Convert Mechanism Radians -> Motor Rotations
-    inputs.motorPositionRotations = (armSim.getAngleRads() * GEAR_RATIO) / (2.0 * Math.PI);
+    double angleRad = armSim.getAngleRads();
+    inputs.motorPositionRotations = (angleRad * GEAR_RATIO) / (2.0 * Math.PI);
     inputs.motorVelocityRotationsPerSec = (armSim.getVelocityRadPerSec() * GEAR_RATIO) / (2.0 * Math.PI);
     inputs.appliedVolts = appliedVolts;
     inputs.currentAmps = Math.abs(armSim.getCurrentDrawAmps());
     inputs.temperatureCelsius = 25.0;
+    // Normalized [0,1] for angle MIN to MAX (for getHoodCurrentAngle)
+    inputs.absolutePositionRotations = MathUtil.clamp(
+        (angleRad - MIN_ANGLE_RAD) / (MAX_ANGLE_RAD - MIN_ANGLE_RAD), 0.0, 1.0);
+  }
+
+  @Override
+  public void setAngle(double angleRadians) {
+    controllerEnabled = true;
+    this.angleSetpointRad = MathUtil.clamp(angleRadians, MIN_ANGLE_RAD, MAX_ANGLE_RAD);
+    this.positionSetpointRotations = (angleSetpointRad * GEAR_RATIO) / (2.0 * Math.PI);
   }
 
   @Override
