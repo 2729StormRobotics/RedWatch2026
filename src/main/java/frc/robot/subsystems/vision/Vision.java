@@ -74,14 +74,16 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
+    leftCameraIO.setThrottle(VisionConstants.THROTTLE_DISABLED);
+        rightCameraIO.setThrottle(VisionConstants.THROTTLE_DISABLED);
     // Thermal management: Set throttle based on robot state
     boolean isEnabled = DriverStation.isEnabled();
     if (isEnabled != lastEnabledState) {
       // State changed, update throttle
       if (isEnabled) {
         // Robot enabled - full speed (throttle = 0)
-        leftCameraIO.setThrottle(VisionConstants.THROTTLE_ENABLED);
-        rightCameraIO.setThrottle(VisionConstants.THROTTLE_ENABLED);
+        // leftCameraIO.setThrottle(VisionConstants.THROTTLE_ENABLED);
+        // rightCameraIO.setThrottle(VisionConstants.THROTTLE_ENABLED);
         Logger.recordOutput("Vision/ThrottleMode", "Enabled");
       } else {
         // Robot disabled - throttle to reduce heat (throttle = 150)

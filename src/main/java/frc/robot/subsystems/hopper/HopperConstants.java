@@ -12,8 +12,8 @@ public final class HopperConstants {
   public static final boolean MOTOR_INVERTED = false;
   
   /** Voltages for commands */
-  public static final double KICK_VOLTAGE = 1;
-  public static final double REVERSE_VOLTAGE = -0.5;
+  public static final double KICK_VOLTAGE = -1;
+  public static final double REVERSE_VOLTAGE = 0.5;
 
   /** Gear ratio */
   public static final double GEAR_RATIO = 25.0;

@@ -22,6 +22,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.FeedForwardConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
@@ -117,9 +118,9 @@ public class IntakeIOReal implements IntakeIO {
   }
 
   @Override
-  public void setPivotPosition(double positionRotations) {
-    pivotPositionSetpoint = positionRotations;
-    pivotController.setSetpoint(positionRotations, ControlType.kPosition);
+  public void setPivotPosition(double positionTicks) {
+    pivotPositionSetpoint = positionTicks;
+    pivotController.setSetpoint(positionTicks, ControlType.kPosition);
   }
 
   @Override
@@ -135,8 +136,6 @@ public class IntakeIOReal implements IntakeIO {
 
   @Override
   public void stop() {
-    pivotPositionSetpoint = 0.0;
-    pivotMotor.set(0.0);
     rollerMotor.set(0.0);
   }
 }

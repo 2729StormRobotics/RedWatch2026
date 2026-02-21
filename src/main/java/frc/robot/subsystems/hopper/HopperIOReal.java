@@ -10,15 +10,17 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkFlex;
+
 import java.util.function.Supplier;
 
 public class HopperIOReal implements HopperIO {
-  private final SparkMax motor;
+  private final SparkFlex motor;
   private final RelativeEncoder encoder;
 
   public HopperIOReal() {
     // Use the constant from KickerConstants
-    motor = new SparkMax(HopperConstants.MOTOR_ID, MotorType.kBrushless);
+    motor = new SparkFlex(HopperConstants.MOTOR_ID, MotorType.kBrushless);
     encoder = motor.getEncoder();
 
     SparkMaxConfig config = new SparkMaxConfig();

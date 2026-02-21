@@ -20,7 +20,7 @@ import com.revrobotics.spark.SparkBase;
 import java.util.function.Supplier;
 
 public class HoodIOReal implements HoodIO {
-  private final SparkMax motor;
+  public final SparkMax motor;
   private final RelativeEncoder encoder;
   private final SparkClosedLoopController positionController;
   

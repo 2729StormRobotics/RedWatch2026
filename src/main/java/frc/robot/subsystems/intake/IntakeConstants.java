@@ -40,7 +40,7 @@ public final class IntakeConstants {
   public static final boolean ROLLER_INVERTED = false;
   
   /** ProfiledPID constants for pivot */
-  public static final double kP = 0.06;
+  public static final double kP = 0.08;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
   public static final double kMaxVelocity = 2.0; // rotations per second
@@ -48,7 +48,8 @@ public final class IntakeConstants {
   
   /** Deployed position in rotations */
   public static final double DEPLOYED_POSITION_degrees = 142;
-  public static final double DEPLOYED_POSITION = 1.0*(DEPLOYED_POSITION_degrees/360);
+  // public static final double DEPLOYED_POSITION = 1.0*(DEPLOYED_POSITION_degrees/360);
+  public static final double DEPLOYED_POSITION = 14;
   
   /** Retracted position in rotations */
   public static final double RETRACTED_POSITION = 0.0;
@@ -57,7 +58,7 @@ public final class IntakeConstants {
   public static final double POSITION_TOLERANCE = 0.05;
   
   /** Roller speed when intaking (percent output) */
-  public static final double INTAKE_ROLLER_SPEED = 0.8;
+  public static final double INTAKE_ROLLER_SPEED = 0.65;
   
   /** Roller speed when ejecting (percent output) */
   public static final double EJECT_ROLLER_SPEED = -0.8;

@@ -3,7 +3,7 @@ package frc.robot.subsystems.climb;
 import static frc.robot.Constants.ElectricalLayout.*;
 
 public final class ClimbConstants {
-  public static final int LEADER_ID = 17;
+  public static final int LEADER_ID = 15;
   public static final int FOLLOWER_ID = 18;
   public static final int CURRENT_LIMIT_AMPS = 40;
   public static final boolean LEADER_INVERTED = false;

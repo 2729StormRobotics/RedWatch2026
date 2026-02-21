@@ -63,10 +63,9 @@ public class TurretIOReal implements TurretIO {
   private boolean isClosedLoop = false;
   private double lastAbsoluteAngleDeg = 0.0;
 
-  public TurretIOReal() {
+  public TurretIOReal(SparkMax auxSparkMax) {
     motor = new SparkMax(12, MotorType.kBrushless);
-    auxSpark = new SparkMax(11, MotorType.kBrushless);
-
+    auxSpark=auxSparkMax;
     encoder19 = motor.getAbsoluteEncoder();
     encoder21 = auxSpark.getAbsoluteEncoder();
     internalEncoder = motor.getEncoder();

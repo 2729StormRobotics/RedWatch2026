@@ -68,7 +68,8 @@ public class DriveControls {
    */
   private static double getTwist(CommandGenericHID controller) {
     if (controller instanceof CommandJoystick) {
-      return ((CommandJoystick) controller).getTwist();
+      
+      return ((CommandJoystick) controller).getHID().getRawAxis(3);
     } else {
       // getRawAxis(2) returns the raw twist/rotation axis value
       return -m_translator.getHID().getRawAxis(2);
@@ -126,6 +127,7 @@ public class DriveControls {
   /** Trigger for quasistatic forward test */
   public static Trigger QUASISTATIC_FORWARD;
   public static Trigger INTAKE;
+  public static Trigger RETRACT_INTAKE;
 
   /** Trigger for quasistatic reverse test */
   public static Trigger QUASISTATIC_REVERSE;
@@ -149,6 +151,9 @@ public class DriveControls {
 
   public static Trigger HopperTrigger;
   public static Trigger ReverseHopperTrigger;
+  public static Trigger HopperStopTrigger;
+  public static Trigger stopFlyWheelTrigger;
+  
 
 
   /**
@@ -159,10 +164,10 @@ public class DriveControls {
     switch (Constants.driver) {
       case KRITHIK:
         // Driver controls - Krithik's configuration
-        DRIVE_FORWARD = () -> (-getY(m_rotator));
-        DRIVE_STRAFE = () -> (-getX(m_rotator));
-        DRIVE_ROTATE = () -> (getTwist(m_rotator) / 2.0);
-        RESET_GYRO = m_rotator.button(12);
+        DRIVE_FORWARD = () -> (-getY(m_translator));
+        DRIVE_STRAFE = () -> (-getX(m_translator));
+        DRIVE_ROTATE = () -> (-getTwist(m_translator));
+        RESET_GYRO = m_translator.button(12);
 
         // Driver settings
         DRIVE_SLOW = m_translator.button(1);
@@ -197,6 +202,7 @@ public class DriveControls {
 
     flyWheelTrigger = m_weaponsController.a();
     reverseFlyWheelTrigger = m_weaponsController.b();
+    stopFlyWheelTrigger = m_translator.button(11);
 
     turretTrigger0 = m_weaponsController.povUp();
     turretTrigger90 = m_weaponsController.povDown();
@@ -211,10 +217,13 @@ public class DriveControls {
     EXTEND_CLIMBER = m_weaponsController.rightTrigger();
     RETRACT_CLIMBER = m_weaponsController.leftTrigger();
     EXTEND_INTAKE = m_translator.button(8);
+    RETRACT_INTAKE = m_translator.button(9);
     INTAKE = m_translator.button(7);
+
 
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
+    HopperStopTrigger  =m_translator.button(10);
 
     
 

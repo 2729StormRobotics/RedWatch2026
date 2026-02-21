@@ -22,6 +22,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
@@ -73,9 +74,14 @@ public class DriveCommands {
     return Commands.run(
         () -> {
           
-          
+          SmartDashboard.putNumber("Drive/XSupplier", (xSupplier.getAsDouble()));
+          SmartDashboard.putNumber("Drive/YSupplier", (ySupplier.getAsDouble()));
+          SmartDashboard.putNumber("Drive/RotateSupplier", (omegaSupplier.getAsDouble()));
+
           Translation2d linearVelocity =
               getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+              SmartDashboard.putNumber("Drive/LinearVelX", (linearVelocity.getX()));
+              SmartDashboard.putNumber("Drive/LinearVelY", (linearVelocity.getY()));
 
           // Apply rotation deadband
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
@@ -89,6 +95,8 @@ public class DriveCommands {
                   linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                   linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                   omega * drive.getMaxAngularSpeedRadPerSec());
+                  SmartDashboard.putString("Drive/ChassisSpeeds", (speeds.toString()));
+          
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Red;

@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -59,8 +60,8 @@ public class Intake extends SubsystemBase {
 
     TrapezoidProfile.State goal = new TrapezoidProfile.State(desiredPivotPosition, 0.0);
     m_lastState = m_profile.calculate(0.020, m_lastState, goal);
-    
-    io.setPivotPosition(m_lastState.position);
+    SmartDashboard.putNumber("intake/desiredpivotpos", m_lastState.position);
+    io.setPivotPosition(desiredPivotPosition);
     io.setRollerPercent(desiredRollerPercent);
 
     // Update 2D Mechanism
@@ -93,7 +94,6 @@ public class Intake extends SubsystemBase {
   }
 
   public void stop() {
-    retract();
     io.stop();
   }
 
