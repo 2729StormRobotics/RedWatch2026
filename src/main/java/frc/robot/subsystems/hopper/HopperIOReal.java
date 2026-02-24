@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 
 import java.util.function.Supplier;
+import frc.robot.util.SparkIdleModeTuner;
 
 public class HopperIOReal implements HopperIO {
   private final SparkFlex motor;
@@ -45,6 +46,9 @@ public class HopperIOReal implements HopperIO {
     inputs.velocityRotationsPerSec = encoder.getVelocity() / 60.0; // RPM to RPS
     inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
     inputs.currentAmps = motor.getOutputCurrent();
+
+    // Allow runtime brake/coast selection for hopper motor.
+    SparkIdleModeTuner.syncIdleMode(motor, "Hopper/HopperBrake", IdleMode.kCoast);
   }
 
    

@@ -9,6 +9,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import frc.robot.util.SparkIdleModeTuner;
 import java.util.function.DoubleSupplier;
 
 /**
@@ -66,6 +67,10 @@ public class ClimbIOReal implements ClimbIO {
     ifOk(leader, leader.getEncoder()::getPosition, (value) -> {
       inputs.positionMeters = value * 0.01; 
     });
+
+    // Allow runtime brake/coast selection for both climb motors.
+    SparkIdleModeTuner.syncIdleMode(leader, "Climb/LeaderBrake", IdleMode.kBrake);
+    SparkIdleModeTuner.syncIdleMode(follower, "Climb/FollowerBrake", IdleMode.kBrake);
 
     // Optional: Log follower current for health monitoring
     // ifOk(follower, follower::getOutputCurrent, (value) -> inputs.followerCurrentAmps = value);

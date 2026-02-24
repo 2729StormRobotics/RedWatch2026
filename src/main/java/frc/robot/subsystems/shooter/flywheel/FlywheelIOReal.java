@@ -29,6 +29,7 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
+import frc.robot.util.SparkIdleModeTuner;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 
 /**
@@ -114,6 +115,10 @@ public class FlywheelIOReal implements FlywheelIO {
         (values) -> inputs.followerAppliedVolts = values[0] * values[1]);
     ifOk(followerMotor, followerMotor::getOutputCurrent, (value) -> inputs.followerCurrentAmps = value);
     ifOk(followerMotor, followerMotor::getMotorTemperature, (value) -> inputs.followerTemperatureCelsius = value);
+
+    // Allow runtime brake/coast selection for both flywheel motors.
+    SparkIdleModeTuner.syncIdleMode(leaderMotor, "Shooter/FlywheelLeaderBrake", IdleMode.kCoast);
+    SparkIdleModeTuner.syncIdleMode(followerMotor, "Shooter/FlywheelFollowerBrake", IdleMode.kCoast);
   }
 
   @Override

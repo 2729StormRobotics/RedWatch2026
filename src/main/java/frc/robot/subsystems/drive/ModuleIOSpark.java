@@ -31,6 +31,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
+import frc.robot.util.SparkIdleModeTuner;
 
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
@@ -38,6 +39,7 @@ import java.util.function.DoubleSupplier;
  */
 public class ModuleIOSpark implements ModuleIO {
   private final Rotation2d zeroRotation;
+  private final String moduleName;
 
   // Hardware objects
   private final SparkBase driveSpark;
@@ -68,6 +70,14 @@ public class ModuleIOSpark implements ModuleIO {
           case 2 -> backLeftZeroRotation;
           case 3 -> backRightZeroRotation;
           default -> Rotation2d.kZero;
+        };
+    moduleName =
+        switch (module) {
+          case 0 -> "FL";
+          case 1 -> "FR";
+          case 2 -> "BL";
+          case 3 -> "BR";
+          default -> "M" + module;
         };
     driveSpark =
         new SparkFlex(
@@ -197,6 +207,12 @@ public class ModuleIOSpark implements ModuleIO {
         (values) -> inputs.turnAppliedVolts = values[0] * values[1]);
     ifOk(turnSpark, turnSpark::getOutputCurrent, (value) -> inputs.turnCurrentAmps = value);
     inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
+
+    // Allow per-module brake/coast selection from Elastic / SmartDashboard.
+    SparkIdleModeTuner.syncIdleMode(
+        driveSpark, "Drive/" + moduleName + "/DriveBrake", IdleMode.kCoast);
+    SparkIdleModeTuner.syncIdleMode(
+        turnSpark, "Drive/" + moduleName + "/TurnBrake", IdleMode.kBrake);
 
     // Update odometry inputs
     inputs.odometryTimestamps =

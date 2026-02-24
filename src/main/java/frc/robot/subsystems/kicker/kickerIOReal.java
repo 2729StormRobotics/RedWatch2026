@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
 import java.util.function.Supplier;
+import frc.robot.util.SparkIdleModeTuner;
 
 public class kickerIOReal implements kickerIO {
   private final SparkFlex motor;
@@ -43,6 +44,9 @@ public class kickerIOReal implements kickerIO {
     inputs.velocityRotationsPerSec = encoder.getVelocity() / 60.0; // RPM to RPS
     inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
     inputs.currentAmps = motor.getOutputCurrent();
+
+    // Allow runtime brake/coast selection for kicker motor.
+    SparkIdleModeTuner.syncIdleMode(motor, "Kicker/KickerBrake", IdleMode.kCoast);
   }
 
    

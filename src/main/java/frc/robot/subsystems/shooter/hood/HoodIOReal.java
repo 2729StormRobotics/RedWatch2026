@@ -17,6 +17,7 @@ import edu.wpi.first.math.MathUtil;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
 import java.util.function.Supplier;
+import frc.robot.util.SparkIdleModeTuner;
 
 public class HoodIOReal implements HoodIO {
   public final SparkMax motor;
@@ -119,6 +120,9 @@ public class HoodIOReal implements HoodIO {
     inputs.temperatureCelsius = motor.getMotorTemperature();
     // Map motor rotations [-37, -1] to normalized [0, 1] for angle 0° to 30°
     inputs.absolutePositionRotations = MathUtil.clamp((pos + 37.0) / 36.0, 0.0, 1.0);
+
+    // Allow runtime brake/coast selection for hood motor.
+    SparkIdleModeTuner.syncIdleMode(motor, "Shooter/HoodBrake", IdleMode.kCoast);
   }
 
 }

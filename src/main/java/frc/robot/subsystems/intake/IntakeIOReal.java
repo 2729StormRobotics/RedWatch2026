@@ -32,6 +32,7 @@ import com.revrobotics.spark.SparkFlex;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import java.util.function.DoubleSupplier;
+import frc.robot.util.SparkIdleModeTuner;
 
 /**
  * Real hardware implementation of IntakeIO using SparkMax motor controllers.
@@ -113,7 +114,11 @@ public class IntakeIOReal implements IntakeIO {
         new DoubleSupplier[] {rollerMotor::getAppliedOutput, rollerMotor::getBusVoltage},
         (values) -> inputs.rollerAppliedVolts = values[0] * values[1]);
     ifOk(rollerMotor, rollerMotor::getOutputCurrent, (value) -> inputs.rollerCurrentAmps = value);
-    
+
+    // Allow runtime brake/coast selection for intake pivot and roller.
+    SparkIdleModeTuner.syncIdleMode(pivotMotor, "Intake/PivotBrake", IdleMode.kBrake);
+    SparkIdleModeTuner.syncIdleMode(rollerMotor, "Intake/RollerBrake", IdleMode.kCoast);
+
     // Read beam break sensor (inverted because DigitalInput is normally true when not triggered)
   }
 

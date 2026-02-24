@@ -28,6 +28,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import java.util.function.DoubleSupplier;
+import frc.robot.util.SparkIdleModeTuner;
 
 /**
  * Real hardware implementation of TurretIO.
@@ -242,6 +243,9 @@ public class TurretIOReal implements TurretIO {
         (values) -> inputs.appliedVolts = values[0] * values[1]);
     ifOk(motor, motor::getOutputCurrent, (val) -> inputs.currentAmps = val);
     ifOk(motor, motor::getMotorTemperature, (val) -> inputs.temperatureCelsius = val);
+
+    // Allow runtime brake/coast selection for turret motor.
+    SparkIdleModeTuner.syncIdleMode(motor, "Shooter/TurretBrake", IdleMode.kBrake);
 
     // Run Profiled PID calculation if in closed loop mode
     if (isClosedLoop) {
