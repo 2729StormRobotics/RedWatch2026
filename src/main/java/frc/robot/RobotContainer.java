@@ -262,19 +262,19 @@ public class RobotContainer {
 
 
     // Shooter / Kicker controls
-    // TICK_2_HOOD.onTrue(shooter.runPositionCommand(2).andThen(shooter.stopCommand()));
-    // TICK_37_HOOD.onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
-    // MOVE_HOOD.onTrue(shooter.runPositionCommand(19 + (MOVE_HOOD_JOYSTICK * 18)));
-    // shooter.setDefaultCommand(shooter.runPositionCommandConstant(DriveControls.m_weaponsController));
+    TICK_2_HOOD.onTrue(shooter.runPositionCommand(2).andThen(shooter.stopCommand()));
+    TICK_37_HOOD.onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
+    MOVE_HOOD.onTrue(shooter.runPositionCommand(19 + (MOVE_HOOD_JOYSTICK.getAsDouble() * 18)));
+     shooter.setDefaultCommand(shooter.runPositionCommandConstant(DriveControls.m_weaponsController));
 
-    // flyWheelTrigger.whileTrue(
-    //     Commands.parallel(
-    //         Commands.run(() -> shooter.setFlywheelVelocity(80), shooter),
-    //         Commands.run(() -> kicker.setVoltage(1), kicker)));
-    // flyWheelTrigger.onFalse(
-    //     Commands.parallel(
-    //         Commands.runOnce(shooter::stop, shooter),
-    //         Commands.runOnce(kicker::stop, kicker)));
+    flyWheelTrigger.whileTrue(
+        Commands.parallel(
+            Commands.run(() -> shooter.setFlywheelVelocity(250), shooter),
+            Commands.run(() -> kicker.setPercent(1), kicker)));
+    flyWheelTrigger.onFalse(
+        Commands.parallel(
+            Commands.runOnce(shooter::stop, shooter),
+            Commands.runOnce(kicker::stop, kicker)));
 
     // reverseFlyWheelTrigger.whileTrue(
     //     Commands.parallel(
@@ -285,10 +285,10 @@ public class RobotContainer {
     //         Commands.runOnce(shooter::stop, shooter),
     //         Commands.runOnce(kicker::stop, kicker)));
 
-    // turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(0.0)));
-    // turretTrigger180.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(180.0)));
-    // turretTriggerNegative90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(-90.0)));
-    // turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(90.0)));
+    turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(0.0)));
+    turretTrigger180.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(180.0)));
+    turretTriggerNegative90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(-90.0)));
+    turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(90.0)));
 
     // Climb Controls
     // EXTEND_CLIMBER.whileTrue(climb.climbCommand());
@@ -300,13 +300,12 @@ public class RobotContainer {
     // Intake Controls
     // INTAKE.whileTrue(intake.intakeCommand());
     // INTAKE.onFalse(intake.stopCommand());
-    // INTAKE.whileTrue(hopper.runContinuous());
-    // INTAKE.onFalse(hopper.stopCommand());
+    intake.setDefaultCommand(intake.intakeCommandTrigger(INTAKE));
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 
-    // HopperTrigger.whileTrue(hopper.runContinuous());
-    // HopperTrigger.onFalse(hopper.stopCommand());
+    HopperTrigger.whileTrue(hopper.runContinuous());
+    HopperTrigger.onFalse(hopper.stopCommand());
 
     // HopperStopTrigger.onTrue(hopper.stopCommand());
     // stopFlyWheelTrigger.onTrue(shooter.stopCommand());

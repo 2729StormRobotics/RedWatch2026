@@ -29,6 +29,7 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
@@ -39,8 +40,8 @@ import frc.robot.util.misc.LoggedTunableNumber;
  * Real hardware implementation of FlywheelIO using SparkMax motor controllers.
  */
 public class FlywheelIOReal implements FlywheelIO {
-  private final SparkMax leaderMotor;
-  private final SparkMax followerMotor;
+  private final SparkFlex leaderMotor;
+  private final SparkFlex followerMotor;
   private final RelativeEncoder leaderEncoder;
   private final SparkClosedLoopController velocityController;
   
@@ -61,12 +62,12 @@ public class FlywheelIOReal implements FlywheelIO {
 
   public FlywheelIOReal() {
     // Create leader motor
-    leaderMotor = new SparkMax(LEADER_MOTOR_ID, MotorType.kBrushless);
+    leaderMotor = new SparkFlex(LEADER_MOTOR_ID, MotorType.kBrushless);
     leaderEncoder = leaderMotor.getEncoder();
     velocityController = leaderMotor.getClosedLoopController();
     
     // Create follower motor
-    followerMotor = new SparkMax(FOLLOWER_MOTOR_ID, MotorType.kBrushless);
+    followerMotor = new SparkFlex(FOLLOWER_MOTOR_ID, MotorType.kBrushless);
     
     // Configure leader motor
     SparkMaxConfig leaderConfig = new SparkMaxConfig();

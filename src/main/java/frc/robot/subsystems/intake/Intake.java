@@ -101,6 +101,7 @@ public class Intake extends SubsystemBase {
     io.stop();
   }
 
+  
   public boolean decrementBall() {
     return io.decrementBall();
   }
