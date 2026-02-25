@@ -278,17 +278,12 @@ public class TurretIOReal implements TurretIO {
   }
 
   private double[] calculateCrtAngle(double raw19, double raw21) {
-    // raw19 is reported in motor rotations; convert to 19T gear rotations
-    double raw19Gear = raw19 / k_gearboxRatio;
-
-    // Normalize both encoder readings into [0, 1) range after applying offsets
-    double r19 = ((raw19Gear - k_enc19Offset) % 1.0 + 1.0) % 1.0;
+    double r19 = ((raw19 - k_enc19Offset) % 1.0 + 1.0) % 1.0;
     double r21 = ((raw21 - k_enc21Offset) % 1.0 + 1.0) % 1.0;
 
     double bestError = Double.MAX_VALUE;
     double bestTurretDegrees = 0.0;
 
-    // Search across all 19T gear wraps that map uniquely with the 21T gear
     for (int k = 0; k < 21; k++) {
       double totalRotations19 = k + r19;
       double turretRotations = totalRotations19 / (k_turretRingTeeth / k_gear19);
@@ -305,14 +300,9 @@ public class TurretIOReal implements TurretIO {
     }
 
     double maxUniqueDeg = ((k_gear19 * k_gear21) / k_turretRingTeeth) * 360.0;
+    if (bestTurretDegrees > (maxUniqueDeg / 2.0)) bestTurretDegrees -= maxUniqueDeg;
 
-    // Keep the reported angle continuous by choosing the solution
-    // closest to the last reported absolute angle, modulo the CRT range.
-    double candidateDeg = bestTurretDegrees;
-    double delta = candidateDeg - lastAbsoluteAngleDeg;
-    candidateDeg -= Math.round(delta / maxUniqueDeg) * maxUniqueDeg;
-
-    return new double[] {candidateDeg, bestError};
+    return new double[] {bestTurretDegrees, bestError};
   }
 
   @Override
