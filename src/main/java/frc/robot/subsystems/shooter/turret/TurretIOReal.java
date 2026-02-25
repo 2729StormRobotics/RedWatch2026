@@ -278,29 +278,18 @@ public class TurretIOReal implements TurretIO {
   }
 
   private double[] calculateCrtAngle(double raw19, double raw21) {
-<<<<<<< Updated upstream
     // raw19 is reported in motor rotations; convert to 19T gear rotations
     double raw19Gear = raw19 / k_gearboxRatio;
 
     // Normalize both encoder readings into [0, 1) range after applying offsets
     double r19 = ((raw19Gear - k_enc19Offset) % 1.0 + 1.0) % 1.0;
-=======
-    // Normalize raw encoder values to [0, 1)
-    double r19 = ((raw19 - k_enc19Offset) % 1.0 + 1.0) % 1.0;
->>>>>>> Stashed changes
     double r21 = ((raw21 - k_enc21Offset) % 1.0 + 1.0) % 1.0;
 
     double bestError = Double.MAX_VALUE;
     double bestTurretDegrees = 0.0;
 
-<<<<<<< Updated upstream
     // Search across all 19T gear wraps that map uniquely with the 21T gear
     for (int k = 0; k < 21; k++) {
-=======
-    // FIX: Shift the search window to check negative and positive rotations!
-    // Instead of 0 to 20, we check -10 to +10. This centers the stable math at 0 degrees.
-    for (int k = -10; k <= 10; k++) {
->>>>>>> Stashed changes
       double totalRotations19 = k + r19;
       double turretRotations = totalRotations19 / (k_turretRingTeeth / k_gear19);
       double totalRotations21 = turretRotations * (k_turretRingTeeth / k_gear21);
@@ -322,11 +311,6 @@ public class TurretIOReal implements TurretIO {
     // the wrapping logic here is much safer now, but we'll leave it 
     // to protect against the extreme edges.
     double maxUniqueDeg = ((k_gear19 * k_gear21) / k_turretRingTeeth) * 360.0;
-<<<<<<< Updated upstream
-=======
-    if (bestTurretDegrees > (maxUniqueDeg / 2.0)) bestTurretDegrees -= maxUniqueDeg;
-    if (bestTurretDegrees < -(maxUniqueDeg / 2.0)) bestTurretDegrees += maxUniqueDeg;
->>>>>>> Stashed changes
 
     // Keep the reported angle continuous by choosing the solution
     // closest to the last reported absolute angle, modulo the CRT range.
