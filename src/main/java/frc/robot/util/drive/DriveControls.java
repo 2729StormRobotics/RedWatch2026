@@ -153,7 +153,8 @@ public class DriveControls {
   public static Trigger flyWheelTrigger;
   public static Trigger reverseFlyWheelTrigger; 
 
-  public static Trigger turretTrigger0;
+  public static Trigger 
+  turretTrigger0;
   public static Trigger turretTrigger90;
   public static Trigger turretTrigger180;
   public static Trigger turretTriggerNegative90;
@@ -223,6 +224,9 @@ public class DriveControls {
 
     MOVE_HOOD = m_weaponsController.rightBumper();
     MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
+
+    TICK_2_HOOD = m_translator.button(8);
+    TICK_37_HOOD = m_translator.button(7);
 
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);

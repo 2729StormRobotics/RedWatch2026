@@ -288,8 +288,11 @@ public class TurretIOReal implements TurretIO {
       double totalRotations19 = k + r19;
       double turretRotations = totalRotations19 / (k_turretRingTeeth / k_gear19);
       double totalRotations21 = turretRotations * (k_turretRingTeeth / k_gear21);
+      
+      // Calculate what the 21T encoder *should* be reading
       double expectedR21 = ((totalRotations21 % 1.0) + 1.0) % 1.0;
 
+      // Circular error between actual and expected
       double error = Math.abs(r21 - expectedR21);
       if (error > 0.5) error = 1.0 - error;
 
@@ -299,6 +302,9 @@ public class TurretIOReal implements TurretIO {
       }
     }
 
+    // Because the loop naturally searches negative and positive, 
+    // the wrapping logic here is much safer now, but we'll leave it 
+    // to protect against the extreme edges.
     double maxUniqueDeg = ((k_gear19 * k_gear21) / k_turretRingTeeth) * 360.0;
     if (bestTurretDegrees > (maxUniqueDeg / 2.0)) bestTurretDegrees -= maxUniqueDeg;
 
