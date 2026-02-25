@@ -27,8 +27,10 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import java.util.function.DoubleSupplier;
+import frc.robot.Constants;
 import frc.robot.util.SparkIdleModeTuner;
+import frc.robot.util.misc.LoggedTunableNumber;
+import java.util.function.DoubleSupplier;
 
 /**
  * Real hardware implementation of TurretIO.
@@ -58,11 +60,19 @@ public class TurretIOReal implements TurretIO {
   private final TrapezoidProfile.Constraints m_constraints = 
       new TrapezoidProfile.Constraints(500.0, 600.0);
   private final ProfiledPIDController m_pidController = 
-      new ProfiledPIDController(0.048, 0.0, 0.0, m_constraints);
+      new ProfiledPIDController(kP, kI, kD, m_constraints);
 
   private double targetAngleDegrees = 0.0;
   private boolean isClosedLoop = false;
   private double lastAbsoluteAngleDeg = 0.0;
+
+  // Tunable PID gains for turret RIO-side controller
+  private final LoggedTunableNumber kP_tunable =
+      new LoggedTunableNumber("Shooter/Turret/kP", kP);
+  private final LoggedTunableNumber kI_tunable =
+      new LoggedTunableNumber("Shooter/Turret/kI", kI);
+  private final LoggedTunableNumber kD_tunable =
+      new LoggedTunableNumber("Shooter/Turret/kD", kD);
 
   /*
    * ===============================================================
@@ -246,6 +256,19 @@ public class TurretIOReal implements TurretIO {
 
     // Allow runtime brake/coast selection for turret motor.
     SparkIdleModeTuner.syncIdleMode(motor, "Shooter/TurretBrake", IdleMode.kBrake);
+
+    // Turret PID tuning from Elastic / SmartDashboard when in tuning mode.
+    if (Constants.tuningMode) {
+      LoggedTunableNumber.ifChanged(
+          this.hashCode(),
+          values -> {
+            double p = values[0];
+            double i = values[1];
+            double d = values[2];
+            m_pidController.setPID(p, i, d);
+          },
+          kP_tunable, kI_tunable, kD_tunable);
+    }
 
     // Run Profiled PID calculation if in closed loop mode
     if (isClosedLoop) {

@@ -740,6 +740,303 @@
         "layouts": [],
         "containers": []
       }
+    },
+    {
+      "name": "PID Tuning",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Drive Velocity kP",
+            "x": 0,
+            "y": 0,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Drive/Velocity/kP",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.02,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Drive Velocity kD",
+            "x": 384,
+            "y": 0,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Drive/Velocity/kD",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.02,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Turn kP",
+            "x": 0,
+            "y": 128,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Drive/Turn/kP",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 3.0,
+              "divisions": 12,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Turn kD",
+            "x": 384,
+            "y": 128,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Drive/Turn/kD",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.5,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Flywheel kP",
+            "x": 0,
+            "y": 256,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Flywheel/kP",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.001,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Flywheel kI",
+            "x": 384,
+            "y": 256,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Flywheel/kI",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.001,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Flywheel kD",
+            "x": 768,
+            "y": 256,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Flywheel/kD",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.001,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Flywheel kF",
+            "x": 1152,
+            "y": 256,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Flywheel/kF",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.05,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Hood kP",
+            "x": 0,
+            "y": 384,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Hood/kP",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.2,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Hood kI",
+            "x": 384,
+            "y": 384,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Hood/kI",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.05,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Hood kD",
+            "x": 768,
+            "y": 384,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Hood/kD",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.1,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Turret kP",
+            "x": 0,
+            "y": 512,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Turret/kP",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 1.0,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Turret kI",
+            "x": 384,
+            "y": 512,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Turret/kI",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.1,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Turret kD",
+            "x": 768,
+            "y": 512,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Shooter/Turret/kD",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.1,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Intake Pivot kP",
+            "x": 0,
+            "y": 640,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Intake/Pivot/kP",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.5,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Intake Pivot kI",
+            "x": 384,
+            "y": 640,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Intake/Pivot/kI",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.1,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "Intake Pivot kD",
+            "x": 768,
+            "y": 640,
+            "width": 384,
+            "height": 128,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Intake/Pivot/kD",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 0.2,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          }
+        ]
+      }
     }
   ]
 }

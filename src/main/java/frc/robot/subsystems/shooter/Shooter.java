@@ -87,7 +87,8 @@ public class Shooter extends SubsystemBase {
   // State variables
   private double desiredFlywheelVelocity = 0.0;
   private double desiredHoodAngle = 0.0;
-  private double desiredTurretAngle = 0.0;
+  /** Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive). */
+  private double desiredTurretAngleDeg = 0.0;
 
   private boolean prep = true;
 
@@ -131,8 +132,8 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter/Hood", hoodInputs);
     Logger.processInputs("Shooter/Turret", turretInputs);
     SmartDashboard.putNumber("Hood/Position", hoodIO.getPosition());
-    SmartDashboard.putNumber("Hood/Setpoint", hoodIO.positionSetpointRotations);
-    SmartDashboard.putBoolean("Hood/AtSetpoint", hoodIO.isAtPosition(hoodIO.positionSetpointRotations)); 
+    SmartDashboard.putNumber("Shooter/Hood/SetpointAngle", desiredHoodAngle);
+    SmartDashboard.putBoolean("Shooter/Hood/AtSetpoint", hoodAtSetpoint()); 
 
     if (moveAndShootEnabled) {
       if (depotAimModeEnabled) {
@@ -161,17 +162,19 @@ public class Shooter extends SubsystemBase {
     // hoodIO.setAngle(desiredHoodAngle);
 
     // Always update turret setpoint
-    // turretIO.setAngle(desiredTurretAngle);
+    // turretIO.setAngle(desiredTurretAngleDeg);
 
     // Log shooter state
     Logger.recordOutput("Shooter/ReadyToFire", isReadyToFire());
     Logger.recordOutput("Shooter/MoveAndShootEnabled", moveAndShootEnabled);
     Logger.recordOutput("Shooter/Hood/SetpointAngle", desiredHoodAngle);
-    Logger.recordOutput("Shooter/Turret/SetpointAngle", desiredTurretAngle);
+    Logger.recordOutput("Shooter/Turret/SetpointAngleDeg", desiredTurretAngleDeg);
 
     // Update 3D mechanism visualization
     // Turret angle is robot-relative (0° = robot forward, positive = CCW)
-    mechanism3d.setShooter(new Rotation2d(getTurretCurrentAngle()), new Rotation2d(getHoodCurrentAngle()));
+    mechanism3d.setShooter(
+        Rotation2d.fromDegrees(getTurretCurrentAngleDeg()),
+        new Rotation2d(getHoodCurrentAngle()));
     // Log the mechanism poses
     mechanism3d.log();
   }
@@ -407,13 +410,14 @@ public class Shooter extends SubsystemBase {
    */
   @AutoLogOutput(key = "Shooter/Hood/CurrentAngle")
   public double getHoodCurrentAngle() {
-    // Convert from 0-1 range back to angle in radians
-    // Simulation: absolutePositionRotations is (angle - MIN) / (MAX - MIN)
-    // So: angle = absolutePositionRotations * (MAX - MIN) + MIN
     double normalized = hoodInputs.absolutePositionRotations;
-    // double angle = normalized * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD)
-    //     + HoodConstants.MIN_ANGLE_RAD;
-    return normalized;
+    // Convert from 0-1 range back to angle in radians:
+    //   normalized = (angle - MIN) / (MAX - MIN)
+    //   angle      = normalized * (MAX - MIN) + MIN
+    double angle =
+        normalized * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD)
+            + HoodConstants.MIN_ANGLE_RAD;
+    return angle;
   }
 
   /**
@@ -428,61 +432,21 @@ public class Shooter extends SubsystemBase {
   // ========== Turret Methods ==========
 
   /**
-   * Solves the Chinese Remainder Theorem to determine absolute multi-turn
-   * position.
+   * Gets the current turret angle in degrees.
+   * Backed by {@code TurretIOInputs.absoluteAngleDeg}, which is populated by both
+   * real hardware IO and simulation IO.
    */
-  private double solveCRT(double turretEncoderValue, double hoodEncoderValue) {
-    int n1 = TurretConstants.ABSOLUTE_ENCODER_TEETH; // 19
-    int n2 = TurretConstants.HOOD_ENCODER_TEETH; // 21
-
-    int a1 = (int) Math.round(turretEncoderValue * n1);
-    int a2 = (int) Math.round(hoodEncoderValue * n2);
-
-    int m1 = n2; // 21
-    int m2 = n1; // 19
-    int lcm = n1 * n2; // 399
-
-    int inv1 = 10; // Pre-calculated: 21^(-1) mod 19 = 10
-    int inv2 = 10; // Pre-calculated: 19^(-1) mod 21 = 10
-
-    long x = ((long) a1 * m1 * inv1 + (long) a2 * m2 * inv2) % lcm;
-    if (x < 0) {
-      x += lcm;
-    }
-
-    return (double) x / lcm;
+  @AutoLogOutput(key = "Shooter/Turret/CurrentAngleDeg")
+  public double getTurretCurrentAngleDeg() {
+    return turretInputs.absoluteAngleDeg;
   }
 
   /**
-   * Gets the current turret angle.
-   * In simulation, uses the encoder value directly.
-   * In real hardware, uses CRT for multi-turn positioning.
-   * Returns angle relative to robot forward direction (0° = forward, positive =
-   * CCW).
+   * Sets the turret angle setpoint (degrees).
    */
-  @AutoLogOutput(key = "Shooter/Turret/CurrentAngle")
-  public double getTurretCurrentAngle() {
-    // In simulation, the absolute encoder value is normalized to 0-1 range
-    // where 0 = -π and 1 = π
-    // So: angle = (value * 2π) - π
-    double turretEncoderValue = turretInputs.absolutePositionRotations;
-
-    // Clamp encoder value to valid range [0, 1] to prevent issues
-    turretEncoderValue = Math.max(0.0, Math.min(1.0, turretEncoderValue));
-
-    // Convert from 0-1 range to -π to π
-    double angle = (turretEncoderValue * 2.0 * Math.PI) - Math.PI;
-
-    // Normalize to [-π, π] range
-    return MathUtil.inputModulus(angle, -Math.PI, Math.PI);
-  }
-
-  /**
-   * Sets the turret angle setpoint.
-   */
-  public void setTurretAngle(double angleRadians) {
-    desiredTurretAngle = MathUtil.inputModulus(angleRadians, TurretConstants.MIN_ANGLE_RAD,
-        TurretConstants.MAX_ANGLE_RAD);
+  public void setTurretAngleDegrees(double angleDegrees) {
+    desiredTurretAngleDeg =
+        MathUtil.inputModulus(angleDegrees, TurretConstants.MIN_ANGLE_DEG, TurretConstants.MAX_ANGLE_DEG);
   }
 
   /**
@@ -490,12 +454,13 @@ public class Shooter extends SubsystemBase {
    */
   @AutoLogOutput(key = "Shooter/Turret/AtSetpoint")
   public boolean turretAtSetpoint() {
-    double currentAngle = getTurretCurrentAngle();
-    double setpointAngle = desiredTurretAngle;
+    double currentDeg = getTurretCurrentAngleDeg();
+    double setpointDeg = desiredTurretAngleDeg;
 
-    // Calculate error with proper wrap-around handling
-    double error = MathUtil.inputModulus(setpointAngle - currentAngle, -Math.PI, Math.PI);
-    return Math.abs(error) < TurretConstants.ANGLE_TOLERANCE;
+    // Calculate error with proper wrap-around handling in degrees
+    double errorDeg =
+        MathUtil.inputModulus(setpointDeg - currentDeg, -180.0, 180.0);
+    return Math.abs(errorDeg) < TurretConstants.ANGLE_TOLERANCE_DEG;
   }
 
   // ========== Combined Methods ==========
@@ -515,7 +480,7 @@ public class Shooter extends SubsystemBase {
   public void stop() {
     desiredFlywheelVelocity = 0.0;
     desiredHoodAngle = getHoodCurrentAngle(); // Hold current position
-    // desiredTurretAngle = getTurretCurrentAngle(); // Hold current position
+    // desiredTurretAngleDeg = getTurretCurrentAngleDeg(); // Hold current position
     flywheelIO.stop();
     hoodIO.stop();
     // turretIO.stop();
@@ -585,7 +550,7 @@ public class Shooter extends SubsystemBase {
 //     // 2. Calculate launch parameters
 //     // We combine robot rotation + turret rotation for the total field-relative
 //     // heading
-//     Rotation2d totalHeader = robotPose.getRotation().plus(Rotation2d.fromRadians(this.getTurretCurrentAngle()));
+//     Rotation2d totalHeader = robotPose.getRotation().plus(Rotation2d.fromDegrees(this.getTurretCurrentAngleDeg()));
 
 //     GamePieceProjectile fuelProjectile = new GamePieceProjectile(
 //         Constants.FUEL_INFO,

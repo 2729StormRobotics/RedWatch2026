@@ -29,9 +29,11 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.Constants;
+import frc.robot.util.SparkIdleModeTuner;
+import frc.robot.util.misc.LoggedTunableNumber;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
-import frc.robot.util.SparkIdleModeTuner;
 
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
@@ -61,6 +63,16 @@ public class ModuleIOSpark implements ModuleIO {
       new Debouncer(0.5, Debouncer.DebounceType.kFalling);
   private final Debouncer turnConnectedDebounce =
       new Debouncer(0.5, Debouncer.DebounceType.kFalling);
+
+  // Tunable drive & turn PID gains (shared keys across all modules)
+  private final LoggedTunableNumber driveKpTunable =
+      new LoggedTunableNumber("Drive/Velocity/kP", driveKp);
+  private final LoggedTunableNumber driveKdTunable =
+      new LoggedTunableNumber("Drive/Velocity/kD", driveKd);
+  private final LoggedTunableNumber turnKpTunable =
+      new LoggedTunableNumber("Drive/Turn/kP", turnKp);
+  private final LoggedTunableNumber turnKdTunable =
+      new LoggedTunableNumber("Drive/Turn/kD", turnKd);
 
   public ModuleIOSpark(int module) {
     zeroRotation =
@@ -213,6 +225,53 @@ public class ModuleIOSpark implements ModuleIO {
         driveSpark, "Drive/" + moduleName + "/DriveBrake", IdleMode.kCoast);
     SparkIdleModeTuner.syncIdleMode(
         turnSpark, "Drive/" + moduleName + "/TurnBrake", IdleMode.kBrake);
+
+    // Drive & turn PID tuning from Elastic / SmartDashboard when in tuning mode.
+    if (Constants.tuningMode) {
+      // Drive velocity loop (SparkFlex)
+      LoggedTunableNumber.ifChanged(
+          ("DrivePID_" + moduleName).hashCode(),
+          values -> {
+            double p = values[0];
+            double d = values[1];
+
+            SparkFlexConfig cfg = new SparkFlexConfig();
+            cfg.closedLoop.pid(p, 0.0, d);
+            cfg.closedLoop.feedForward.kV(1 / ModuleConstants.kDriveWheelFreeSpeedRps);
+            tryUntilOk(
+                driveSpark,
+                5,
+                () ->
+                    ((SparkFlex) driveSpark)
+                        .configure(
+                            cfg, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters));
+          },
+          driveKpTunable, driveKdTunable);
+
+      // Turn position loop (SparkMax)
+      LoggedTunableNumber.ifChanged(
+          ("TurnPID_" + moduleName).hashCode(),
+          values -> {
+            double p = values[0];
+            double d = values[1];
+
+            SparkMaxConfig cfg = new SparkMaxConfig();
+            cfg
+                .closedLoop
+                .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+                .positionWrappingEnabled(true)
+                .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)
+                .pid(p, 0.0, d);
+            tryUntilOk(
+                turnSpark,
+                5,
+                () ->
+                    ((SparkMax) turnSpark)
+                        .configure(
+                            cfg, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters));
+          },
+          turnKpTunable, turnKdTunable);
+    }
 
     // Update odometry inputs
     inputs.odometryTimestamps =

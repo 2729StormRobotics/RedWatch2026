@@ -29,10 +29,11 @@ import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
-
 import edu.wpi.first.wpilibj.DigitalInput;
-import java.util.function.DoubleSupplier;
+import frc.robot.Constants;
 import frc.robot.util.SparkIdleModeTuner;
+import frc.robot.util.misc.LoggedTunableNumber;
+import java.util.function.DoubleSupplier;
 
 /**
  * Real hardware implementation of IntakeIO using SparkMax motor controllers.
@@ -44,6 +45,14 @@ public class IntakeIOReal implements IntakeIO {
   private final SparkClosedLoopController pivotController;
   
   private double pivotPositionSetpoint = 0.0;
+
+  // Tunable PID gains for intake pivot
+  private final LoggedTunableNumber kP_tunable =
+      new LoggedTunableNumber("Intake/Pivot/kP", kP);
+  private final LoggedTunableNumber kI_tunable =
+      new LoggedTunableNumber("Intake/Pivot/kI", kI);
+  private final LoggedTunableNumber kD_tunable =
+      new LoggedTunableNumber("Intake/Pivot/kD", kD);
 
   public IntakeIOReal() {
     // Create pivot motor
@@ -118,6 +127,29 @@ public class IntakeIOReal implements IntakeIO {
     // Allow runtime brake/coast selection for intake pivot and roller.
     SparkIdleModeTuner.syncIdleMode(pivotMotor, "Intake/PivotBrake", IdleMode.kBrake);
     SparkIdleModeTuner.syncIdleMode(rollerMotor, "Intake/RollerBrake", IdleMode.kCoast);
+
+    // PID tuning from Elastic / SmartDashboard when in tuning mode.
+    if (Constants.tuningMode) {
+      LoggedTunableNumber.ifChanged(
+          this.hashCode(),
+          values -> {
+            double p = values[0];
+            double i = values[1];
+            double d = values[2];
+
+            SparkMaxConfig cfg = new SparkMaxConfig();
+            cfg.closedLoop.pid(p, i, d);
+            tryUntilOk(
+                pivotMotor,
+                5,
+                () ->
+                    pivotMotor.configure(
+                        cfg,
+                        ResetMode.kNoResetSafeParameters,
+                        PersistMode.kNoPersistParameters));
+          },
+          kP_tunable, kI_tunable, kD_tunable);
+    }
 
     // Read beam break sensor (inverted because DigitalInput is normally true when not triggered)
   }

@@ -136,6 +136,9 @@ public final class Constants {
     /** Operator joystick/controller port */
     public static final int CONTROLLER_OPERATOR_ID = 1;
 
+    /** Weapons / co‑driver controller port */
+    public static final int CONTROLLER_WEAPONS_ID = 2;
+
     // LED system
     /** Blinkin LED controller PWM port */
     public static final int BLINKIN_LED_CONTROLLER_PORT = 7;

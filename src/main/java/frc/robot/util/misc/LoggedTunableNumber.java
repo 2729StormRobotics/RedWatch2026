@@ -5,10 +5,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * Class for a tunable number. Gets value from dashboard in tuning mode, returns default if not or
- * value not in dashboard.
+ * Class for a tunable number.
+ *
+ * <p>Backed by SmartDashboard / NetworkTables so it can be viewed and edited from Elastic.
+ * When {@link Constants#tuningMode} is true:
+ *   - The default value is published once to "/SmartDashboard/TunableNumbers/...".
+ *   - {@link #get()} reads the current value from that topic (falling back to the default).
+ *
+ * When tuning mode is false, {@link #get()} always returns the default value.
  */
 public class LoggedTunableNumber {
   private static final String tableKey = "TunableNumbers";
@@ -16,12 +23,12 @@ public class LoggedTunableNumber {
   private final String key;
   private boolean hasDefault = false;
   private double defaultValue;
-  private Map<Integer, Double> lastHasChangedValues = new HashMap<>();
+  private final Map<Integer, Double> lastHasChangedValues = new HashMap<>();
 
   /**
    * Create a new LoggedTunableNumber
    *
-   * @param dashboardKey Key on dashboard
+   * @param dashboardKey Key on dashboard (under the "TunableNumbers/" namespace)
    */
   public LoggedTunableNumber(String dashboardKey) {
     this.key = tableKey + "/" + dashboardKey;
@@ -47,9 +54,10 @@ public class LoggedTunableNumber {
     if (!hasDefault) {
       hasDefault = true;
       this.defaultValue = defaultValue;
-      if (Constants.tuningMode) {
-        // dashboardNumber = new LoggedDashboardNumber(key, defaultValue);
-      }
+    }
+
+    if (Constants.tuningMode && !SmartDashboard.containsKey(key)) {
+      SmartDashboard.putNumber(key, defaultValue);
     }
   }
 
@@ -61,10 +69,18 @@ public class LoggedTunableNumber {
   public double get() {
     if (!hasDefault) {
       return 0.0;
-    } else {
-      // return Constants.tuningMode ? dashboardNumber.get() : defaultValue;
-      return 0.0;
     }
+
+    if (!Constants.tuningMode) {
+      return defaultValue;
+    }
+
+    if (!SmartDashboard.containsKey(key)) {
+      SmartDashboard.putNumber(key, defaultValue);
+      return defaultValue;
+    }
+
+    return SmartDashboard.getNumber(key, defaultValue);
   }
 
   /**

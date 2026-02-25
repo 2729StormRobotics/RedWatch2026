@@ -65,14 +65,15 @@ public interface TurretIO {
    */
   public default void updateInputs(TurretIOInputs inputs) {}
 
-  public default void setInternalPosition(double degrees){}
+  /** Sets the internal turret encoder position in degrees. */
+  public default void setInternalPosition(double degrees) {}
 
   /**
    * Sets the turret angle setpoint.
    *
-   * @param angleRadians Target angle in radians
+   * @param angleDegrees Target angle in degrees (robot‑relative, 0° = forward, CCW positive)
    */
-  public default void setAngle(double angleRadians) {}
+  public default void setAngle(double angleDegrees) {}
 
   /**
    * Sets the turret to run at a specific voltage.

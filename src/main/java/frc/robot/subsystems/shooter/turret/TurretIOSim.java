@@ -18,7 +18,6 @@ import static frc.robot.subsystems.shooter.turret.TurretConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import frc.robot.subsystems.shooter.turret.*;
 
 /**
  * Simulation implementation of TurretIO.
@@ -29,8 +28,9 @@ public class TurretIOSim implements TurretIO {
   
   private final SingleJointedArmSim armSim;
   private double appliedVolts = 0.0;
-  private double angleSetpoint = 0.0;
-  private double currentAngle = 0.0;
+  // Internal sim state is kept in radians, but public API uses degrees.
+  private double angleSetpointRad = 0.0;
+  private double currentAngleRad = 0.0;
 
   public TurretIOSim() {
     // Create arm simulation using NEO motor model
@@ -44,9 +44,9 @@ public class TurretIOSim implements TurretIO {
             MAX_ANGLE_RAD,
             false, // No gravity for turret (horizontal rotation)
             0.0); // Start at 0 (robot forward)
-    
+
     // Initialize current angle from simulation
-    currentAngle = 0.0;
+    currentAngleRad = 0.0;
   }
 
   @Override
@@ -60,13 +60,13 @@ public class TurretIOSim implements TurretIO {
     double rawAngle = armSim.getAngleRads();
     
     // Normalize to [-π, π] range immediately to prevent wrap-around issues
-    currentAngle = MathUtil.inputModulus(rawAngle, -Math.PI, Math.PI);
+    currentAngleRad = MathUtil.inputModulus(rawAngle, -Math.PI, Math.PI);
     
     // Normalize setpoint to [-π, π] for error calculation
-    double normalizedSetpoint = MathUtil.inputModulus(angleSetpoint, -Math.PI, Math.PI);
+    double normalizedSetpoint = MathUtil.inputModulus(angleSetpointRad, -Math.PI, Math.PI);
     
     // Calculate error with wrap-around handling (shortest path)
-    double error = MathUtil.inputModulus(normalizedSetpoint - currentAngle, -Math.PI, Math.PI);
+    double error = MathUtil.inputModulus(normalizedSetpoint - currentAngleRad, -Math.PI, Math.PI);
     
     // Apply control voltage with damping to prevent oscillation
     double kP = 2.0;
@@ -79,24 +79,32 @@ public class TurretIOSim implements TurretIO {
     // Convert angle to 0-1 range for absolute encoder (matching real encoder)
     // Real encoder: 0 = -π, 0.5 = 0, 1 = π
     // Use normalized current angle (already in [-π, π])
-    inputs.absolutePositionRotations = (currentAngle + Math.PI) / (2.0 * Math.PI);
+    inputs.absolutePositionRotations = (currentAngleRad + Math.PI) / (2.0 * Math.PI);
     // Clamp to ensure it's in [0, 1] range (should always be, but be safe)
     inputs.absolutePositionRotations = Math.max(0.0, Math.min(1.0, inputs.absolutePositionRotations));
-    inputs.motorPositionRotations = currentAngle / (2.0 * Math.PI);
+    inputs.motorPositionRotations = currentAngleRad / (2.0 * Math.PI);
     inputs.motorVelocityRotationsPerSec = armSim.getVelocityRadPerSec() / (2.0 * Math.PI);
     inputs.appliedVolts = appliedVolts;
     inputs.currentAmps = Math.abs(armSim.getCurrentDrawAmps());
     inputs.temperatureCelsius = 25.0;
+
+    // Degree-based fields to mirror real hardware IO
+    double currentAngleDeg = Math.toDegrees(currentAngleRad);
+    inputs.absoluteAngleDeg = currentAngleDeg;
+    inputs.motorPositionDeg = currentAngleDeg;
+    inputs.motorVelocityDegPerSec = Math.toDegrees(armSim.getVelocityRadPerSec());
   }
 
   @Override
-  public void setAngle(double angleRadians) {
-    angleSetpoint = MathUtil.inputModulus(angleRadians, MIN_ANGLE_RAD, MAX_ANGLE_RAD);
+  public void setAngle(double angleDegrees) {
+    // Convert public degrees API to internal radians for the sim plant
+    double angleRad = Math.toRadians(angleDegrees);
+    angleSetpointRad = MathUtil.inputModulus(angleRad, MIN_ANGLE_RAD, MAX_ANGLE_RAD);
   }
 
   @Override
   public void setVoltage(double volts) {
-    angleSetpoint = 0.0;
+    angleSetpointRad = 0.0;
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
     armSim.setInputVoltage(appliedVolts);
   }
@@ -104,7 +112,7 @@ public class TurretIOSim implements TurretIO {
   @Override
   public void stop() {
     // Hold current position instead of going to zero
-    angleSetpoint = currentAngle;
+    angleSetpointRad = currentAngleRad;
     appliedVolts = 0.0;
     armSim.setInputVoltage(0.0);
   }

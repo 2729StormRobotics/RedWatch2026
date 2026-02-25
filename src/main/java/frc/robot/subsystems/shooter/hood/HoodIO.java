@@ -20,7 +20,6 @@ import org.littletonrobotics.junction.AutoLog;
  * Follows the AdvantageKit IO pattern for proper logging and simulation support.
  */
 public interface HoodIO {
-  public double positionSetpointRotations = 0;
   /**
    * Auto-logged inputs for the hood.
    * All fields in this class are automatically logged by AdvantageKit.

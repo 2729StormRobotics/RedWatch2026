@@ -122,4 +122,18 @@ public class HoodIOSim implements HoodIO {
     
     armSim.setInputVoltage(0.0);
   }
+
+  @Override
+  public void setPercent(double percent) {
+    // Simple open-loop control for sim; bypasses PID.
+    controllerEnabled = false;
+    appliedVolts = MathUtil.clamp(percent, -1.0, 1.0) * 12.0;
+  }
+
+  @Override
+  public void setVoltage(double volts) {
+    // Direct voltage control for debugging simulation.
+    controllerEnabled = false;
+    appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+  }
 }

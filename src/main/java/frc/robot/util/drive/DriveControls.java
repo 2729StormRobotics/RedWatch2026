@@ -1,6 +1,6 @@
 package frc.robot.util.drive;
 
-import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -11,6 +11,11 @@ import java.util.function.DoubleSupplier;
 /**
  * Centralized control configuration for driver and operator inputs.
  * Maps physical controller inputs to logical control actions.
+ *
+ * To change bindings:
+ *  - Driver axes + basic drive buttons: edit {@link #configureDriverBindings()}.
+ *  - Weapons / subsystems (hood, intake, shooter, hopper, etc.):
+ *      edit {@link #configureSubsystemBindings()}.
  */
 public class DriveControls {
   // Controllers
@@ -24,12 +29,12 @@ public class DriveControls {
   static {
     if (Constants.currentMode == Constants.Mode.REAL) {
       // Real mode: use CommandJoystick
-      m_translator = new CommandJoystick(0);
-      m_rotator = new CommandJoystick(1);
+      m_translator = new CommandJoystick(Constants.ElectricalLayout.CONTROLLER_DRIVER_ID);
+      m_rotator = new CommandJoystick(Constants.ElectricalLayout.CONTROLLER_OPERATOR_ID);
     } else {
       // Simulation mode: use CommandGenericHID
-      m_translator = new CommandGenericHID(0);
-      m_rotator = new CommandGenericHID(1);
+      m_translator = new CommandGenericHID(Constants.ElectricalLayout.CONTROLLER_DRIVER_ID);
+      m_rotator = new CommandGenericHID(Constants.ElectricalLayout.CONTROLLER_OPERATOR_ID);
     }
   }
 
@@ -68,16 +73,16 @@ public class DriveControls {
    */
   private static double getTwist(CommandGenericHID controller) {
     if (controller instanceof CommandJoystick) {
-      
       return ((CommandJoystick) controller).getHID().getRawAxis(3);
     } else {
       // getRawAxis(2) returns the raw twist/rotation axis value
-      return -m_translator.getHID().getRawAxis(2);
+      return controller.getHID().getRawAxis(2);
     }
   }
 
   /** Weapons/operator controller for subsystem controls */
-  public static final CommandXboxController m_weaponsController = new CommandXboxController(2);
+  public static final CommandXboxController m_weaponsController =
+      new CommandXboxController(Constants.ElectricalLayout.CONTROLLER_WEAPONS_ID);
 
   // Useful for things that don't need to be triggered
   /** Empty trigger that never fires */
@@ -86,10 +91,14 @@ public class DriveControls {
   /** Empty double supplier that always returns 0.0 */
   private static final DoubleSupplier EMPTY_DOUBLE_SUPPLIER = () -> 0.0;
 
+  private static double applyDriveDeadband(double value) {
+    return MathUtil.applyDeadband(value, Constants.OperatorConstants.kDriveDeadband);
+  }
+
   public static Trigger TICK_2_HOOD;
   public static Trigger TICK_37_HOOD;
   public static Trigger MOVE_HOOD;
-  public static double MOVE_HOOD_JOYSTICK;
+  public static DoubleSupplier MOVE_HOOD_JOYSTICK;
   public static Trigger EXTEND_CLIMBER;
   public static Trigger RETRACT_CLIMBER;
 
@@ -161,45 +170,45 @@ public class DriveControls {
    * This method should be called during robot initialization.
    */
   public static void configureControls() {
+    configureDriverBindings();
+    configureSubsystemBindings();
+  }
+
+  /** Configure driver joystick axes and driving-related buttons. */
+  private static void configureDriverBindings() {
     switch (Constants.driver) {
       case KRITHIK:
-        // Driver controls - Krithik's configuration
-        DRIVE_FORWARD = () -> (-getY(m_translator));
-        DRIVE_STRAFE = () -> (-getX(m_translator));
-        DRIVE_ROTATE = () -> (-getTwist(m_translator));
-        RESET_GYRO = m_translator.button(12);
-        
-        // Driver settings
-        DRIVE_SLOW = m_translator.button(1);
-        DRIVE_STOP = m_translator.button(2);
-        DRIVE_HOLD_STOP = m_translator.button(3);
-
-        // Driver modes
-        DRIVE_ROBOT_RELATIVE = m_translator.button(4);
+        configureDriverCommon();
         break;
-
       case PROGRAMMERS:
       default:
-        // Driver controls - Default/programmer configuration
-        DRIVE_FORWARD = () -> (-getY(m_translator));
-        DRIVE_STRAFE = () -> (-getX(m_translator));
-        DRIVE_ROTATE = () -> (-getTwist(m_translator));
-        RESET_GYRO = m_translator.button(12);
-
-        // Driver settings
-        DRIVE_SLOW = m_translator.button(1);
-        DRIVE_STOP = m_translator.button(2);
-        DRIVE_HOLD_STOP = m_translator.button(3);
-
-        // Driver modes
-        DRIVE_ROBOT_RELATIVE = m_translator.button(4);
+        configureDriverCommon();
         break;
     }
+  }
 
+  /** Shared driver bindings used by all driver profiles for now. */
+  private static void configureDriverCommon() {
+    // Axes
+    DRIVE_FORWARD = () -> applyDriveDeadband(-getY(m_translator));
+    DRIVE_STRAFE = () -> applyDriveDeadband(-getX(m_translator));
+    DRIVE_ROTATE = () -> applyDriveDeadband(-getTwist(m_translator));
 
+    // Buttons / modes
+    RESET_GYRO = m_translator.button(12);
+    DRIVE_SLOW = m_translator.button(1);
+    DRIVE_STOP = m_translator.button(2);
+    DRIVE_HOLD_STOP = m_translator.button(3);
+    DRIVE_ROBOT_RELATIVE = m_translator.button(4);
+  }
+
+  /** Configure weapons / subsystem controls (hood, intake, turret, hopper, etc.). */
+  private static void configureSubsystemBindings() {
     hoodTrigger = m_weaponsController.leftTrigger();
     reverseHoodTrigger = m_weaponsController.leftBumper();
-    INTAKE = () -> (m_weaponsController.getRightTriggerAxis());
+
+    INTAKE = () -> m_weaponsController.getRightTriggerAxis();
+
     flyWheelTrigger = m_weaponsController.a();
     reverseFlyWheelTrigger = m_weaponsController.b();
     stopFlyWheelTrigger = m_translator.button(11);
@@ -209,23 +218,14 @@ public class DriveControls {
     turretTrigger180 = m_weaponsController.povLeft();
     turretTriggerNegative90 = m_weaponsController.povRight();
 
-
     EXTEND_INTAKE = m_weaponsController.x();
     RETRACT_INTAKE = m_weaponsController.y();
-    MOVE_HOOD = m_weaponsController.rightBumper();
-    MOVE_HOOD_JOYSTICK = m_weaponsController.getRightY();
-    // EXTEND_CLIMBER = m_weaponsController.rightTrigger();
-    // RETRACT_CLIMBER = m_weaponsController.leftTrigger();
-    // EXTEND_INTAKE = m_translator.button(8);
-    // RETRACT_INTAKE = m_translator.button(9);
-    // INTAKE = m_weaponsController.rightTrigger();
 
+    MOVE_HOOD = m_weaponsController.rightBumper();
+    MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
 
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
-    HopperStopTrigger  =m_translator.button(10);
-
-    
-
+    HopperStopTrigger = m_translator.button(10);
   }
 }

@@ -13,7 +13,6 @@
 
 package frc.robot.subsystems.shooter.turret;
 
-import static frc.robot.Constants.ElectricalLayout.*;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -40,15 +39,20 @@ public final class TurretConstants {
   public static final double kI = 0.0;
   public static final double kD = 0.0;
   public static final double kFF = 0.015;
-  
-  /** Angle tolerance for atSetpoint check (radians) */
-  public static final double ANGLE_TOLERANCE = Units.degreesToRadians(2.0);
-  
-  /** Minimum turret angle in radians (typically -180 to +180 degrees) */
-  public static final double MIN_ANGLE_RAD = Units.degreesToRadians(-180.0);
-  
-  /** Maximum turret angle in radians */
-  public static final double MAX_ANGLE_RAD = Units.degreesToRadians(180.0);
+
+  /** Minimum turret angle in degrees (typically -180 to +180 degrees) */
+  public static final double MIN_ANGLE_DEG = -180.0;
+
+  /** Maximum turret angle in degrees */
+  public static final double MAX_ANGLE_DEG = 180.0;
+
+  /** Angle tolerance for atSetpoint check (degrees) */
+  public static final double ANGLE_TOLERANCE_DEG = 2.0;
+
+  // Radian equivalents used internally by simulation
+  public static final double MIN_ANGLE_RAD = Units.degreesToRadians(MIN_ANGLE_DEG);
+  public static final double MAX_ANGLE_RAD = Units.degreesToRadians(MAX_ANGLE_DEG);
+  public static final double ANGLE_TOLERANCE_RAD = Units.degreesToRadians(ANGLE_TOLERANCE_DEG);
   
   /** Gear ratio (motor rotations per turret rotation) */
   public static final double GEAR_RATIO = 1.0;

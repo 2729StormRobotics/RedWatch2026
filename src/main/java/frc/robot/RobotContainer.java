@@ -285,10 +285,10 @@ public class RobotContainer {
     //         Commands.runOnce(shooter::stop, shooter),
     //         Commands.runOnce(kicker::stop, kicker)));
 
-    // turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(0)));
-    // turretTrigger180.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(Math.PI)));
-    // turretTriggerNegative90.onTrue(Commands.runOnce(() -> shooter.setTurretAngle((3 * Math.PI) / 2)));
-    // turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngle(Math.PI / 2)));
+    // turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(0.0)));
+    // turretTrigger180.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(180.0)));
+    // turretTriggerNegative90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(-90.0)));
+    // turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(90.0)));
 
     // Climb Controls
     // EXTEND_CLIMBER.whileTrue(climb.climbCommand());

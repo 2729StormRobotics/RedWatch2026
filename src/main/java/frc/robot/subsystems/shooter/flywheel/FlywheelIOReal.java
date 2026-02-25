@@ -29,8 +29,11 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
-import frc.robot.util.SparkIdleModeTuner;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
+import frc.robot.util.SparkIdleModeTuner;
+import frc.robot.util.misc.LoggedTunableNumber;
 
 /**
  * Real hardware implementation of FlywheelIO using SparkMax motor controllers.
@@ -42,6 +45,19 @@ public class FlywheelIOReal implements FlywheelIO {
   private final SparkClosedLoopController velocityController;
   
   private double velocitySetpoint = 0.0;
+
+  // Tunable PID + FF gains (exposed to Elastic via SmartDashboard)
+  private final LoggedTunableNumber kP_tunable =
+      new LoggedTunableNumber("Shooter/Flywheel/kP", kP);
+  private final LoggedTunableNumber kI_tunable =
+      new LoggedTunableNumber("Shooter/Flywheel/kI", kI);
+  private final LoggedTunableNumber kD_tunable =
+      new LoggedTunableNumber("Shooter/Flywheel/kD", kD);
+  private final LoggedTunableNumber kF_tunable =
+      new LoggedTunableNumber("Shooter/Flywheel/kF", kF);
+
+  // Local copy of feedforward gain so we can adjust it at runtime
+  private double ffGain = kF;
 
   public FlywheelIOReal() {
     // Create leader motor
@@ -119,12 +135,37 @@ public class FlywheelIOReal implements FlywheelIO {
     // Allow runtime brake/coast selection for both flywheel motors.
     SparkIdleModeTuner.syncIdleMode(leaderMotor, "Shooter/FlywheelLeaderBrake", IdleMode.kCoast);
     SparkIdleModeTuner.syncIdleMode(followerMotor, "Shooter/FlywheelFollowerBrake", IdleMode.kCoast);
+
+    // PID tuning from Elastic/SmartDashboard when in tuning mode.
+    if (Constants.tuningMode) {
+      // Only touch the config when a value actually changes to avoid extra CAN traffic.
+      LoggedTunableNumber.ifChanged(
+          this.hashCode(),
+          values -> {
+            double p = values[0];
+            double i = values[1];
+            double d = values[2];
+
+            SparkMaxConfig cfg = new SparkMaxConfig();
+            cfg.closedLoop.pid(p, i, d);
+            tryUntilOk(
+                leaderMotor,
+                5,
+                () ->
+                    leaderMotor.configure(
+                        cfg, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters));
+          },
+          kP_tunable, kI_tunable, kD_tunable);
+
+      // Feedforward gain (used when commanding velocity)
+      kF_tunable.runUpdate(v -> ffGain = v);
+    }
   }
 
   @Override
   public void setVelocity(double velocityRotationsPerSec) {
     velocitySetpoint = velocityRotationsPerSec;
-    double ffVolts = kF * velocityRotationsPerSec;
+    double ffVolts = ffGain * velocityRotationsPerSec;
     velocityController.setSetpoint(
         velocityRotationsPerSec,
         ControlType.kVelocity,
