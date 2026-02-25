@@ -278,21 +278,28 @@ public class TurretIOReal implements TurretIO {
   }
 
   private double[] calculateCrtAngle(double raw19, double raw21) {
-    double r19 = ((raw19 - k_enc19Offset) % 1.0 + 1.0) % 1.0;
+    // The Spark absolute encoder on the turret motor reports motor rotations.
+    // Convert to 19T gear rotations by dividing out the gearbox ratio so the
+    // CRT math matches the real 19T/21T/ring gear train.
+    double raw19Gear = raw19 / k_gearboxRatio;
+
+    // Normalize both encoder readings into [0, 1) range after applying offsets.
+    double r19 = ((raw19Gear - k_enc19Offset) % 1.0 + 1.0) % 1.0;
     double r21 = ((raw21 - k_enc21Offset) % 1.0 + 1.0) % 1.0;
 
     double bestError = Double.MAX_VALUE;
     double bestTurretDegrees = 0.0;
 
+    // Search across all 19T gear wraps that map uniquely with the 21T gear.
     for (int k = 0; k < 21; k++) {
       double totalRotations19 = k + r19;
       double turretRotations = totalRotations19 / (k_turretRingTeeth / k_gear19);
       double totalRotations21 = turretRotations * (k_turretRingTeeth / k_gear21);
-      
-      // Calculate what the 21T encoder *should* be reading
+
+      // Expected 21T encoder reading for this hypothesis
       double expectedR21 = ((totalRotations21 % 1.0) + 1.0) % 1.0;
 
-      // Circular error between actual and expected
+      // Smallest circular difference between actual and expected
       double error = Math.abs(r21 - expectedR21);
       if (error > 0.5) error = 1.0 - error;
 
@@ -302,13 +309,15 @@ public class TurretIOReal implements TurretIO {
       }
     }
 
-    // Because the loop naturally searches negative and positive, 
-    // the wrapping logic here is much safer now, but we'll leave it 
-    // to protect against the extreme edges.
+    // CRT gives a unique angle over this range (~718 deg). Use it to keep the
+    // reported angle continuous by staying on the branch closest to the last
+    // reported absolute angle.
     double maxUniqueDeg = ((k_gear19 * k_gear21) / k_turretRingTeeth) * 360.0;
-    if (bestTurretDegrees > (maxUniqueDeg / 2.0)) bestTurretDegrees -= maxUniqueDeg;
+    double candidateDeg = bestTurretDegrees;
+    double delta = candidateDeg - lastAbsoluteAngleDeg;
+    candidateDeg -= Math.round(delta / maxUniqueDeg) * maxUniqueDeg;
 
-    return new double[] {bestTurretDegrees, bestError};
+    return new double[] {candidateDeg, bestError};
   }
 
   @Override
