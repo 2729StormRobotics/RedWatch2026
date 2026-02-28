@@ -603,4 +603,14 @@ public class Shooter extends SubsystemBase {
     return runOnce(() -> hoodIO.setPercent(0)).withName("HoodStop");
   }
 
+  public Command runTurret() {
+    return runOnce(() -> turretIO.setPercent(0.05)).withName("TurretForward");
+  }
+  public Command reverseTurret() {
+    return runOnce(() -> turretIO.setPercent(-0.05)).withName("TurretReverse");
+  }
+  public Command stopTurret() {
+    return runOnce(() -> turretIO.setPercent(0)).withName("TurretStop");
+  }
+
 }

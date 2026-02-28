@@ -307,6 +307,12 @@ public class RobotContainer {
     HopperTrigger.whileTrue(hopper.runContinuous());
     HopperTrigger.onFalse(hopper.stopCommand());
 
+    turretForward.whileTrue(shooter.runTurret());
+    turretForward.onFalse(shooter.stopTurret());
+
+    turretReverse.whileTrue(shooter.reverseTurret());
+    turretReverse.onFalse(shooter.stopTurret());
+
     // HopperStopTrigger.onTrue(hopper.stopCommand());
     // stopFlyWheelTrigger.onTrue(shooter.stopCommand());
 

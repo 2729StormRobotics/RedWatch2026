@@ -81,6 +81,8 @@ public interface TurretIO {
    * @param volts Voltage to apply (-12 to 12 volts)
    */
   public default void setVoltage(double volts) {}
+  
+  public default void setPercent(double percent) {}
 
   /**
    * Stops the turret.

@@ -163,6 +163,10 @@ public class DriveControls {
   public static Trigger ReverseHopperTrigger;
   public static Trigger HopperStopTrigger;
   public static Trigger stopFlyWheelTrigger;
+
+  public static Trigger turretForward;
+  public static Trigger turretReverse;
+
   
 
 
@@ -206,7 +210,10 @@ public class DriveControls {
   /** Configure weapons / subsystem controls (hood, intake, turret, hopper, etc.). */
   private static void configureSubsystemBindings() {
     hoodTrigger = m_weaponsController.leftTrigger();
-    reverseHoodTrigger = m_weaponsController.leftBumper();
+    reverseHoodTrigger = m_weaponsController.leftTrigger();
+
+    turretForward = m_weaponsController.rightBumper();
+    turretReverse = m_weaponsController.leftBumper();
 
     INTAKE = () -> m_weaponsController.getRightTriggerAxis();
 

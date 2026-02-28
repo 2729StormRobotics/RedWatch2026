@@ -228,6 +228,11 @@ public class TurretIOReal implements TurretIO {
     motor.setVoltage(volts);
   }
 
+  public void setPercent(double percent) {
+    isClosedLoop = false;
+    motor.set(percent);
+  }
+
   @Override
   public void setInternalPosition(double degrees) {
     internalEncoder.setPosition(degrees);
