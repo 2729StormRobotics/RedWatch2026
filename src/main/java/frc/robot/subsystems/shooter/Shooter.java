@@ -479,7 +479,7 @@ public class Shooter extends SubsystemBase {
    */
   public void stop() {
     desiredFlywheelVelocity = 0.0;
-    // desiredHoodAngle = getHoodCurrentAngle(); // Hold current position
+    desiredHoodAngle = getHoodCurrentAngle(); // Hold current position
     // desiredTurretAngleDeg = getTurretCurrentAngleDeg(); // Hold current position
     flywheelIO.stop();
     // hoodIO.stop();

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import java.util.function.DoubleSupplier;
+import edu.wpi.first.wpilibj.RobotState;
 
 /**
  * Centralized control configuration for driver and operator inputs.
@@ -135,8 +136,12 @@ public class DriveControls {
   // SysId controls
   /** Trigger for quasistatic forward test */
   public static Trigger QUASISTATIC_FORWARD;
-  public static DoubleSupplier INTAKE;
+  // public static DoubleSupplier INTAKE;
   public static Trigger RETRACT_INTAKE;
+
+  public static Trigger INTAKE_TRIGGER;
+
+
 
   /** Trigger for quasistatic reverse test */
   public static Trigger QUASISTATIC_REVERSE;
@@ -205,29 +210,35 @@ public class DriveControls {
     DRIVE_STOP = m_translator.button(2);
     DRIVE_HOLD_STOP = m_translator.button(3);
     DRIVE_ROBOT_RELATIVE = m_translator.button(4);
+
+
   }
 
   /** Configure weapons / subsystem controls (hood, intake, turret, hopper, etc.). */
   private static void configureSubsystemBindings() {
-    hoodTrigger = m_weaponsController.leftTrigger();
-    reverseHoodTrigger = m_weaponsController.leftTrigger();
+    // hoodTrigger = m_weaponsController.leftTrigger();
+    // reverseHoodTrigger = m_weaponsController.leftTrigger();
 
     turretForward = m_weaponsController.rightBumper();
     turretReverse = m_weaponsController.leftBumper();
 
-    INTAKE = () -> m_weaponsController.getRightTriggerAxis();
+    //INTAKE = () -> m_weaponsController.getRightTriggerAxis();
+    INTAKE_TRIGGER = m_weaponsController.rightTrigger();
 
     flyWheelTrigger = m_weaponsController.a();
     reverseFlyWheelTrigger = m_weaponsController.b();
     stopFlyWheelTrigger = m_translator.button(11);
 
-    turretTrigger0 = m_weaponsController.povUp();
-    turretTrigger90 = m_weaponsController.povDown();
-    turretTrigger180 = m_weaponsController.povLeft();
-    turretTriggerNegative90 = m_weaponsController.povRight();
+    // turretTrigger0 = m_weaponsController.povUp();
+    // turretTrigger90 = m_weaponsController.povDown();
+    // turretTrigger180 = m_weaponsController.povLeft();
+    // turretTriggerNegative90 = m_weaponsController.povRight();
 
     EXTEND_INTAKE = m_weaponsController.x();
     RETRACT_INTAKE = m_weaponsController.y();
+
+    EXTEND_CLIMBER = m_weaponsController.povUp();
+    RETRACT_CLIMBER = m_weaponsController.povDown();
 
     MOVE_HOOD = m_weaponsController.rightBumper();
     MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
@@ -235,8 +246,9 @@ public class DriveControls {
     TICK_2_HOOD = m_translator.button(8);
     TICK_37_HOOD = m_translator.button(7);
 
-    HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
     HopperStopTrigger = m_translator.button(10);
+
+    HopperTrigger = m_translator.button(6);
   }
 }

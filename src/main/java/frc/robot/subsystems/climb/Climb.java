@@ -27,6 +27,10 @@ public class Climb extends SubsystemBase {
     return this.run(() -> io.setVoltage(volts));
   }
 
+  public Command setPercentCommand(double percent) {
+    return this.run(() -> io.setPercent(percent));
+  }
+
   /**
    * Returns a command that stops the climber motor.
    */
@@ -35,10 +39,10 @@ public class Climb extends SubsystemBase {
   }
 
   public Command climbCommand() {
-    return runVoltageCommand(ClimbConstants.CLIMB_VOLTAGE);
+    return setPercentCommand(ClimbConstants.CLIMBSPEED);
   }
 
   public Command retractCommand() {
-    return runVoltageCommand(-ClimbConstants.CLIMB_VOLTAGE);
+    return setPercentCommand(-ClimbConstants.CLIMBSPEED);
   }
 }

@@ -18,14 +18,14 @@ import java.util.function.DoubleSupplier;
  */
 public class ClimbIOReal implements ClimbIO {
   private final SparkMax leader;
-  private final SparkMax follower;
+  // private final SparkMax follower;
 
   public ClimbIOReal() {
     leader = new SparkMax(LEADER_ID, MotorType.kBrushless);
-    follower = new SparkMax(FOLLOWER_ID, MotorType.kBrushless);
+    // follower = new SparkMax(FOLLOWER_ID, MotorType.kBrushless);
 
     SparkMaxConfig leaderConfig = new SparkMaxConfig();
-    SparkMaxConfig followerConfig = new SparkMaxConfig();
+    // SparkMaxConfig followerConfig = new SparkMaxConfig();
 
     // 1. Configure Leader
     leaderConfig
@@ -37,11 +37,11 @@ public class ClimbIOReal implements ClimbIO {
     leaderConfig.encoder.positionConversionFactor(1.0);
     
     // 2. Configure Follower
-    followerConfig
-        .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(CURRENT_LIMIT_AMPS)
-        .follow(leader, FOLLOWER_INVERTED) // Follow leader with specific inversion
-        .voltageCompensation(12.0);
+    // followerConfig
+    //     .idleMode(IdleMode.kBrake)
+    //     .smartCurrentLimit(CURRENT_LIMIT_AMPS)
+    //     .follow(leader, FOLLOWER_INVERTED) // Follow leader with specific inversion
+    //     .voltageCompensation(12.0);
 
     // Apply configurations
     tryUntilOk(
@@ -49,10 +49,10 @@ public class ClimbIOReal implements ClimbIO {
         5, 
         () -> leader.configure(leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
     
-    tryUntilOk(
-        follower, 
-        5, 
-        () -> follower.configure(followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    // tryUntilOk(
+    //     follower, 
+    //     5, 
+    //     () -> follower.configure(followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
@@ -70,7 +70,7 @@ public class ClimbIOReal implements ClimbIO {
 
     // Allow runtime brake/coast selection for both climb motors.
     SparkIdleModeTuner.syncIdleMode(leader, "Climb/LeaderBrake", IdleMode.kBrake);
-    SparkIdleModeTuner.syncIdleMode(follower, "Climb/FollowerBrake", IdleMode.kBrake);
+    // SparkIdleModeTuner.syncIdleMode(follower, "Climb/FollowerBrake", IdleMode.kBrake);
 
     // Optional: Log follower current for health monitoring
     // ifOk(follower, follower::getOutputCurrent, (value) -> inputs.followerCurrentAmps = value);
@@ -83,8 +83,14 @@ public class ClimbIOReal implements ClimbIO {
   }
 
   @Override
+  public void setPercent(double percent) {
+    leader.set(percent);
+    // Follower automatically receives same signal via hardware follow mode
+  }
+
+  @Override
   public void stop() {
     leader.stopMotor();
-    follower.stopMotor(); // Explicitly stop both for safety
+    // follower.stopMotor(); // Explicitly stop both for safety
   }
 }

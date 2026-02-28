@@ -27,9 +27,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.LED.BlinkinLEDController;
+import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -59,10 +61,10 @@ import frc.robot.subsystems.shooter.hood.HoodIOReal;
 import frc.robot.subsystems.shooter.hood.HoodIOSim;
 import frc.robot.subsystems.shooter.turret.TurretIOReal;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
-// import frc.robot.subsystems.climb.Climb;
-// import frc.robot.subsystems.climb.ClimbIO;
-// import frc.robot.subsystems.climb.ClimbIOReal;
-// import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOReal;
+import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.kicker.kicker;
 import frc.robot.subsystems.kicker.kickerConstants;
 import frc.robot.subsystems.kicker.kickerIO;
@@ -95,6 +97,7 @@ public class RobotContainer {
   private final kicker kicker;
   private final Intake intake;
   private final Hopper hopper;
+  private final Climb climb;
 
   // LEDs
   private final BlinkinLEDController ledController = BlinkinLEDController.getInstance();
@@ -133,6 +136,7 @@ public class RobotContainer {
         kicker = new kicker(new kickerIOReal());
         intake = new Intake(new IntakeIOReal());
         hopper = new Hopper(new HopperIOReal());
+        climb = new Climb(new ClimbIOReal());
 
         // Vision subsystem with real Limelight cameras
         vision =
@@ -161,6 +165,7 @@ public class RobotContainer {
         kicker = new kicker(new kickerIOSim());
         intake = new Intake(new IntakeIOSim(driveSimulation));
         hopper = new Hopper(new HopperIOSim());
+        climb = new Climb(new ClimbIOSim());
         
         // Vision subsystem with simulation IO (no vision data)
         vision =
@@ -189,6 +194,7 @@ public class RobotContainer {
         kicker = new kicker(new kickerIOReal());
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIOReal());
+        climb = new Climb(new ClimbIOReal());
 
 
         // Vision subsystem with empty IO for replay
@@ -270,11 +276,15 @@ public class RobotContainer {
     flyWheelTrigger.whileTrue(
         Commands.parallel(
             Commands.run(() -> shooter.setFlywheelVelocity(250), shooter),
-            Commands.run(() -> kicker.setPercent(1), kicker)));
+            Commands.run(() -> kicker.setPercent(1), kicker),
+            Commands.run(() -> hopper.runContinuous(), hopper)
+            ));
     flyWheelTrigger.onFalse(
         Commands.parallel(
             Commands.runOnce(shooter::stop, shooter),
-            Commands.runOnce(kicker::stop, kicker)));
+            Commands.runOnce(kicker::stop, kicker),
+            Commands.run(() -> hopper.stopCommand(), hopper)
+            ));
 
     // reverseFlyWheelTrigger.whileTrue(
     //     Commands.parallel(
@@ -285,22 +295,22 @@ public class RobotContainer {
     //         Commands.runOnce(shooter::stop, shooter),
     //         Commands.runOnce(kicker::stop, kicker)));
 
-    turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(0.0)));
-    turretTrigger180.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(180.0)));
-    turretTriggerNegative90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(-90.0)));
-    turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(90.0)));
+    // turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(0.0)));
+    // turretTrigger180.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(180.0)));
+    // turretTriggerNegative90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(-90.0)));
+    // turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(90.0)));
 
     // Climb Controls
-    // EXTEND_CLIMBER.whileTrue(climb.climbCommand());
-    // EXTEND_CLIMBER.onFalse(climb.stopCommand());
+    EXTEND_CLIMBER.whileTrue(climb.climbCommand());
+    EXTEND_CLIMBER.onFalse(climb.stopCommand());
 
-    // RETRACT_CLIMBER.whileTrue(climb.retractCommand());
-    // RETRACT_CLIMBER.onFalse(climb.stopCommand());
+    RETRACT_CLIMBER.whileTrue(climb.climbCommand());
+    RETRACT_CLIMBER.onFalse(climb.stopCommand());
 
     // Intake Controls
-    // INTAKE.whileTrue(intake.intakeCommand());
-    // INTAKE.onFalse(intake.stopCommand());
-    intake.setDefaultCommand(intake.intakeCommandTrigger(INTAKE));
+    INTAKE_TRIGGER.whileTrue(intake.intakeCommand());
+    INTAKE_TRIGGER.onFalse(intake.stopCommand());
+    // intake.setDefaultCommand(intake.intakeCommandTrigger(INTAKE));
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 
@@ -333,6 +343,13 @@ public class RobotContainer {
               drive.resetYaw();
             },
             drive));
+
+            // Move hood to 0 on disable
+    new Trigger(edu.wpi.first.wpilibj.RobotState::isDisabled)
+    .onTrue(
+      shooter.runPositionCommand(15).andThen(shooter.stopCommand())
+            .ignoringDisable(true)
+    );
   }
 
   /**
