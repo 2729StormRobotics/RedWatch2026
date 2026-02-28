@@ -169,6 +169,9 @@ public class TurretIOReal implements TurretIO {
     }
   }
 
+  /** When multiple wrap solutions have similar CRT error (e.g. due to backlash), prefer the one closest to the previous angle. */
+  private static final double CRT_ERROR_TIE_TOLERANCE = 0.05;
+
   private double[] calculateCrtAngle(double raw19, double raw21) {
     // Normalize encoder readings into [0, 1) range
     double r19 = ((raw19 - k_enc19Offset) % 1.0 + 1.0) % 1.0;
@@ -188,15 +191,22 @@ public class TurretIOReal implements TurretIO {
       double error = Math.abs(r21 - expectedR21);
       if (error > 0.5) error = 1.0 - error;
 
-      if (error < bestError) {
+      double candidateDegrees = turretRotations * 360.0;
+      // Prefer this solution if: (1) strictly better error, or (2) error within tie tolerance
+      // and angle is closer to last reading (avoids CW/CCW backlash jump).
+      boolean errorBetter = error < bestError;
+      boolean errorTie = (error <= bestError + CRT_ERROR_TIE_TOLERANCE);
+      double wrapDistToLast = Math.abs(MathUtil.inputModulus(candidateDegrees - lastAbsoluteAngleDeg, -180.0, 180.0));
+      double wrapDistBest = Math.abs(MathUtil.inputModulus(bestTurretDegrees - lastAbsoluteAngleDeg, -180.0, 180.0));
+      boolean closerToLast = errorTie && (wrapDistToLast < wrapDistBest);
+
+      if (errorBetter || closerToLast) {
         bestError = error;
-        bestTurretDegrees = turretRotations * 360.0;
+        bestTurretDegrees = candidateDegrees;
       }
     }
 
-    // NEW LOGIC: Force the angle into the -180 to 180 range.
-    // This ensures that if the turret is 10 degrees to the right, it shows -10,
-    // and if it's 10 degrees to the left, it shows 10 (or vice versa depending on inversion).
+    // Force the angle into the -180 to 180 range.
     double finalAngle = MathUtil.inputModulus(bestTurretDegrees, -180.0, 180.0);
 
     return new double[] {finalAngle, bestError};
