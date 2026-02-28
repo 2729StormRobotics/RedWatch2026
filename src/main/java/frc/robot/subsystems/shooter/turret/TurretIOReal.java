@@ -65,6 +65,8 @@ public class TurretIOReal implements TurretIO {
   private double targetAngleDegrees = 0.0;
   private boolean isClosedLoop = false;
   private double lastAbsoluteAngleDeg = 0.0;
+  /** True once we've used CRT once at startup to seed the internal (relative) encoder. */
+  private boolean initializedFromCrt = false;
 
   // Tunable PID gains for turret RIO-side controller
   private final LoggedTunableNumber kP_tunable =
@@ -124,21 +126,25 @@ public class TurretIOReal implements TurretIO {
   public void updateInputs(TurretIOInputs inputs) {
     ifOk(motor, encoder19::getPosition, (val) -> inputs.absoluteEncoder19Pos = val);
     ifOk(auxSpark, encoder21::getPosition, (val) -> inputs.absoluteEncoder21Pos = val);
-    // Inside updateInputs
-    if (isClosedLoop) {
-      // Use the MOTOR's relative encoder for the PID loop. 
-      // It is 100x smoother and has no backlash relative to the motor shaft.
-      double output = m_pidController.calculate(inputs.motorPositionDeg, targetAngleDegrees);
-      motor.set(MathUtil.clamp(output, -1.0, 1.0));
-    }
-    
-    // CRT Calculation
-    double[] crtResult = calculateCrtAngle(inputs.absoluteEncoder19Pos, inputs.absoluteEncoder21Pos);
-    inputs.absoluteAngleDeg = crtResult[0];
-    inputs.crtError = crtResult[1];
-    lastAbsoluteAngleDeg = inputs.absoluteAngleDeg;
 
-    ifOk(motor, internalEncoder::getPosition, (val) -> inputs.motorPositionDeg = val);
+    // Use CRT once at startup to seed the internal encoder with an absolute angle.
+    double[] crtResult = calculateCrtAngle(inputs.absoluteEncoder19Pos, inputs.absoluteEncoder21Pos);
+    double crtAngleDeg = crtResult[0];
+    inputs.crtError = crtResult[1];
+
+    if (!initializedFromCrt) {
+      internalEncoder.setPosition(crtAngleDeg);
+      lastAbsoluteAngleDeg = crtAngleDeg;
+      initializedFromCrt = true;
+    }
+
+    // From this point on, the turret angle reported to the rest of the robot comes from the
+    // internal encoder (relative), which was initially aligned by CRT.
+    ifOk(motor, internalEncoder::getPosition, (val) -> {
+      inputs.motorPositionDeg = val;
+      inputs.absoluteAngleDeg = val;
+      lastAbsoluteAngleDeg = val;
+    });
     ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
     
     ifOk(motor, new DoubleSupplier[] {motor::getAppliedOutput, motor::getBusVoltage}, 
@@ -169,46 +175,68 @@ public class TurretIOReal implements TurretIO {
     }
   }
 
-  /** When multiple wrap solutions have similar CRT error (e.g. due to backlash), prefer the one closest to the previous angle. */
-  private static final double CRT_ERROR_TIE_TOLERANCE = 0.05;
+  // -------------------------------------------------------------------------
+  // CRT (Coarse Relative Tracking) math — exact derivation
+  // -------------------------------------------------------------------------
+  // Physical model: 200T ring drives 19T (encoder A) and 21T (encoder B).
+  // One turret rotation => 19T rotates 200/19 turns, 21T rotates 200/21 turns.
+  // So:  totalRotations19 = turretRotations * (200/19)
+  //      totalRotations21 = turretRotations * (200/21)  =>  totalRotations21 = totalRotations19 * (19/21)
+  // Absolute encoders report frac in [0,1). So totalRotations19 = k + r19 (unknown int k).
+  // We search k; for each k we get turretRotations = (k+r19)/(200/19), then expectedR21 = frac((k+r19)*19/21).
+  // Pick k that minimizes circular distance between r21 and expectedR21.
+  // Tie-break: when errors are equal (fp noise), prefer angle closest to previous (continuity).
+  // -------------------------------------------------------------------------
+
+  /** Fractional part in [0, 1). x - floor(x) is unambiguous for positive and negative x. */
+  private static double frac(double x) {
+    double f = x - Math.floor(x);
+    return (f >= 1.0 - 1e-12) ? 0.0 : f;
+  }
+
+  /** Circular distance on [0, 1): min(|a-b|, 1 - |a-b|). */
+  private static double circularError(double a, double b) {
+    double diff = Math.abs(a - b);
+    return (diff > 0.5) ? (1.0 - diff) : diff;
+  }
+
+  private static final double CRT_TIE_EPSILON = 1e-9;
 
   private double[] calculateCrtAngle(double raw19, double raw21) {
-    // Normalize encoder readings into [0, 1) range
-    double r19 = ((raw19 - k_enc19Offset) % 1.0 + 1.0) % 1.0;
-    double r21 = ((raw21 - k_enc21Offset) % 1.0 + 1.0) % 1.0;
+    double r19 = frac(raw19 - k_enc19Offset);
+    double r21 = frac(raw21 - k_enc21Offset);
 
     double bestError = Double.MAX_VALUE;
     double bestTurretDegrees = 0.0;
 
-    // Search across possible wraps
+    // 200/19 = encoder 19 rotations per turret rotation; 200/21 = encoder 21 rotations per turret rotation
+    final double inv19 = k_gear19 / k_turretRingTeeth;   // 19/200
+    final double ratio19to21 = k_gear19 / k_gear21;       // 19/21
+
     for (int k = -15; k <= 15; k++) {
       double totalRotations19 = k + r19;
-      double turretRotations = totalRotations19 / (k_turretRingTeeth / k_gear19);
-      double totalRotations21 = turretRotations * (k_turretRingTeeth / k_gear21);
+      double turretRotations = totalRotations19 * inv19;
+      double totalRotations21 = totalRotations19 * ratio19to21;
 
-      double expectedR21 = ((totalRotations21 % 1.0) + 1.0) % 1.0;
-
-      double error = Math.abs(r21 - expectedR21);
-      if (error > 0.5) error = 1.0 - error;
+      double expectedR21 = frac(totalRotations21);
+      double error = circularError(r21, expectedR21);
 
       double candidateDegrees = turretRotations * 360.0;
-      // Prefer this solution if: (1) strictly better error, or (2) error within tie tolerance
-      // and angle is closer to last reading (avoids CW/CCW backlash jump).
-      boolean errorBetter = error < bestError;
-      boolean errorTie = (error <= bestError + CRT_ERROR_TIE_TOLERANCE);
-      double wrapDistToLast = Math.abs(MathUtil.inputModulus(candidateDegrees - lastAbsoluteAngleDeg, -180.0, 180.0));
-      double wrapDistBest = Math.abs(MathUtil.inputModulus(bestTurretDegrees - lastAbsoluteAngleDeg, -180.0, 180.0));
-      boolean closerToLast = errorTie && (wrapDistToLast < wrapDistBest);
+      boolean strictlyBetter = error < bestError;
+      boolean tie = (error <= bestError + CRT_TIE_EPSILON);
+      double candidateDistToLast =
+          Math.abs(MathUtil.inputModulus(candidateDegrees - lastAbsoluteAngleDeg, -180.0, 180.0));
+      double bestDistToLast =
+          Math.abs(MathUtil.inputModulus(bestTurretDegrees - lastAbsoluteAngleDeg, -180.0, 180.0));
+      boolean closerToLast = tie && (candidateDistToLast < bestDistToLast);
 
-      if (errorBetter || closerToLast) {
+      if (strictlyBetter || closerToLast) {
         bestError = error;
         bestTurretDegrees = candidateDegrees;
       }
     }
 
-    // Force the angle into the -180 to 180 range.
     double finalAngle = MathUtil.inputModulus(bestTurretDegrees, -180.0, 180.0);
-
     return new double[] {finalAngle, bestError};
   }
   @Override
