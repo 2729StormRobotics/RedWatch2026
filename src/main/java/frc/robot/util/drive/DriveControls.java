@@ -155,8 +155,7 @@ public class DriveControls {
   public static Trigger flyWheelTrigger;
   public static Trigger reverseFlyWheelTrigger; 
 
-  public static Trigger 
-  turretTrigger0;
+  public static Trigger turretTrigger0;
   public static Trigger turretTrigger90;
   public static Trigger turretTrigger180;
   public static Trigger turretTrigger45;
@@ -165,6 +164,9 @@ public class DriveControls {
   public static Trigger ReverseHopperTrigger;
   public static Trigger HopperStopTrigger;
   public static Trigger stopFlyWheelTrigger;
+
+  public static Trigger 
+  HopperOutake;
   
 
 
@@ -204,7 +206,7 @@ public class DriveControls {
     DRIVE_HOLD_STOP = m_translator.button(3);
     DRIVE_ROBOT_RELATIVE = m_translator.button(4);
   }
-
+  // yushy_boi was here
   /** Configure weapons / subsystem controls (hood, intake, turret, hopper, etc.). */
   private static void configureSubsystemBindings() {
     hoodTrigger = m_weaponsController.leftTrigger();
@@ -233,5 +235,7 @@ public class DriveControls {
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
     HopperStopTrigger = m_translator.button(10);
+    
+    HopperOutake = m_translator.button(12);
   }
 }

@@ -35,7 +35,7 @@ public final class TurretConstants {
   public static final int HOOD_ENCODER_TEETH = 21;
   
   /** Position PID constants */
-  public static final double kP = 0.5;
+  public static final double kP = 0.02;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
   public static final double kFF = 0.015;

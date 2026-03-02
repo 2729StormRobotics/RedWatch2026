@@ -88,6 +88,7 @@ public class Intake extends SubsystemBase {
     desiredRollerPercent = 0.0;
   }
   public void intake() { desiredRollerPercent = IntakeConstants.INTAKE_ROLLER_SPEED; }
+  public void outake() {desiredRollerPercent = IntakeConstants.OUTAKE_ROLLER_SPEED;}
   public void intake(double pwr) { desiredRollerPercent = pwr; }
   public void eject() { desiredRollerPercent = IntakeConstants.EJECT_ROLLER_SPEED; }
   public void stopRoller() { desiredRollerPercent = 0.0; }
@@ -109,6 +110,7 @@ public class Intake extends SubsystemBase {
   public Command deployCommand() { return Commands.runOnce(this::deploy, this); }
   public Command retractCommand() { return Commands.runOnce(this::retract, this); }
   public Command intakeCommand() { return Commands.run(() -> { intake(); }, this); }
+  public Command OutakeCommand() {return Commands.run(()-> { outake(); }, this);}
   public Command intakeCommandTrigger(DoubleSupplier pwr) { return Commands.run(() -> { intake(pwr.getAsDouble()); }, this); }
     public Command stopCommand() { return Commands.run(() -> { stop(); }, this); }
 

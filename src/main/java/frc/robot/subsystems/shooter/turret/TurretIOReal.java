@@ -63,6 +63,7 @@ public class TurretIOReal implements TurretIO {
       new ProfiledPIDController(kP, kI, kD, m_constraints);
 
   private double targetAngleDegrees = 0.0;
+
   private boolean isClosedLoop = false;
   private double lastAbsoluteAngleDeg = 0.0;
   /** True once we've used CRT once at startup to seed the internal (relative) encoder. */
@@ -90,7 +91,7 @@ public class TurretIOReal implements TurretIO {
     motorConfig
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(40)
-        .inverted(false);
+        .inverted(true);
 
     // Conversion Factors
     double totalGearRatio = k_gearboxRatio * (k_turretRingTeeth / k_gear19);
@@ -141,9 +142,10 @@ public class TurretIOReal implements TurretIO {
     // From this point on, the turret angle reported to the rest of the robot comes from the
     // internal encoder (relative), which was initially aligned by CRT.
     ifOk(motor, internalEncoder::getPosition, (val) -> {
-      inputs.motorPositionDeg = -val;
-      inputs.absoluteAngleDeg = -val;
-      lastAbsoluteAngleDeg = -val;
+      inputs.motorPositionDeg = val;
+      inputs.absoluteAngleDeg = val;
+      internalEncoder.setPosition(val);
+      lastAbsoluteAngleDeg = val;
     });
     ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
     
@@ -171,7 +173,7 @@ public class TurretIOReal implements TurretIO {
     // Run Profiled PID calculation if in closed loop mode
     if (isClosedLoop) {
       double output = m_pidController.calculate(inputs.motorPositionDeg, targetAngleDegrees);
-      motor.set(MathUtil.clamp(output, -1.0, 1.0));
+      motor.set(MathUtil.clamp(output, -.8, 0.8));
     }
   }
 
@@ -221,7 +223,7 @@ public class TurretIOReal implements TurretIO {
       double expectedR21 = frac(totalRotations21);
       double error = circularError(r21, expectedR21);
 
-      double candidateDegrees = turretRotations * 360.0;
+      double candidateDegrees = -turretRotations * 360.0;
       boolean strictlyBetter = error < bestError;
       boolean tie = (error <= bestError + CRT_TIE_EPSILON);
       double candidateDistToLast =
@@ -266,5 +268,10 @@ public class TurretIOReal implements TurretIO {
   public void stop() {
     isClosedLoop = false;
     motor.stopMotor();
+  }
+
+  @Override
+  public double getDesiredAngle() {
+    return targetAngleDegrees;
   }
 }

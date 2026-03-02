@@ -59,6 +59,7 @@ public final class IntakeConstants {
   
   /** Roller speed when intaking (percent output) */
   public static final double INTAKE_ROLLER_SPEED = 1;
+  public static final double OUTAKE_ROLLER_SPEED = -1;
   
   /** Roller speed when ejecting (percent output) */
   public static final double EJECT_ROLLER_SPEED = -0.8;

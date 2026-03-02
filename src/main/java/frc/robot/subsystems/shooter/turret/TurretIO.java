@@ -55,6 +55,9 @@ public interface TurretIO {
     public double motorPositionDeg;
 
     public double motorVelocityDegPerSec;
+
+
+
   }
 
   /**
@@ -81,6 +84,8 @@ public interface TurretIO {
    * @param volts Voltage to apply (-12 to 12 volts)
    */
   public default void setVoltage(double volts) {}
+
+  public default double getDesiredAngle() {return 0.0;}
 
   /**
    * Stops the turret.

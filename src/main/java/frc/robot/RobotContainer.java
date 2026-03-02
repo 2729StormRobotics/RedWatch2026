@@ -78,6 +78,7 @@ import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
 import frc.robot.subsystems.hopper.HopperIOSim;
 import frc.robot.subsystems.hopper.HopperConstants;
+import frc.robot.commandgroups.HopperBackwardsIntake;
 
 
 
@@ -263,8 +264,8 @@ public class RobotContainer {
 
 
     // Shooter / Kicker controls
-    // TICK_2_HOOD.onTrue(shooter.runPositionCommand(2).andThen(shooter.stopCommand()));
-    // TICK_37_HOOD.onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
+    TICK_2_HOOD.onTrue(shooter.runPositionCommand(2).andThen(shooter.stopCommand()));
+    TICK_37_HOOD.onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
     // shooter.runHoodCommand(MOVE_HOOD_JOYSTICK.getAsDouble());
 
     flyWheelTrigger.whileTrue(
@@ -285,10 +286,10 @@ public class RobotContainer {
     //         Commands.runOnce(shooter::stop, shooter),
     //         Commands.runOnce(kicker::stop, kicker)));
 
-    turretTrigger0.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(0.0)));
-    turretTrigger180.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(180.0)));
-    turretTrigger45.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(45.0)));
-    turretTrigger90.onTrue(Commands.runOnce(() -> shooter.setTurretAngleDegrees(90.0)));
+    turretTrigger0.onTrue(shooter.setTurretAngleDegreesCommand(0.0));
+    turretTrigger180.onTrue(shooter.setTurretAngleDegreesCommand(180.0));
+    turretTrigger45.onTrue(shooter.setTurretAngleDegreesCommand(45.0));
+    turretTrigger90.onTrue(shooter.setTurretAngleDegreesCommand(90.0));
 
     // Climb Controls
     // EXTEND_CLIMBER.whileTrue(climb.climbCommand());
@@ -306,6 +307,8 @@ public class RobotContainer {
 
     HopperTrigger.whileTrue(hopper.runContinuous());
     HopperTrigger.onFalse(hopper.stopCommand());
+    
+    HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper));
 
     // HopperStopTrigger.onTrue(hopper.stopCommand());
     // stopFlyWheelTrigger.onTrue(shooter.stopCommand());

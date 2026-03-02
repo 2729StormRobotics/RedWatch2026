@@ -23,7 +23,7 @@ public final class HopperBackwardsIntake {
    * @return command that aims at our depot until cancelled
    */
   public static Command getCommand(Intake intake, Hopper hopper) {
-    return Commands.parallel(hopper.runContinuous(), intake.intakeCommand()).withName("doing");
+    return Commands.parallel(hopper.runContinuous(), intake.OutakeCommand()).withName("backwards");
   }
 }
 

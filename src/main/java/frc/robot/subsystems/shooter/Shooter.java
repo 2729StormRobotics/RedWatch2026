@@ -134,7 +134,8 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter/Turret", turretInputs);
     SmartDashboard.putNumber("Hood/Position", hoodIO.getPosition());
     SmartDashboard.putNumber("Shooter/Hood/SetpointAngle", desiredHoodAngle);
-    SmartDashboard.putBoolean("Shooter/Hood/AtSetpoint", hoodAtSetpoint()); 
+    SmartDashboard.putBoolean("Shooter/Hood/AtSetpoint", hoodAtSetpoint());
+    SmartDashboard.putNumber("Shooter/Hood/DesiredAngle", turretIO.getDesiredAngle());  
 
     if (moveAndShootEnabled) {
       if (depotAimModeEnabled) {
@@ -161,9 +162,9 @@ public class Shooter extends SubsystemBase {
 
     // Always update hood setpoint
     // hoodIO.setAngle(desiredHoodAngle);
-
+    // 
     // Always update turret setpoint
-    // turretIO.setAngle(desiredTurretAngleDeg);
+     turretIO.setAngle(desiredTurretAngleDeg);
 
     // Log shooter state
     Logger.recordOutput("Shooter/ReadyToFire", isReadyToFire());
@@ -577,7 +578,7 @@ public class Shooter extends SubsystemBase {
 //   }
 
     public Command runPositionCommand(double ticks) {
-    return run(() -> hoodIO.setPosition(-ticks)).withName("HoodPosition: " + -ticks);
+    return run(() -> hoodIO.setPosition(ticks)).withName("HoodPosition: " + ticks);
   }
 
   public Command runPositionCommandConstant(CommandXboxController m_operatorController) {
@@ -602,6 +603,11 @@ public class Shooter extends SubsystemBase {
 
   // public Command stopHoodCommand() {
   //   return runOnce(() -> hoodIO.setPercent(0)).withName("HoodStop");
+
+
+  public Command setTurretAngleDegreesCommand(double degrees){
+    return runOnce(() -> setTurretAngleDegrees(degrees)).withName("HoodStop");
+  }
   
 
 }

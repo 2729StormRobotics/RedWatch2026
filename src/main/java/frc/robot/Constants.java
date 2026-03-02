@@ -131,13 +131,13 @@ public final class Constants {
   public static class ElectricalLayout {
     // Controllers
     /** Driver joystick/controller port */
-    public static final int CONTROLLER_DRIVER_ID = 0;
+    public static final int CONTROLLER_DRIVER_ID = 2;
 
     /** Operator joystick/controller port */
     public static final int CONTROLLER_OPERATOR_ID = 1;
 
     /** Weapons / co‑driver controller port */
-    public static final int CONTROLLER_WEAPONS_ID = 2;
+    public static final int CONTROLLER_WEAPONS_ID = 0;
 
     // LED system
     /** Blinkin LED controller PWM port */

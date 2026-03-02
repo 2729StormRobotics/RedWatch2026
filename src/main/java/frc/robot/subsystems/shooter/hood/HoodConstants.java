@@ -47,10 +47,10 @@ public final class HoodConstants {
   public static final double MAX_ANGLE_RAD = Units.degreesToRadians(30.0);
   
   /** Minimum hood motor position in rotations (fully down) */
-  public static final double MIN_POSITION_ROTATIONS = -37.0;
+  public static final double MIN_POSITION_ROTATIONS = 0;
 
   /** Maximum hood motor position in rotations (fully up) */
-  public static final double MAX_POSITION_ROTATIONS = -1.0;
+  public static final double MAX_POSITION_ROTATIONS = 37;
   
   /** Gear ratio (motor rotations per hood rotation) */
   public static final double GEAR_RATIO = 25.0;
