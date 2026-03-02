@@ -135,7 +135,9 @@ public class DriveControls {
   // SysId controls
   /** Trigger for quasistatic forward test */
   public static Trigger QUASISTATIC_FORWARD;
-  public static DoubleSupplier INTAKE;
+  //public static DoubleSupplier INTAKE;
+
+  public static Trigger INTAKE_TRIGGER;
   public static Trigger RETRACT_INTAKE;
 
   /** Trigger for quasistatic reverse test */
@@ -157,7 +159,7 @@ public class DriveControls {
   turretTrigger0;
   public static Trigger turretTrigger90;
   public static Trigger turretTrigger180;
-  public static Trigger turretTriggerNegative90;
+  public static Trigger turretTrigger45;
 
   public static Trigger HopperTrigger;
   public static Trigger ReverseHopperTrigger;
@@ -208,7 +210,7 @@ public class DriveControls {
     hoodTrigger = m_weaponsController.leftTrigger();
     reverseHoodTrigger = m_weaponsController.leftBumper();
 
-    INTAKE = () -> m_weaponsController.getRightTriggerAxis();
+    INTAKE_TRIGGER = m_weaponsController.rightTrigger();
 
     flyWheelTrigger = m_weaponsController.a();
     reverseFlyWheelTrigger = m_weaponsController.b();
@@ -217,7 +219,7 @@ public class DriveControls {
     turretTrigger0 = m_weaponsController.povUp();
     turretTrigger90 = m_weaponsController.povDown();
     turretTrigger180 = m_weaponsController.povLeft();
-    turretTriggerNegative90 = m_weaponsController.povRight();
+    turretTrigger45 = m_weaponsController.povRight();
 
     EXTEND_INTAKE = m_weaponsController.x();
     RETRACT_INTAKE = m_weaponsController.y();

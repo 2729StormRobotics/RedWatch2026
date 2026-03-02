@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 
 import java.lang.reflect.Field;
+import java.util.function.DoubleSupplier;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
@@ -592,15 +593,15 @@ public class Shooter extends SubsystemBase {
     return runOnce(this::stop).withName("HoodStop");
   }
 
-  public Command runHoodCommand() {
-    return runOnce(() -> hoodIO.setPercent(0.05)).withName("HoodStop");
-  }
-  public Command reverseHoodCommand() {
-    return runOnce(() -> hoodIO.setPercent(-0.05)).withName("HoodStop");
-  }
+  // public Command runHoodCommand(double joyStick) {
+  //   return runOnce(() -> hoodIO.setPercent(joyStick * 0.5));
+  // }
+  // public Command reverseHoodCommand() {
+  //   return runOnce(() -> hoodIO.setPercent(-0.05)).withName("HoodStop");
+  // }
 
-  public Command stopHoodCommand() {
-    return runOnce(() -> hoodIO.setPercent(0)).withName("HoodStop");
-  }
+  // public Command stopHoodCommand() {
+  //   return runOnce(() -> hoodIO.setPercent(0)).withName("HoodStop");
+  
 
 }

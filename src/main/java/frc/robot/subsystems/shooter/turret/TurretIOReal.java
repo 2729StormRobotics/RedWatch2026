@@ -141,9 +141,9 @@ public class TurretIOReal implements TurretIO {
     // From this point on, the turret angle reported to the rest of the robot comes from the
     // internal encoder (relative), which was initially aligned by CRT.
     ifOk(motor, internalEncoder::getPosition, (val) -> {
-      inputs.motorPositionDeg = val;
-      inputs.absoluteAngleDeg = val;
-      lastAbsoluteAngleDeg = val;
+      inputs.motorPositionDeg = -val;
+      inputs.absoluteAngleDeg = -val;
+      lastAbsoluteAngleDeg = -val;
     });
     ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
     
