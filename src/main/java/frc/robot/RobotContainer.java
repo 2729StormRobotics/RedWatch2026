@@ -308,8 +308,8 @@ public class RobotContainer {
     HopperTrigger.whileTrue(hopper.runContinuous());
     HopperTrigger.onFalse(hopper.stopCommand());
     
-    HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
-    HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
+    // HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
+    // HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
     // HopperStopTrigger.onTrue(hopper.stopCommand());
     // stopFlyWheelTrigger.onTrue(shooter.stopCommand());
 
