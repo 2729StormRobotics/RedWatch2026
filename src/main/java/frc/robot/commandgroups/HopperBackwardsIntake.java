@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.kicker.kicker;
+import frc.robot.subsystems.shooter.Shooter;
 
 /**
  * Command group: aim the shooter toward our depot for passes to our side.
@@ -22,8 +24,18 @@ public final class HopperBackwardsIntake {
    * @param shooter Shooter subsystem
    * @return command that aims at our depot until cancelled
    */
-  public static Command getCommand(Intake intake, Hopper hopper) {
-    return Commands.parallel(hopper.runContinuous(), intake.OutakeCommand()).withName("backwards");
+  public static Command getCommand(Intake intake, Hopper hopper, Shooter shooter, kicker kicker) {
+    return Commands.parallel(hopper.runContinuous(), 
+                              intake.OutakeCommand(), 
+                              Commands.run(() -> shooter.setFlywheelVelocity(250), shooter), 
+                              Commands.run(() -> kicker.setPercent(1), kicker)).withName("backwards");
+  }
+
+  public static Command getStopCommand(Intake intake, Hopper hopper, Shooter shooter, kicker kicker) {
+    return Commands.parallel(hopper.runContinuous(), 
+                              intake.OutakeCommand(), 
+                              Commands.run(() -> shooter.setFlywheelVelocity(0), shooter), 
+                              Commands.run(() -> kicker.setPercent(0), kicker)).withName("backwards");
   }
 }
 

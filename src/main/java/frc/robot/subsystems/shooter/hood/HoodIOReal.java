@@ -123,7 +123,7 @@ public class HoodIOReal implements HoodIO {
     tryUntilOk(motor, 5, () -> encoder.setPosition(0.0));
     
     // Initial target: park somewhere safely inside the motion range
-    this.setPosition((HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0);
+    // this.setPosition((HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0);
   }
 
   public static void tryUntilOk(SparkBase spark, int maxAttempts, Supplier<REVLibError> command) {
