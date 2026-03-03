@@ -170,6 +170,10 @@ public class DriveControls {
   public static Trigger stopFlyWheelTrigger;
 
   public static Trigger HopperOutake;
+  
+
+  public static Trigger IncHood;
+  public static Trigger DecHood;
 
   /**
    * Configures all controls based on the current driver and operator settings.
@@ -214,7 +218,7 @@ public class DriveControls {
    */
   private static void configureSubsystemBindings() {
     hoodTrigger = m_weaponsController.leftTrigger();
-    reverseHoodTrigger = m_weaponsController.leftBumper();
+    DecHood = m_weaponsController.leftBumper();
 
     INTAKE_TRIGGER = m_weaponsController.rightTrigger();
 
@@ -230,7 +234,7 @@ public class DriveControls {
     EXTEND_INTAKE = m_weaponsController.x();
     RETRACT_INTAKE = m_weaponsController.y();
 
-    MOVE_HOOD = m_weaponsController.rightBumper();
+    IncHood = m_weaponsController.rightBumper();
     MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
 
     TICK_2_HOOD = m_translator.button(8);

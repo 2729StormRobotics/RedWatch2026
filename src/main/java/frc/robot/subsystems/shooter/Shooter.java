@@ -481,7 +481,7 @@ public class Shooter extends SubsystemBase {
    */
   public void stop() {
     desiredFlywheelVelocity = 0.0;
-    // desiredHoodAngle = getHoodCurrentAngle(); // Hold current position
+    desiredHoodAngle = getHoodCurrentAngle(); // Hold current position
     // desiredTurretAngleDeg = getTurretCurrentAngleDeg(); // Hold current position
     flywheelIO.stop();
     // hoodIO.stop();
@@ -579,6 +579,21 @@ public class Shooter extends SubsystemBase {
 
     public Command runPositionCommand(double ticks) {
     return run(() -> hoodIO.setPosition(ticks)).withName("HoodPosition: " + ticks);
+  }
+
+  public Command incrementPositionCommand() {
+    // Commands.runOnce with a lambda checks the position AT THE TIME OF THE CLICK
+    return Commands.runOnce(() -> {
+      double currentPos = hoodIO.getPosition(); // Or use your getHoodCurrentAngle()
+      hoodIO.setPosition(currentPos + 1.0);     // Change 1.0 to whatever step size you want
+    }, this);
+  }
+
+  public Command decrementPositionCommand() {
+    return Commands.runOnce(() -> {
+      double currentPos = hoodIO.getPosition();
+      hoodIO.setPosition(currentPos - 1.0); 
+    }, this);
   }
 
   public Command runPositionCommandConstant(CommandXboxController m_operatorController) {

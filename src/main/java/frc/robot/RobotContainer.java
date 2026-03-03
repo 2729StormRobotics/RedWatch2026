@@ -268,6 +268,12 @@ public class RobotContainer {
     TICK_37_HOOD.onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
     // shooter.runHoodCommand(MOVE_HOOD_JOYSTICK.getAsDouble());
 
+    DecHood.onTrue(shooter.incrementPositionCommand());
+    DecHood.onFalse(shooter.stopCommand());
+
+    IncHood.onTrue(shooter.decrementPositionCommand());
+    IncHood.onFalse(shooter.stopCommand());
+
     flyWheelTrigger.whileTrue(
         Commands.parallel(
             Commands.run(() -> shooter.setFlywheelVelocity(250), shooter),

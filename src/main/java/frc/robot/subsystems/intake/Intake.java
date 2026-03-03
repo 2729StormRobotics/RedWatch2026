@@ -152,7 +152,7 @@ public class Intake extends SubsystemBase {
 
   public Command stopCommand() {
     return Commands.run(() -> {
-      stop();
+      stopRoller();
     }, this);
   }
 
