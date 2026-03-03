@@ -13,9 +13,9 @@ import java.util.function.DoubleSupplier;
  * Maps physical controller inputs to logical control actions.
  *
  * To change bindings:
- *  - Driver axes + basic drive buttons: edit {@link #configureDriverBindings()}.
- *  - Weapons / subsystems (hood, intake, shooter, hopper, etc.):
- *      edit {@link #configureSubsystemBindings()}.
+ * - Driver axes + basic drive buttons: edit {@link #configureDriverBindings()}.
+ * - Weapons / subsystems (hood, intake, shooter, hopper, etc.):
+ * edit {@link #configureSubsystemBindings()}.
  */
 public class DriveControls {
   // Controllers
@@ -40,8 +40,10 @@ public class DriveControls {
 
   /**
    * Gets the Y axis value from a controller.
-   * Works with both CommandJoystick (using getY()) and CommandGenericHID (using getRawAxis(1)).
-   * Both should return negative when pushed forward (standard joystick convention).
+   * Works with both CommandJoystick (using getY()) and CommandGenericHID (using
+   * getRawAxis(1)).
+   * Both should return negative when pushed forward (standard joystick
+   * convention).
    */
   private static double getY(CommandGenericHID controller) {
     if (controller instanceof CommandJoystick) {
@@ -54,7 +56,8 @@ public class DriveControls {
 
   /**
    * Gets the X axis value from a controller.
-   * Works with both CommandJoystick (using getX()) and CommandGenericHID (using getRawAxis(0)).
+   * Works with both CommandJoystick (using getX()) and CommandGenericHID (using
+   * getRawAxis(0)).
    * Both should return negative when pushed right (standard joystick convention).
    */
   private static double getX(CommandGenericHID controller) {
@@ -68,7 +71,8 @@ public class DriveControls {
 
   /**
    * Gets the twist axis value from a controller.
-   * Works with both CommandJoystick (using getTwist()) and CommandGenericHID (using getRawAxis(2)).
+   * Works with both CommandJoystick (using getTwist()) and CommandGenericHID
+   * (using getRawAxis(2)).
    * Both should return the raw twist/rotation axis value.
    */
   private static double getTwist(CommandGenericHID controller) {
@@ -81,8 +85,8 @@ public class DriveControls {
   }
 
   /** Weapons/operator controller for subsystem controls */
-  public static final CommandXboxController m_weaponsController =
-      new CommandXboxController(Constants.ElectricalLayout.CONTROLLER_WEAPONS_ID);
+  public static final CommandXboxController m_weaponsController = new CommandXboxController(
+      Constants.ElectricalLayout.CONTROLLER_WEAPONS_ID);
 
   // Useful for things that don't need to be triggered
   /** Empty trigger that never fires */
@@ -135,7 +139,7 @@ public class DriveControls {
   // SysId controls
   /** Trigger for quasistatic forward test */
   public static Trigger QUASISTATIC_FORWARD;
-  //public static DoubleSupplier INTAKE;
+  // public static DoubleSupplier INTAKE;
 
   public static Trigger INTAKE_TRIGGER;
   public static Trigger RETRACT_INTAKE;
@@ -153,7 +157,7 @@ public class DriveControls {
   public static Trigger reverseHoodTrigger;
 
   public static Trigger flyWheelTrigger;
-  public static Trigger reverseFlyWheelTrigger; 
+  public static Trigger reverseFlyWheelTrigger;
 
   public static Trigger turretTrigger0;
   public static Trigger turretTrigger90;
@@ -165,10 +169,7 @@ public class DriveControls {
   public static Trigger HopperStopTrigger;
   public static Trigger stopFlyWheelTrigger;
 
-  public static Trigger 
-  HopperOutake;
-  
-
+  public static Trigger HopperOutake;
 
   /**
    * Configures all controls based on the current driver and operator settings.
@@ -206,8 +207,11 @@ public class DriveControls {
     DRIVE_HOLD_STOP = m_translator.button(3);
     DRIVE_ROBOT_RELATIVE = m_translator.button(4);
   }
+
   // yushy_boi was here
-  /** Configure weapons / subsystem controls (hood, intake, turret, hopper, etc.). */
+  /**
+   * Configure weapons / subsystem controls (hood, intake, turret, hopper, etc.).
+   */
   private static void configureSubsystemBindings() {
     hoodTrigger = m_weaponsController.leftTrigger();
     reverseHoodTrigger = m_weaponsController.leftBumper();
@@ -215,7 +219,7 @@ public class DriveControls {
     INTAKE_TRIGGER = m_weaponsController.rightTrigger();
 
     flyWheelTrigger = m_weaponsController.a();
-    reverseFlyWheelTrigger = m_weaponsController.b();
+    HopperOutake = m_weaponsController.b();
     stopFlyWheelTrigger = m_translator.button(11);
 
     turretTrigger0 = m_weaponsController.povUp();
@@ -234,8 +238,5 @@ public class DriveControls {
 
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
-    HopperStopTrigger = m_translator.button(10);
-    
-    HopperOutake = m_translator.button(12);
   }
 }

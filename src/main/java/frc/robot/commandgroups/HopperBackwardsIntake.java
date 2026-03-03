@@ -32,10 +32,13 @@ public final class HopperBackwardsIntake {
   }
 
   public static Command getStopCommand(Intake intake, Hopper hopper, Shooter shooter, kicker kicker) {
-    return Commands.parallel(hopper.runContinuous(), 
-                              intake.OutakeCommand(), 
-                              Commands.run(() -> shooter.setFlywheelVelocity(0), shooter), 
-                              Commands.run(() -> kicker.setPercent(0), kicker)).withName("backwards");
+    // On release, explicitly command all subsystems to stop instead of continuing to run.
+    return Commands.parallel(
+            hopper.stopCommand(),
+            intake.stopCommand(),
+            Commands.runOnce(shooter::stop, shooter),
+            Commands.runOnce(kicker::stop, kicker))
+        .withName("backwardsStop");
   }
 }
 
