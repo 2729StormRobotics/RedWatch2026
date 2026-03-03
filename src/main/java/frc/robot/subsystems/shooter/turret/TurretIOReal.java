@@ -85,7 +85,6 @@ public class TurretIOReal implements TurretIO {
     internalEncoder = motor.getEncoder();
 
     SparkMaxConfig motorConfig = new SparkMaxConfig();
-    SparkMaxConfig auxConfig = new SparkMaxConfig();
 
     // Configure Main Motor
     motorConfig
@@ -111,14 +110,10 @@ public class TurretIOReal implements TurretIO {
         .reverseSoftLimit(-90)
         .reverseSoftLimitEnabled(true);
 
-    // Configure Aux Spark (Hood motor) - absolute encoder on data port for CRT
-    auxConfig.absoluteEncoder
-        .setSparkMaxDataPortConfig()
-        .positionConversionFactor(1.0)
-        .velocityConversionFactor(1.0);
-
     tryUntilOk(motor, 5, () -> motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-    tryUntilOk(auxSpark, 5, () -> auxSpark.configure(auxConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    // NOTE: We intentionally do NOT reconfigure auxSpark here. That Spark MAX is owned by the hood
+    // subsystem, and resetting safe parameters here can wipe its closed-loop config or change how its
+    // data-port absolute encoder is interpreted. We only read its absolute encoder for CRT.
 
     m_pidController.setTolerance(1.0);
   }
@@ -128,26 +123,48 @@ public class TurretIOReal implements TurretIO {
     ifOk(motor, encoder19::getPosition, (val) -> inputs.absoluteEncoder19Pos = val);
     ifOk(auxSpark, encoder21::getPosition, (val) -> inputs.absoluteEncoder21Pos = val);
 
-    // Use CRT once at startup to seed the internal encoder with an absolute angle.
+    // CRT gives an absolute turret angle in degrees in [-180, 180] plus a consistency error.
     double[] crtResult = calculateCrtAngle(inputs.absoluteEncoder19Pos, inputs.absoluteEncoder21Pos);
-    double crtAngleDeg = crtResult[0];
+    double crtAngleDeg =
+        MathUtil.inputModulus(crtResult[0] + TurretConstants.ZERO_OFFSET_DEG, -180.0, 180.0);
     inputs.crtError = crtResult[1];
 
+    ifOk(
+        motor,
+        internalEncoder::getPosition,
+        (val) -> {
+          inputs.motorPositionDeg = val;
+          inputs.absoluteAngleDeg = val;
+          lastAbsoluteAngleDeg = val;
+        });
+    ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
+
+    // Seed the internal encoder ONCE from CRT, then use internal encoder for smooth continuous angle.
+    // This avoids occasional CRT "branch" jumps due to ambiguity/noise.
     if (!initializedFromCrt) {
       internalEncoder.setPosition(crtAngleDeg);
+      m_pidController.reset(crtAngleDeg);
+      inputs.motorPositionDeg = crtAngleDeg;
+      inputs.absoluteAngleDeg = crtAngleDeg;
       lastAbsoluteAngleDeg = crtAngleDeg;
       initializedFromCrt = true;
+    } else {
+      // If the internal encoder ever resets (Spark reboot/brownout), the reported angle will jump.
+      // Detect *large* disagreement while idle and snap back to CRT.
+      final double crtTrustThreshold = 0.05; // lower is better
+      final double resyncThresholdDeg = 90.0; // only resync on "obvious reset"
+      if (!isClosedLoop && inputs.crtError >= 0.0 && inputs.crtError < crtTrustThreshold) {
+        double diffDeg =
+            Math.abs(MathUtil.inputModulus(crtAngleDeg - inputs.motorPositionDeg, -180.0, 180.0));
+        if (diffDeg > resyncThresholdDeg) {
+          internalEncoder.setPosition(crtAngleDeg);
+          m_pidController.reset(crtAngleDeg);
+          inputs.motorPositionDeg = crtAngleDeg;
+          inputs.absoluteAngleDeg = crtAngleDeg;
+          lastAbsoluteAngleDeg = crtAngleDeg;
+        }
+      }
     }
-
-    // From this point on, the turret angle reported to the rest of the robot comes from the
-    // internal encoder (relative), which was initially aligned by CRT.
-    ifOk(motor, internalEncoder::getPosition, (val) -> {
-      inputs.motorPositionDeg = val;
-      inputs.absoluteAngleDeg = val;
-      internalEncoder.setPosition(val);
-      lastAbsoluteAngleDeg = val;
-    });
-    ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
     
     ifOk(motor, new DoubleSupplier[] {motor::getAppliedOutput, motor::getBusVoltage}, 
         (values) -> inputs.appliedVolts = values[0] * values[1]);

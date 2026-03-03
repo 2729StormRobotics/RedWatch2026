@@ -49,6 +49,17 @@ public final class TurretConstants {
   /** Angle tolerance for atSetpoint check (degrees) */
   public static final double ANGLE_TOLERANCE_DEG = 2.0;
 
+  /**
+   * Turret electrical zero offset (degrees).
+   *
+   * <p>This shifts the turret coordinate system so that your preferred physical "0°" matches the
+   * software reading. Positive values shift the reported angle positively.
+   *
+   * <p>Example: if the turret reads -150° when it's physically at your desired 0°, set this to
+   * +150.0.
+   */
+  public static final double ZERO_OFFSET_DEG = 0.0;
+
   // Radian equivalents used internally by simulation
   public static final double MIN_ANGLE_RAD = Units.degreesToRadians(MIN_ANGLE_DEG);
   public static final double MAX_ANGLE_RAD = Units.degreesToRadians(MAX_ANGLE_DEG);
