@@ -42,7 +42,7 @@ public final class FlywheelConstants {
   public static final double VELOCITY_TOLERANCE = 5.0;
   
   /** Maximum velocity in rotations per second */
-  public static final double MAX_VELOCITY_RPS = 100.0;
+  public static final double MAX_VELOCITY_RPS = 6000;
   
   /** Gear ratio (motor rotations per flywheel rotation) */
   public static final double GEAR_RATIO = 1.0;
