@@ -397,13 +397,13 @@ public class Shooter extends SubsystemBase {
 
   /** Command to bump the test flywheel velocity up by a fixed step (e.g. +50 RPS). */
   public Command incrementTestFlywheelVelocityCommand() {
-    return Commands.runOnce(() -> adjustTestFlywheelVelocity(50.0), this)
+    return Commands.runOnce(() -> adjustTestFlywheelVelocity(10.0), this)
         .withName("Shooter/IncTestFlywheelVel");
   }
 
   /** Command to bump the test flywheel velocity down by a fixed step (e.g. -50 RPS). */
   public Command decrementTestFlywheelVelocityCommand() {
-    return Commands.runOnce(() -> adjustTestFlywheelVelocity(-50.0), this)
+    return Commands.runOnce(() -> adjustTestFlywheelVelocity(-10.0), this)
         .withName("Shooter/DecTestFlywheelVel");
   }
 

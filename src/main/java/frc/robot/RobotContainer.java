@@ -264,7 +264,7 @@ public class RobotContainer {
 
 
     // Shooter / Kicker controls
-    TICK_2_HOOD.onTrue(shooter.runPositionCommand(2).andThen(shooter.stopCommand()));
+    TICK_2_HOOD.onTrue(shooter.runPositionCommand(0.).andThen(shooter.stopCommand()));
     TICK_37_HOOD.onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
     // shooter.runHoodCommand(MOVE_HOOD_JOYSTICK.getAsDouble());
 
