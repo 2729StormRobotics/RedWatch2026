@@ -268,20 +268,27 @@ public class RobotContainer {
     TICK_37_HOOD.onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
     // shooter.runHoodCommand(MOVE_HOOD_JOYSTICK.getAsDouble());
 
-    DecHood.onTrue(shooter.incrementPositionCommand());
-    DecHood.onFalse(shooter.stopCommand());
+    // Hood manual nudging for calibration / lookup-table data collection.
+    // Left bumper: step hood down (toward MIN_POSITION_ROTATIONS).
+    // Right bumper: step hood up   (toward MAX_POSITION_ROTATIONS).
+    DecHood.onTrue(shooter.decrementPositionCommand());
+    IncHood.onTrue(shooter.incrementPositionCommand());
 
-    IncHood.onTrue(shooter.decrementPositionCommand());
-    IncHood.onFalse(shooter.stopCommand());
-
+    // Flywheel / kicker controls for testing and data collection.
+    // While held: run flywheel at the current test velocity stored in Shooter and run the kicker.
+    // On release: stop both.
     flyWheelTrigger.whileTrue(
         Commands.parallel(
-            Commands.run(() -> shooter.setFlywheelVelocity(250), shooter),
+            shooter.runTestFlywheelCommand(),
             Commands.run(() -> kicker.setPercent(1), kicker)));
     flyWheelTrigger.onFalse(
         Commands.parallel(
             Commands.runOnce(shooter::stop, shooter),
             Commands.runOnce(kicker::stop, kicker)));
+
+    // Translator buttons 10/11: bump the test flywheel velocity up/down.
+    INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());
+    DEC_TEST_FLYWHEEL.onTrue(shooter.decrementTestFlywheelVelocityCommand());
 
     // reverseFlyWheelTrigger.whileTrue(
     //     Commands.parallel(

@@ -170,7 +170,10 @@ public class DriveControls {
   public static Trigger stopFlyWheelTrigger;
 
   public static Trigger HopperOutake;
-  
+
+  // Flywheel test velocity adjustment (translator buttons 10/11)
+  public static Trigger INC_TEST_FLYWHEEL;
+  public static Trigger DEC_TEST_FLYWHEEL;
 
   public static Trigger IncHood;
   public static Trigger DecHood;
@@ -224,7 +227,7 @@ public class DriveControls {
 
     flyWheelTrigger = m_weaponsController.a();
     HopperOutake = m_weaponsController.b();
-    stopFlyWheelTrigger = m_translator.button(11);
+    stopFlyWheelTrigger = m_translator.button(11); // currently unused
 
     turretTrigger0 = m_weaponsController.povUp();
     turretTrigger90 = m_weaponsController.povDown();
@@ -242,5 +245,9 @@ public class DriveControls {
 
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
+
+    // Translator buttons 10/11: adjust shooter test flywheel velocity
+    INC_TEST_FLYWHEEL = m_translator.button(10);
+    DEC_TEST_FLYWHEEL = m_translator.button(11);
   }
 }

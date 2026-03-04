@@ -90,6 +90,8 @@ public class Shooter extends SubsystemBase {
   private double desiredHoodAngle = 0.0;
   /** Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive). */
   private double desiredTurretAngleDeg = 0.0;
+  /** Adjustable flywheel test velocity (rotations per second) for manual tuning / data collection. */
+  private double testFlywheelVelocityRps = 250.0;
 
   private boolean prep = true;
 
@@ -356,6 +358,47 @@ public class Shooter extends SubsystemBase {
    */
   public void setFlywheelVelocity(double velocityRotationsPerSec) {
     desiredFlywheelVelocity = velocityRotationsPerSec;
+  }
+
+  /**
+   * Sets the adjustable test flywheel velocity stored on the shooter.
+   * Useful for manual tuning and building a distance/velocity lookup table.
+   */
+  public void setTestFlywheelVelocity(double velocityRotationsPerSec) {
+    testFlywheelVelocityRps = velocityRotationsPerSec;
+  }
+
+  /** Returns the current test flywheel velocity (rotations per second). */
+  public double getTestFlywheelVelocity() {
+    return testFlywheelVelocityRps;
+  }
+
+  /** Increments the test flywheel velocity by the given delta (RPS). */
+  public void adjustTestFlywheelVelocity(double deltaRps) {
+    double minRps = 0.0;
+    double maxRps = 5000.0 / 60.0; // Same rough clamp as calculateRequiredRPM
+    testFlywheelVelocityRps = MathUtil.clamp(testFlywheelVelocityRps + deltaRps, minRps, maxRps);
+  }
+
+  /**
+   * Command that runs the flywheel at the current {@code testFlywheelVelocityRps}.
+   * Use this with whileTrue(...) so the flywheel runs while held.
+   */
+  public Command runTestFlywheelCommand() {
+    return Commands.run(() -> setFlywheelVelocity(testFlywheelVelocityRps), this)
+        .withName("Shooter/RunTestFlywheel");
+  }
+
+  /** Command to bump the test flywheel velocity up by a fixed step (e.g. +50 RPS). */
+  public Command incrementTestFlywheelVelocityCommand() {
+    return Commands.runOnce(() -> adjustTestFlywheelVelocity(+50.0 / 60.0), this)
+        .withName("Shooter/IncTestFlywheelVel");
+  }
+
+  /** Command to bump the test flywheel velocity down by a fixed step (e.g. -50 RPS). */
+  public Command decrementTestFlywheelVelocityCommand() {
+    return Commands.runOnce(() -> adjustTestFlywheelVelocity(-50.0 / 60.0), this)
+        .withName("Shooter/DecTestFlywheelVel");
   }
 
   /**
