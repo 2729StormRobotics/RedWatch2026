@@ -90,6 +90,9 @@ public class Shooter extends SubsystemBase {
   private double desiredHoodAngle = 0.0;
   /** Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive). */
   private double desiredTurretAngleDeg = 0.0;
+  /** Adjustable hood test position in motor rotations for manual tuning / data collection. */
+  private double testHoodPositionRotations =
+      (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
   /** Adjustable flywheel test velocity (rotations per second) for manual tuning / data collection. */
   private double testFlywheelVelocityRps = 250.0;
 
@@ -434,6 +437,29 @@ public class Shooter extends SubsystemBase {
     hoodIO.setAngle(angleRadians);
   }
 
+  // ===== Hood manual test helpers (motor-rotation space) =====
+
+  /** Sets the internal test hood position (in motor rotations) and commands the hood to it. */
+  public void setTestHoodPositionRotations(double rotations) {
+    double clamped =
+        MathUtil.clamp(
+            rotations,
+            HoodConstants.MIN_POSITION_ROTATIONS,
+            HoodConstants.MAX_POSITION_ROTATIONS);
+    testHoodPositionRotations = clamped;
+    hoodIO.setPosition(testHoodPositionRotations);
+  }
+
+  /** Returns the current test hood position (motor rotations). */
+  public double getTestHoodPositionRotations() {
+    return testHoodPositionRotations;
+  }
+
+  /** Adjusts the test hood position by a delta (motor rotations) and commands the hood. */
+  public void adjustTestHoodPositionRotations(double deltaRotations) {
+    setTestHoodPositionRotations(testHoodPositionRotations + deltaRotations);
+  }
+
   /**
    * Sets the hood angle based on distance to target.
    */
@@ -628,18 +654,15 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command incrementPositionCommand() {
-    // Commands.runOnce with a lambda checks the position AT THE TIME OF THE CLICK
-    return Commands.runOnce(() -> {
-      double currentPos = hoodIO.getPosition(); // Or use your getHoodCurrentAngle()
-      hoodIO.setPosition(currentPos + 1.0);     // Change 1.0 to whatever step size you want
-    }, this);
+    // Bump the stored test hood position up by +1 rotation and command the hood there.
+    return Commands.runOnce(() -> adjustTestHoodPositionRotations(+1.0), this)
+        .withName("Hood/IncTestPosition");
   }
 
   public Command decrementPositionCommand() {
-    return Commands.runOnce(() -> {
-      double currentPos = hoodIO.getPosition();
-      hoodIO.setPosition(currentPos - 1.0); 
-    }, this);
+    // Bump the stored test hood position down by -1 rotation and command the hood there.
+    return Commands.runOnce(() -> adjustTestHoodPositionRotations(-1.0), this)
+        .withName("Hood/DecTestPosition");
   }
 
   public Command runPositionCommandConstant(CommandXboxController m_operatorController) {
