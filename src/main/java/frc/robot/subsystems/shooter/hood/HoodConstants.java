@@ -33,7 +33,7 @@ public final class HoodConstants {
   public static final int ABSOLUTE_ENCODER_TEETH = 21;
   
   /** Position PID constants */
-  public static final double kP = 0.03;
+  public static final double kP = 0.05;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
   

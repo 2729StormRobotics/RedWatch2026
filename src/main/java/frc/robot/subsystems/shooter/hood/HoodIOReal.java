@@ -106,7 +106,8 @@ public class HoodIOReal implements HoodIO {
     config.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         // Using PID constants from HoodConstants
-        .pid(HoodConstants.kP, HoodConstants.kI, HoodConstants.kD);
+        .pid(HoodConstants.kP, HoodConstants.kI, HoodConstants.kD)
+        .allowedClosedLoopError(0.1, ClosedLoopSlot.kSlot0);
 
     // Absolute encoder on data port (21T) - used by Turret for CRT multi-turn positioning
     config.absoluteEncoder
