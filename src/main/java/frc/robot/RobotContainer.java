@@ -263,9 +263,9 @@ public class RobotContainer {
     ledController.orange();
 
 
-    // Shooter / Kicker controls
-    TICK_2_HOOD.onTrue(shooter.runPositionCommand(0.).andThen(shooter.stopCommand()));
-    TICK_37_HOOD.onTrue(shooter.runPositionCommand(37).andThen(shooter.stopCommand()));
+    // Shooter / Hood: set desired position (periodic applies it; no need to "run" or stop).
+    TICK_2_HOOD.onTrue(shooter.runPositionCommand(2));
+    TICK_37_HOOD.onTrue(shooter.runPositionCommand(37));
     // shooter.runHoodCommand(MOVE_HOOD_JOYSTICK.getAsDouble());
 
     // Hood manual nudging for calibration / lookup-table data collection.

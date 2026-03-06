@@ -87,11 +87,13 @@ public class Shooter extends SubsystemBase {
 
   // State variables
   private double desiredFlywheelVelocity = 0.0;
-  private double desiredHoodAngle = 0.0;
   /** Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive). */
   private double desiredTurretAngleDeg = 0.0;
-  /** Adjustable hood test position in motor rotations for manual tuning / data collection. */
-  private double testHoodPositionRotations =
+  /**
+   * Desired hood position in motor rotations. Single source of truth; periodic() applies it every
+   * cycle (like the turret). All hood methods only change this value.
+   */
+  private double desiredHoodPositionRotations =
       (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
   /** Adjustable flywheel test velocity (rotations per second) for manual tuning / data collection. */
   private double testFlywheelVelocityRps = 250.0;
@@ -138,7 +140,7 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter/Hood", hoodInputs);
     Logger.processInputs("Shooter/Turret", turretInputs);
     SmartDashboard.putNumber("Hood/Position", hoodIO.getPosition());
-    SmartDashboard.putNumber("Shooter/Hood/SetpointAngle", desiredHoodAngle);
+    SmartDashboard.putNumber("Shooter/Hood/DesiredPositionRotations", desiredHoodPositionRotations);
     SmartDashboard.putBoolean("Shooter/Hood/AtSetpoint", hoodAtSetpoint());
     SmartDashboard.putNumber("Shooter/Hood/DesiredAngle", turretIO.getDesiredAngle());
     SmartDashboard.putNumber("flywheel/flywheelVel", testFlywheelVelocityRps);
@@ -154,28 +156,29 @@ public class Shooter extends SubsystemBase {
     // If we are under the trench, we OVERWRITE the hood setpoint calculated by
     // updateMoveAndShoot
     boolean safetyActive = isUnderTrench();
-    if (safetyActive) {
+    if (false) {
       // Force the hood down to clear the 22.25" opening height
-      desiredHoodAngle = frc.robot.subsystems.shooter.hood.HoodConstants.MIN_ANGLE_RAD;
+      desiredHoodPositionRotations = HoodConstants.MIN_POSITION_ROTATIONS;
     }
 
     Logger.recordOutput("Shooter/TrenchSafetyActive", safetyActive);
 
-    // Apply desired setpoints
+    // Apply desired setpoints every cycle (turret-style: one desired value, always applied)
     if (desiredFlywheelVelocity != 0.0) {
       flywheelIO.setVelocity(desiredFlywheelVelocity);
     }
-
-    // Always update hood setpoint
-    // hoodIO.setAngle(desiredHoodAngle);
-    // 
-    // Always update turret setpoint
-     turretIO.setAngle(desiredTurretAngleDeg);
+    double clampedHood =
+        MathUtil.clamp(
+            desiredHoodPositionRotations,
+            HoodConstants.MIN_POSITION_ROTATIONS,
+            HoodConstants.MAX_POSITION_ROTATIONS);
+    hoodIO.setPosition(clampedHood);
+    turretIO.setAngle(desiredTurretAngleDeg);
 
     // Log shooter state
     Logger.recordOutput("Shooter/ReadyToFire", isReadyToFire());
     Logger.recordOutput("Shooter/MoveAndShootEnabled", moveAndShootEnabled);
-    Logger.recordOutput("Shooter/Hood/SetpointAngle", desiredHoodAngle);
+    Logger.recordOutput("Shooter/Hood/DesiredPositionRotations", desiredHoodPositionRotations);
     Logger.recordOutput("Shooter/Turret/SetpointAngleDeg", desiredTurretAngleDeg);
 
     // Update 3D mechanism visualization
@@ -427,37 +430,48 @@ public class Shooter extends SubsystemBase {
     return flywheelInputs.leaderVelocityRotationsPerSec;
   }
 
-  // ========== Hood Methods ==========
+  // ========== Hood Methods (turret-style: all methods only set desired; periodic applies it) ==========
 
-  /**
-   * Sets the hood angle setpoint.
-   */
-  public void setHoodAngle(double angleRadians) {
-    desiredHoodAngle = angleRadians;
-    hoodIO.setAngle(angleRadians);
-  }
-
-  // ===== Hood manual test helpers (motor-rotation space) =====
-
-  /** Sets the internal test hood position (in motor rotations) and commands the hood to it. */
-  public void setTestHoodPositionRotations(double rotations) {
-    double clamped =
+  /** Sets the desired hood position (motor rotations). Clamped to soft limits. */
+  public void setDesiredHoodPositionRotations(double rotations) {
+    desiredHoodPositionRotations =
         MathUtil.clamp(
             rotations,
             HoodConstants.MIN_POSITION_ROTATIONS,
             HoodConstants.MAX_POSITION_ROTATIONS);
-    testHoodPositionRotations = clamped;
-    hoodIO.setPosition(testHoodPositionRotations);
   }
 
-  /** Returns the current test hood position (motor rotations). */
-  public double getTestHoodPositionRotations() {
-    return testHoodPositionRotations;
+  /** Returns the current desired hood position (motor rotations). */
+  public double getDesiredHoodPositionRotations() {
+    return desiredHoodPositionRotations;
   }
 
-  /** Adjusts the test hood position by a delta (motor rotations) and commands the hood. */
-  public void adjustTestHoodPositionRotations(double deltaRotations) {
-    setTestHoodPositionRotations(testHoodPositionRotations + deltaRotations);
+  /** Adjusts the desired hood position by delta (motor rotations). */
+  public void adjustDesiredHoodPositionRotations(double deltaRotations) {
+    setDesiredHoodPositionRotations(desiredHoodPositionRotations + deltaRotations);
+  }
+
+  /** Converts desired position (rotations) to desired angle (radians) for logging / atSetpoint. */
+  private double getDesiredHoodAngleRad() {
+    double norm =
+        (desiredHoodPositionRotations - HoodConstants.MIN_POSITION_ROTATIONS)
+            / (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
+    return HoodConstants.MIN_ANGLE_RAD
+        + norm * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD);
+  }
+
+  /** Sets the desired hood angle (radians). Converts to motor rotations and updates desired. */
+  public void setHoodAngle(double angleRadians) {
+    double clamped =
+        MathUtil.clamp(angleRadians, HoodConstants.MIN_ANGLE_RAD, HoodConstants.MAX_ANGLE_RAD);
+    double normalizedAngle =
+        (clamped - HoodConstants.MIN_ANGLE_RAD)
+            / (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD);
+    double rotations =
+        HoodConstants.MIN_POSITION_ROTATIONS
+            + normalizedAngle
+                * (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
+    setDesiredHoodPositionRotations(rotations);
   }
 
   /**
@@ -499,7 +513,7 @@ public class Shooter extends SubsystemBase {
    */
   @AutoLogOutput(key = "Shooter/Hood/AtSetpoint")
   public boolean hoodAtSetpoint() {
-    double error = Math.abs(getHoodCurrentAngle() - desiredHoodAngle);
+    double error = Math.abs(getHoodCurrentAngle() - getDesiredHoodAngleRad());
     return error < HoodConstants.ANGLE_TOLERANCE;
   }
 
@@ -553,11 +567,8 @@ public class Shooter extends SubsystemBase {
    */
   public void stop() {
     desiredFlywheelVelocity = 0.0;
-    desiredHoodAngle = getHoodCurrentAngle(); // Hold current position
-    // desiredTurretAngleDeg = getTurretCurrentAngleDeg(); // Hold current position
+    desiredHoodPositionRotations = hoodIO.getPosition(); // Hold current hood position
     flywheelIO.stop();
-    // hoodIO.stop();
-    // turretIO.stop();
   }
 
   public Command idleFlywheelCommand() {
@@ -649,29 +660,31 @@ public class Shooter extends SubsystemBase {
 //     SimulatedArena.getInstance().addGamePieceProjectile(fuelProjectile);
 //   }
 
-    public Command runPositionCommand(double ticks) {
-    return run(() -> hoodIO.setPosition(ticks)).withName("HoodPosition: " + ticks);
+  /** Sets the desired hood position (motor rotations). Periodic applies it. */
+  public Command runPositionCommand(double ticks) {
+    return Commands.runOnce(() -> setDesiredHoodPositionRotations(ticks), this)
+        .withName("HoodSetPosition: " + ticks);
   }
 
+  /** Bump desired hood position up by +1 rotation. */
   public Command incrementPositionCommand() {
-    // Bump the stored test hood position up by +1 rotation and command the hood there.
-    return Commands.runOnce(() -> adjustTestHoodPositionRotations(+1.0), this)
-        .withName("Hood/IncTestPosition");
+    return Commands.runOnce(() -> adjustDesiredHoodPositionRotations(+1.0), this)
+        .withName("Hood/IncPosition");
   }
 
+  /** Bump desired hood position down by -1 rotation. */
   public Command decrementPositionCommand() {
-    // Bump the stored test hood position down by -1 rotation and command the hood there.
-    return Commands.runOnce(() -> adjustTestHoodPositionRotations(-1.0), this)
-        .withName("Hood/DecTestPosition");
+    return Commands.runOnce(() -> adjustDesiredHoodPositionRotations(-1.0), this)
+        .withName("Hood/DecPosition");
   }
 
+  /** While running, updates desired hood position from joystick; periodic applies it. */
   public Command runPositionCommandConstant(CommandXboxController m_operatorController) {
-    SmartDashboard.putNumber("Hood/leftx", (m_operatorController.getLeftX()));
-        SmartDashboard.putNumber("Hood/ly", (m_operatorController.getLeftY()));
-        SmartDashboard.putNumber("Hood/rx", (m_operatorController.getRightX()));
-        SmartDashboard.putNumber("Hood/ry", (m_operatorController.getRightY()));
-        SmartDashboard.putNumber("Hood/rt", (m_operatorController.getRightTriggerAxis()));
-    return new RepeatCommand(run(() -> hoodIO.setPosition(-(19+(-m_operatorController.getLeftY()*18)))).withName("HoodPosition: " + -(19+(-m_operatorController.getRightY()*18))));
+    return run(
+            () ->
+                setDesiredHoodPositionRotations(
+                    -(19 + (-m_operatorController.getLeftY() * 18))))
+        .withName("HoodJoystick");
   }
 
   public Command stopCommand() {
