@@ -51,7 +51,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.LimelightHelpers;
+// import frc.robot.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
 
 public class Drive extends SubsystemBase {
@@ -127,8 +127,8 @@ public class Drive extends SubsystemBase {
 
     // Configure IMU Mode
     // Mode 2 uses the LL4's internal IMU for MegaTag 2 calculation
-    LimelightHelpers.SetIMUMode("limelight-front", 2);
-    LimelightHelpers.SetIMUMode("limelight-back", 2);
+    // LimelightHelpers.SetIMUMode("limelight-front", 4);
+    // LimelightHelpers.SetIMUMode("limelight-back", 4);
   }
 
   @Override
@@ -189,63 +189,63 @@ public class Drive extends SubsystemBase {
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
     }
 
-    // 1. Update Limelight with fresh gyro data (Critical for MegaTag 2)
-    // Note: Use the internal robotYaw variable to ensure thread safety if needed
-    double robotYaw = getRotation().getDegrees(); 
-    double yawVel = Units.radiansToDegrees(gyroInputs.yawVelocityRadPerSec); // Convert to Degrees/Sec
+    // // 1. Update Limelight with fresh gyro data (Critical for MegaTag 2)
+    // // Note: Use the internal robotYaw variable to ensure thread safety if needed
+    // double robotYaw = getRotation().getDegrees(); 
+    // double yawVel = Units.radiansToDegrees(gyroInputs.yawVelocityRadPerSec); // Convert to Degrees/Sec
 
-    LimelightHelpers.SetRobotOrientation("limelight-front", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
-    LimelightHelpers.SetRobotOrientation("limelight-back", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
+    // LimelightHelpers.SetRobotOrientation("limelight-front", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
+    // LimelightHelpers.SetRobotOrientation("limelight-back", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
 
-    // 2. Define cameras to iterate over
-    String[] camNames = {"limelight-front", "limelight-back"};
+    // // 2. Define cameras to iterate over
+    // String[] camNames = {"limelight-front", "limelight-back"};
 
-    for (String camName : camNames) {
-        // Fetch the MegaTag 2 Estimate (if pipeline is configured for it)
-        LimelightHelpers.PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(camName);
+    // for (String camName : camNames) {
+    //     // Fetch the MegaTag 2 Estimate (if pipeline is configured for it)
+    //     LimelightHelpers.PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(camName);
 
-        if (mt2Estimate == null) {
-          continue;
-        }
+    //     if (mt2Estimate == null) {
+    //       continue;
+    //     }
 
 
-        // CHECK 1: Do we have a valid target?
-        if (mt2Estimate.tagCount == 0) {
-            continue; // Skip this camera, it sees nothing
-        }
+    //     // CHECK 1: Do we have a valid target?
+    //     if (mt2Estimate.tagCount == 0) {
+    //         continue; // Skip this camera, it sees nothing
+    //     }
 
-        // CHECK 2: Is the data fresh? (Reject if > 0.5s old, prevents "ghosting" when connection lags)
-        if (Math.abs(Timer.getFPGATimestamp() - mt2Estimate.timestampSeconds) > 0.3) {
-            continue; 
-        }
-        // 3. Dynamic Standard Deviation Calculation
-        // This is the "Secret Sauce". We trust close multi-tag data, and distrust far single-tag data.
-        double xyStds;
-        double degStds = 9999999; // Default to ignoring vision rotation (trust Gyro)
+    //     // CHECK 2: Is the data fresh? (Reject if > 0.5s old, prevents "ghosting" when connection lags)
+    //     if (Math.abs(Timer.getFPGATimestamp() - mt2Estimate.timestampSeconds) > 0.3) {
+    //         continue; 
+    //     }
+    //     // 3. Dynamic Standard Deviation Calculation
+    //     // This is the "Secret Sauce". We trust close multi-tag data, and distrust far single-tag data.
+    //     double xyStds;
+    //     double degStds = 9999999; // Default to ignoring vision rotation (trust Gyro)
 
-        if (mt2Estimate.tagCount >= 2) {
-            // MULTI-TAG: Very trustworthy. 
-            // Trust it heavily (0.5m) but scale slightly with distance to be safe.
-            xyStds = 0.5 + (mt2Estimate.avgTagDist * 0.1); 
-        } else {
-            // SINGLE-TAG: Low trust.
-            // If it's far away (>4m), trust it very little (high std dev).
-            // If it's close (<2m), trust it moderately.
-            if (mt2Estimate.avgTagDist > 4.0) {
-                xyStds = 3.0; // Very untrusted
-            } else {
-                xyStds = 0.9 + (mt2Estimate.avgTagDist * 0.2);
-            }
-        }
+    //     if (mt2Estimate.tagCount >= 2) {
+    //         // MULTI-TAG: Very trustworthy. 
+    //         // Trust it heavily (0.5m) but scale slightly with distance to be safe.
+    //         xyStds = 0.5 + (mt2Estimate.avgTagDist * 0.1); 
+    //     } else {
+    //         // SINGLE-TAG: Low trust.
+    //         // If it's far away (>4m), trust it very little (high std dev).
+    //         // If it's close (<2m), trust it moderately.
+    //         if (mt2Estimate.avgTagDist > 4.0) {
+    //             xyStds = 3.0; // Very untrusted
+    //         } else {
+    //             xyStds = 0.9 + (mt2Estimate.avgTagDist * 0.2);
+    //         }
+    //     }
 
-        // 4. Add to Pose Estimator
-        // We use the 3-argument version to apply these specific StdDevs to THIS measurement only.
-        poseEstimator.addVisionMeasurement(
-            mt2Estimate.pose,
-            mt2Estimate.timestampSeconds,
-            VecBuilder.fill(xyStds, xyStds, degStds)
-        );
-    }
+    //     // 4. Add to Pose Estimator
+    //     // We use the 3-argument version to apply these specific StdDevs to THIS measurement only.
+    //     poseEstimator.addVisionMeasurement(
+    //         mt2Estimate.pose,
+    //         mt2Estimate.timestampSeconds,
+    //         VecBuilder.fill(xyStds, xyStds, degStds)
+    //     );
+    // }
     
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);

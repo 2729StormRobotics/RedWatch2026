@@ -5,10 +5,10 @@ package frc.robot.subsystems.vision;
  */
 public final class VisionConstants {
   /** NetworkTables name for the left Limelight camera */
-  public static final String LEFT_LIMELIGHT_NAME = "limelight-front";
+  public static final String LEFT_LIMELIGHT_NAME = "limelight-left";
 
   /** NetworkTables name for the right Limelight camera */
-  public static final String RIGHT_LIMELIGHT_NAME = "limelight-back";
+  public static final String RIGHT_LIMELIGHT_NAME = "limelight-right";
 
   /** Maximum valid distance to trust a single tag (meters) */
   public static final double MAX_SINGLE_TAG_DISTANCE = 4.0;
@@ -38,7 +38,7 @@ public final class VisionConstants {
   public static final int THROTTLE_ENABLED = 0;
 
   /** IMU mode for MegaTag 2 (0=external only, 1=seed internal, 2=use internal for MT2) */
-  public static final int IMU_MODE = 2; // Recommended: use internal IMU for best performance
+  public static final int IMU_MODE = 4; // Recommended: use internal IMU for best performance
 
   /** Maximum angular velocity to accept vision updates (degrees per second) */
   public static final double MAX_ACCEPTABLE_ANGULAR_VELOCITY_DEG_PER_SEC = 720.0;
