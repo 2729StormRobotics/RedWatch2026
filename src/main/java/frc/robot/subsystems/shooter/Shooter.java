@@ -173,7 +173,7 @@ public class Shooter extends SubsystemBase {
             HoodConstants.MIN_POSITION_ROTATIONS,
             HoodConstants.MAX_POSITION_ROTATIONS);
     hoodIO.setPosition(clampedHood);
-    turretIO.setAngle(desiredTurretAngleDeg);
+    // turretIO.setAngle(desiredTurretAngleDeg);
 
     // Log shooter state
     Logger.recordOutput("Shooter/ReadyToFire", isReadyToFire());

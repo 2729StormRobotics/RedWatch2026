@@ -62,6 +62,7 @@ public class VisionIOLimelight implements VisionIO {
       Pose2d botPose = getBotPose2d();
 
       if (botPose != null && isValidPose(botPose)) {
+
         inputs.hasPose = true;
         
         int tagCount = getTagCountFromMegaTag2();
