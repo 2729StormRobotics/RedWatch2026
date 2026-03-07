@@ -12,7 +12,6 @@
 // GNU General Public License for more details.
 
 package frc.robot.subsystems.shooter.turret;
-
 import static frc.robot.subsystems.shooter.turret.TurretConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
@@ -44,7 +43,7 @@ public class TurretIOReal implements TurretIO {
   private final double k_gear21 = 21.0;
   private final double k_gearboxRatio = 4.0; 
 
-  // TUNE THESE OFFSETS BASED ON CALIBRATION
+  // TUNE THESE OFFSETS BASED ON CALIBRATION (Raw values from REV Client when straight)
   private final double k_enc19Offset = 0.0;
   private final double k_enc21Offset = 0.0;
 
@@ -79,7 +78,7 @@ public class TurretIOReal implements TurretIO {
 
   public TurretIOReal(SparkMax auxSparkMax) {
     motor = new SparkMax(12, MotorType.kBrushless);
-    auxSpark=auxSparkMax;
+    auxSpark = auxSparkMax;
     encoder19 = motor.getAbsoluteEncoder();
     encoder21 = auxSpark.getAbsoluteEncoder();
     internalEncoder = motor.getEncoder();
@@ -103,11 +102,11 @@ public class TurretIOReal implements TurretIO {
         .positionConversionFactor(1.0)
         .velocityConversionFactor(1.0);
 
-    // Hardware Soft Limits
+    // Hardware Soft Limits (-90 to +180)
     motorConfig.softLimit
-        .forwardSoftLimit(180)
+        .forwardSoftLimit(180.0)
         .forwardSoftLimitEnabled(true)
-        .reverseSoftLimit(-90)
+        .reverseSoftLimit(-90.0)
         .reverseSoftLimitEnabled(true);
 
     tryUntilOk(motor, 5, () -> motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
@@ -258,15 +257,19 @@ public class TurretIOReal implements TurretIO {
     double finalAngle = MathUtil.inputModulus(bestTurretDegrees, -180.0, 180.0);
     return new double[] {finalAngle, bestError};
   }
+
   @Override
   public void setAngle(double degrees) {
+    // Software clamp so PID doesn't wind up trying to drive past hardware limits
+    double clampedDegrees = MathUtil.clamp(degrees, -90.0, 180.0);
+
     if (!isClosedLoop) {
       // Sync internal encoder to absolute position before starting closed loop
       internalEncoder.setPosition(lastAbsoluteAngleDeg);
       m_pidController.reset(lastAbsoluteAngleDeg);
       isClosedLoop = true;
     }
-    targetAngleDegrees = degrees;
+    targetAngleDegrees = clampedDegrees;
   }
 
   @Override

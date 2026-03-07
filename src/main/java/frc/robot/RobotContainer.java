@@ -60,10 +60,10 @@ import frc.robot.subsystems.shooter.hood.HoodIOReal;
 import frc.robot.subsystems.shooter.hood.HoodIOSim;
 import frc.robot.subsystems.shooter.turret.TurretIOReal;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
-// import frc.robot.subsystems.climb.Climb;
-// import frc.robot.subsystems.climb.ClimbIO;
-// import frc.robot.subsystems.climb.ClimbIOReal;
-// import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOReal;
+import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.kicker.kicker;
 import frc.robot.subsystems.kicker.kickerConstants;
 import frc.robot.subsystems.kicker.kickerIO;
@@ -98,6 +98,8 @@ public class RobotContainer {
   private final Intake intake;
   private final Hopper hopper;
 
+  private final Climb climber;
+
   // LEDs
   private final BlinkinLEDController ledController = BlinkinLEDController.getInstance();
 
@@ -126,6 +128,7 @@ public class RobotContainer {
                 new ModuleIOSpark(3));
 
         HoodIOReal hoodIOReal = new HoodIOReal();
+        climber = new Climb(new ClimbIOReal());
         shooter = new Shooter(
             new FlywheelIOReal(),
             hoodIOReal,
@@ -163,6 +166,7 @@ public class RobotContainer {
         kicker = new kicker(new kickerIOSim());
         intake = new Intake(new IntakeIOSim(driveSimulation));
         hopper = new Hopper(new HopperIOSim());
+        climber = new Climb(new ClimbIOSim());
         
         // Vision subsystem with simulation IO (no vision data)
         vision =
@@ -191,6 +195,7 @@ public class RobotContainer {
         kicker = new kicker(new kickerIOReal());
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIOReal());
+        climber = new Climb(new ClimbIOReal());
 
 
         // Vision subsystem with empty IO for replay
@@ -264,8 +269,8 @@ public class RobotContainer {
 
 
     // Shooter / Hood: set desired position (periodic applies it; no need to "run" or stop).
-    TICK_2_HOOD.onTrue(shooter.runPositionCommand(2));
-    TICK_37_HOOD.onTrue(shooter.runPositionCommand(37));
+    // TICK_2_HOOD.onTrue(shooter.runPositionCommand(2));
+    // TICK_37_HOOD.onTrue(shooter.runPositionCommand(37));
     // shooter.runHoodCommand(MOVE_HOOD_JOYSTICK.getAsDouble());
 
     // Hood manual nudging for calibration / lookup-table data collection.
@@ -305,11 +310,11 @@ public class RobotContainer {
     turretTrigger90.onTrue(shooter.setTurretAngleDegreesCommand(90.0));
 
     // Climb Controls
-    // EXTEND_CLIMBER.whileTrue(climb.climbCommand());
-    // EXTEND_CLIMBER.onFalse(climb.stopCommand());
+    EXTEND_CLIMBER.whileTrue(climber.climbCommand());
+    EXTEND_CLIMBER.onFalse(climber.stopCommand());
 
-    // RETRACT_CLIMBER.whileTrue(climb.retractCommand());
-    // RETRACT_CLIMBER.onFalse(climb.stopCommand());
+    RETRACT_CLIMBER.whileTrue(climber.retractCommand());
+    RETRACT_CLIMBER.onFalse(climber.stopCommand());
 
     // Intake Controls
     INTAKE_TRIGGER.whileTrue(intake.intakeCommand());
@@ -323,6 +328,9 @@ public class RobotContainer {
     
     HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
     HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
+    
+    enableMoveShoot.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
+    disableMoveShoot.onTrue(new InstantCommand(() -> shooter.disableMoveAndShoot()));
     // HopperStopTrigger.onTrue(hopper.stopCommand());
     // stopFlyWheelTrigger.onTrue(shooter.stopCommand());
 

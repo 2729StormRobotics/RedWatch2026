@@ -82,8 +82,8 @@ public class Vision extends SubsystemBase {
       // State changed, update throttle
       if (isEnabled) {
         // Robot enabled - full speed (throttle = 0)
-        // leftCameraIO.setThrottle(VisionConstants.THROTTLE_ENABLED);
-        // rightCameraIO.setThrottle(VisionConstants.THROTTLE_ENABLED);
+        leftCameraIO.setThrottle(VisionConstants.THROTTLE_ENABLED);
+        rightCameraIO.setThrottle(VisionConstants.THROTTLE_ENABLED);
         Logger.recordOutput("Vision/ThrottleMode", "Enabled");
       } else {
         // Robot disabled - throttle to reduce heat (throttle = 150)
@@ -107,7 +107,7 @@ public class Vision extends SubsystemBase {
     // CRITICAL: Update robot orientation to Limelight every cycle for MegaTag 2
     // Only update when enabled (MegaTag 2 not needed when disabled)
     if (isEnabled) {
-leftCameraIO.setRobotOrientation(currentYaw.getDegrees(), Math.toDegrees(yawVelocity));
+  leftCameraIO.setRobotOrientation(currentYaw.getDegrees(), Math.toDegrees(yawVelocity));
   rightCameraIO.setRobotOrientation(currentYaw.getDegrees(), Math.toDegrees(yawVelocity));    }
 
     // Update inputs from cameras
@@ -136,6 +136,7 @@ leftCameraIO.setRobotOrientation(currentYaw.getDegrees(), Math.toDegrees(yawVelo
   private void processVisionMeasurement(VisionIOInputsAutoLogged inputs, String cameraName) {
     // Reject if no pose estimate
     if (!inputs.hasPose || inputs.visionPose == null) {
+      Logger.recordOutput("Vision/" + cameraName + "/MeasurementRejected", "nopose");
       return;
     }
 

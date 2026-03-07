@@ -5,10 +5,10 @@ package frc.robot.subsystems.vision;
  */
 public final class VisionConstants {
   /** NetworkTables name for the left Limelight camera */
-  public static final String LEFT_LIMELIGHT_NAME = "limelight-front";
+  public static final String LEFT_LIMELIGHT_NAME = "limelight-left";
 
   /** NetworkTables name for the right Limelight camera */
-  public static final String RIGHT_LIMELIGHT_NAME = "limelight-back";
+  public static final String RIGHT_LIMELIGHT_NAME = "limelight-right";
 
   /** Maximum valid distance to trust a single tag (meters) */
   public static final double MAX_SINGLE_TAG_DISTANCE = 4.0;

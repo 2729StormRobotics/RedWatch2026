@@ -168,6 +168,8 @@ public class DriveControls {
   public static Trigger ReverseHopperTrigger;
   public static Trigger HopperStopTrigger;
   public static Trigger stopFlyWheelTrigger;
+  public static Trigger enableMoveShoot;
+  public static Trigger disableMoveShoot;
 
   public static Trigger HopperOutake;
 
@@ -209,8 +211,8 @@ public class DriveControls {
 
     // Buttons / modes
     RESET_GYRO = m_translator.button(12);
-    DRIVE_SLOW = m_translator.button(1);
-    DRIVE_STOP = m_translator.button(2);
+    // DRIVE_SLOW = m_translator.button(1);
+    // DRIVE_STOP = m_translator.button(2);
     DRIVE_HOLD_STOP = m_translator.button(3);
     DRIVE_ROBOT_RELATIVE = m_translator.button(4);
   }
@@ -234,14 +236,17 @@ public class DriveControls {
     turretTrigger180 = m_weaponsController.povLeft();
     turretTrigger45 = m_weaponsController.povRight();
 
+    EXTEND_CLIMBER = m_translator.button(1);
+    RETRACT_CLIMBER = m_translator.button(2);
+
     EXTEND_INTAKE = m_weaponsController.x();
     RETRACT_INTAKE = m_weaponsController.y();
 
     IncHood = m_weaponsController.rightBumper();
     MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
 
-    TICK_2_HOOD = m_translator.button(8);
-    TICK_37_HOOD = m_translator.button(7);
+    // TICK_2_HOOD = m_translator.button(8);
+    // TICK_37_HOOD = m_translator.button(7);
 
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
@@ -249,5 +254,9 @@ public class DriveControls {
     // Translator buttons 10/11: adjust shooter test flywheel velocity
     INC_TEST_FLYWHEEL = m_translator.button(10);
     DEC_TEST_FLYWHEEL = m_translator.button(11);
+
+    enableMoveShoot = m_translator.button(1);
+    disableMoveShoot = m_translator.button(2);
+
   }
 }

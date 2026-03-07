@@ -16,12 +16,12 @@ import java.util.function.Supplier;
 import frc.robot.util.SparkIdleModeTuner;
 
 public class HopperIOReal implements HopperIO {
-  private final SparkFlex motor;
+  private final SparkMax motor;
   private final RelativeEncoder encoder;
 
   public HopperIOReal() {
     // Use the constant from KickerConstants
-    motor = new SparkFlex(HopperConstants.MOTOR_ID, MotorType.kBrushless);
+    motor = new SparkMax(HopperConstants.MOTOR_ID, MotorType.kBrushless);
     encoder = motor.getEncoder();
 
     SparkMaxConfig config = new SparkMaxConfig();

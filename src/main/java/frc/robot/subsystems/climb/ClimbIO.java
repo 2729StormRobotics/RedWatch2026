@@ -17,4 +17,5 @@ public interface ClimbIO {
   public default void setVoltage(double volts) {}
   public default void setLock(boolean engaged) {}
   public default void stop() {}
+  public default void setPercent(double percent) {}
 }

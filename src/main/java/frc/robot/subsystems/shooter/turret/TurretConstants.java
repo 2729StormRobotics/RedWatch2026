@@ -58,7 +58,7 @@ public final class TurretConstants {
    * <p>Example: if the turret reads -150° when it's physically at your desired 0°, set this to
    * +150.0.
    */
-  public static final double ZERO_OFFSET_DEG = -54.37205123901367 + 16.990386962890625;
+  public static final double ZERO_OFFSET_DEG = -50.400001525878906;
 
   // Radian equivalents used internally by simulation
   public static final double MIN_ANGLE_RAD = Units.degreesToRadians(MIN_ANGLE_DEG);

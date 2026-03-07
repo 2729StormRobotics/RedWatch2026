@@ -127,8 +127,8 @@ public class Drive extends SubsystemBase {
 
     // Configure IMU Mode
     // Mode 2 uses the LL4's internal IMU for MegaTag 2 calculation
-    LimelightHelpers.SetIMUMode("limelight-front", 2);
-    LimelightHelpers.SetIMUMode("limelight-back", 2);
+    LimelightHelpers.SetIMUMode("limelight-left", 2);
+    LimelightHelpers.SetIMUMode("limelight-right", 2);
   }
 
   @Override
@@ -194,11 +194,11 @@ public class Drive extends SubsystemBase {
     double robotYaw = getRotation().getDegrees(); 
     double yawVel = Units.radiansToDegrees(gyroInputs.yawVelocityRadPerSec); // Convert to Degrees/Sec
 
-    LimelightHelpers.SetRobotOrientation("limelight-front", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
-    LimelightHelpers.SetRobotOrientation("limelight-back", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
+    LimelightHelpers.SetRobotOrientation("limelight-left", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
+    LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, yawVel, 0.0, 0.0, 0.0, 0.0);
 
     // 2. Define cameras to iterate over
-    String[] camNames = {"limelight-front", "limelight-back"};
+    String[] camNames = {"limelight-left", "limelight-right"};
 
     for (String camName : camNames) {
         // Fetch the MegaTag 2 Estimate (if pipeline is configured for it)
