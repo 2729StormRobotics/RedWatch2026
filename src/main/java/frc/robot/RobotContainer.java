@@ -19,6 +19,7 @@ import java.lang.constant.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -342,6 +343,33 @@ public class RobotContainer {
     // Set default drive command - field-relative joystick drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(drive, DRIVE_FORWARD, DRIVE_STRAFE, DRIVE_ROTATE));
+
+    // POV on translator: while held, drive with linear input but rotate to face that angle
+    POV_UP.whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(0)));
+    POV_DOWN.whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(180)));
+    POV_LEFT.whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(90)));
+    POV_RIGHT.whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(270)));
+    // Diagonals (45° intervals)
+    POV_UP_RIGHT.whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(45)));
+    POV_DOWN_RIGHT.whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(135)));
+    POV_DOWN_LEFT.whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(225)));
+    POV_UP_LEFT.whileTrue(
+        DriveCommands.joystickDriveAtAngle(
+            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(315)));
 
     // Button bindings
     // Reset gyro when button is pressed

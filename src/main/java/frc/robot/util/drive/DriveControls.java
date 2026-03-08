@@ -136,6 +136,17 @@ public class DriveControls {
   /** Trigger to reset gyro */
   public static Trigger RESET_GYRO;
 
+  /** POV triggers on translator: rotate robot to face this field angle while held */
+  public static Trigger POV_UP;
+  public static Trigger POV_DOWN;
+  public static Trigger POV_LEFT;
+  public static Trigger POV_RIGHT;
+  /** Diagonal POV (45° intervals) */
+  public static Trigger POV_UP_RIGHT;
+  public static Trigger POV_DOWN_RIGHT;
+  public static Trigger POV_DOWN_LEFT;
+  public static Trigger POV_UP_LEFT;
+
   // SysId controls
   /** Trigger for quasistatic forward test */
   public static Trigger QUASISTATIC_FORWARD;
@@ -215,6 +226,16 @@ public class DriveControls {
     // DRIVE_STOP = m_translator.button(2);
     DRIVE_HOLD_STOP = m_translator.button(3);
     DRIVE_ROBOT_RELATIVE = m_translator.button(4);
+
+    // POV (hat): 0=up, 90=right, 180=down, 270=left; 45/135/225/315 = diagonals
+    POV_UP = new Trigger(() -> m_translator.getHID().getPOV() == 0);
+    POV_DOWN = new Trigger(() -> m_translator.getHID().getPOV() == 180);
+    POV_LEFT = new Trigger(() -> m_translator.getHID().getPOV() == 270);
+    POV_RIGHT = new Trigger(() -> m_translator.getHID().getPOV() == 90);
+    POV_UP_RIGHT = new Trigger(() -> m_translator.getHID().getPOV() == 45);
+    POV_DOWN_RIGHT = new Trigger(() -> m_translator.getHID().getPOV() == 135);
+    POV_DOWN_LEFT = new Trigger(() -> m_translator.getHID().getPOV() == 225);
+    POV_UP_LEFT = new Trigger(() -> m_translator.getHID().getPOV() == 315);
   }
 
   // yushy_boi was here
