@@ -172,6 +172,7 @@ public class Shooter extends SubsystemBase {
     double distanceToHubHorizontal =
         hubCenter2d.minus(robotPoseForDistance.getTranslation()).getNorm();
     SmartDashboard.putNumber("Shooter/Turret/DistanceToHub", distanceToHubHorizontal);
+    Logger.recordOutput("Shooter/hubpose", FieldConstants.Hub.topCenterPoint.toTranslation2d());
     Logger.recordOutput("Shooter/Elastic/DistanceToHub", distanceToHubHorizontal);
 
     if (moveAndShootEnabled) {
