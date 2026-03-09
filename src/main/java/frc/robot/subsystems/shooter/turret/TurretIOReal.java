@@ -128,24 +128,27 @@ public class TurretIOReal implements TurretIO {
         MathUtil.inputModulus(crtResult[0] + TurretConstants.ZERO_OFFSET_DEG, -180.0, 180.0);
     inputs.crtError = crtResult[1];
 
+    // Report angle in convention: 0° = forward, CCW positive (left = -90°)
+    final double conventionOffset = TurretConstants.FORWARD_OFFSET_DEG;
     ifOk(
         motor,
         internalEncoder::getPosition,
         (val) -> {
-          inputs.motorPositionDeg = val;
-          inputs.absoluteAngleDeg = val;
-          lastAbsoluteAngleDeg = val;
+          double conventionDeg = val + conventionOffset;
+          inputs.motorPositionDeg = MathUtil.inputModulus(conventionDeg, -180.0, 180.0);
+          inputs.absoluteAngleDeg = inputs.motorPositionDeg;
+          lastAbsoluteAngleDeg = val; // keep hardware angle for PID/resync
         });
     ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
 
     // Seed the internal encoder ONCE from CRT, then use internal encoder for smooth continuous angle.
     // This avoids occasional CRT "branch" jumps due to ambiguity/noise.
     if (!initializedFromCrt) {
-      crtAngleDeg = 0;
-      internalEncoder.setPosition(crtAngleDeg);
-      m_pidController.reset(crtAngleDeg);
-      inputs.motorPositionDeg = crtAngleDeg;
-      inputs.absoluteAngleDeg = crtAngleDeg;
+      internalEncoder.setPosition(crtAngleDeg); // hardware angle
+      double conventionDeg = MathUtil.inputModulus(crtAngleDeg + conventionOffset, -180.0, 180.0);
+      m_pidController.reset(conventionDeg);
+      inputs.motorPositionDeg = conventionDeg;
+      inputs.absoluteAngleDeg = conventionDeg;
       lastAbsoluteAngleDeg = crtAngleDeg;
       initializedFromCrt = true;
     } else {
@@ -154,13 +157,14 @@ public class TurretIOReal implements TurretIO {
       final double crtTrustThreshold = 0.05; // lower is better
       final double resyncThresholdDeg = 90.0; // only resync on "obvious reset"
       if (!isClosedLoop && inputs.crtError >= 0.0 && inputs.crtError < crtTrustThreshold) {
+        double conventionCrt = MathUtil.inputModulus(crtAngleDeg + conventionOffset, -180.0, 180.0);
         double diffDeg =
-            Math.abs(MathUtil.inputModulus(crtAngleDeg - inputs.motorPositionDeg, -180.0, 180.0));
+            Math.abs(MathUtil.inputModulus(conventionCrt - inputs.motorPositionDeg, -180.0, 180.0));
         if (diffDeg > resyncThresholdDeg) {
           internalEncoder.setPosition(crtAngleDeg);
-          m_pidController.reset(crtAngleDeg);
-          inputs.motorPositionDeg = crtAngleDeg;
-          inputs.absoluteAngleDeg = crtAngleDeg;
+          m_pidController.reset(conventionCrt);
+          inputs.motorPositionDeg = conventionCrt;
+          inputs.absoluteAngleDeg = conventionCrt;
           lastAbsoluteAngleDeg = crtAngleDeg;
         }
       }
@@ -187,7 +191,7 @@ public class TurretIOReal implements TurretIO {
           kP_tunable, kI_tunable, kD_tunable);
     }
 
-    // Run Profiled PID calculation if in closed loop mode
+    // Run Profiled PID calculation if in closed loop mode (both in convention: 0° = forward)
     if (isClosedLoop) {
       double output = m_pidController.calculate(inputs.motorPositionDeg, targetAngleDegrees);
       motor.set(MathUtil.clamp(output, -.8, 0.8));
@@ -261,13 +265,14 @@ public class TurretIOReal implements TurretIO {
 
   @Override
   public void setAngle(double degrees) {
-    // Software clamp so PID doesn't wind up trying to drive past hardware limits
-    double clampedDegrees = MathUtil.clamp(degrees, -90.0, 180.0);
+    // Convention: 0° = forward, CCW positive. Clamp to valid range (maps to hardware -90° to 180°).
+    double clampedDegrees = MathUtil.clamp(degrees, -180.0, 90.0);
 
     if (!isClosedLoop) {
-      // Sync internal encoder to absolute position before starting closed loop
+      // Sync internal encoder (hardware) and PID (convention) before starting closed loop
+      double conventionDeg = MathUtil.inputModulus(lastAbsoluteAngleDeg + TurretConstants.FORWARD_OFFSET_DEG, -180.0, 180.0);
       internalEncoder.setPosition(lastAbsoluteAngleDeg);
-      m_pidController.reset(lastAbsoluteAngleDeg);
+      m_pidController.reset(conventionDeg);
       isClosedLoop = true;
     }
     targetAngleDegrees = clampedDegrees;

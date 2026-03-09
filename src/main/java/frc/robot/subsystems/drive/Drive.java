@@ -74,6 +74,7 @@ public class Drive extends SubsystemBase {
       };
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
+  private boolean poseInitialized = false;
 
   public Drive(
       GyroIO gyroIO,
@@ -134,6 +135,12 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // Initialize pose to correct alliance side on first valid alliance data
+    if (!poseInitialized && DriverStation.getAlliance().isPresent()) {
+      setPose(AllianceFlipUtil.apply(Pose2d.kZero));
+      poseInitialized = true;
+    }
+
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -386,7 +393,11 @@ public class Drive extends SubsystemBase {
   public void resetYaw() {
     gyroIO.resetYaw();
     Pose2d currentPose = getPose();
-    setPose(new Pose2d(currentPose.getX(), currentPose.getY(), Rotation2d.kZero));
+    Rotation2d newHeading =
+        AllianceFlipUtil.shouldFlip()
+            ? Rotation2d.fromDegrees(180)
+            : Rotation2d.kZero;
+    setPose(new Pose2d(currentPose.getX(), currentPose.getY(), newHeading));
   }
 
   /** Adds a new timestamped vision measurement. */

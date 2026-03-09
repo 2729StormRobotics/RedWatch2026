@@ -227,10 +227,10 @@ public final class Constants {
   }
 
   public static final class MechanismConstants {
-    /** Shooter: Turret base position relative to robot center */
+    /** Shooter: Turret base position relative to robot center (closer to back than front) */
     public static final Transform3d robotToTurret = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(4.75),  // X: forward/back
+            Units.inchesToMeters(-4.75), // X: forward/back (negative = back)
             Units.inchesToMeters(0),     // Y: left/right
             Units.inchesToMeters(14.25)), // Z: height
         new Rotation3d(0.0, 0.0, -Math.PI / 2.0));

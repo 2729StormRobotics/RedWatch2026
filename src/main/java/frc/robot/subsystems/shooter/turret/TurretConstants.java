@@ -60,6 +60,12 @@ public final class TurretConstants {
    */
   public static final double ZERO_OFFSET_DEG = -50.400001525878906;
 
+  /**
+   * Offset so that 0° = robot forward, CCW positive (left = -90°).
+   * Hardware reports 0° when turret points left; subtract 90 so forward = 0°.
+   */
+  public static final double FORWARD_OFFSET_DEG = -90.0;
+
   // Radian equivalents used internally by simulation
   public static final double MIN_ANGLE_RAD = Units.degreesToRadians(MIN_ANGLE_DEG);
   public static final double MAX_ANGLE_RAD = Units.degreesToRadians(MAX_ANGLE_DEG);

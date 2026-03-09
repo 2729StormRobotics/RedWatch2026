@@ -239,26 +239,34 @@ public class Shooter extends SubsystemBase {
       robotVelocity = drive.getChassisSpeeds();
     }
 
-    // Calculate vector from robot to hub (in field coordinates)
-    Translation2d robotToTarget = targetPoint.minus(robotPose.getTranslation());
+    // Turret position in field frame (robot center + offset rotated by robot heading)
+    Translation2d robotToTurret2d =
+        new Translation2d(
+            Constants.MechanismConstants.robotToTurret.getX(),
+            Constants.MechanismConstants.robotToTurret.getY());
+    Translation2d turretPositionField =
+        robotPose.getTranslation().plus(robotToTurret2d.rotateBy(robotPose.getRotation()));
+
+    // Vector from turret to target (hub) in field coordinates for correct angle and distance
+    Translation2d turretToTarget = targetPoint.minus(turretPositionField);
 
     // Check if target is valid (non-zero distance)
-    double distanceToHub = robotToTarget.getNorm();
+    double distanceToHub = turretToTarget.getNorm();
     if (distanceToHub < 0.01) {
 
       disableMoveAndShoot();
       return;
     }
 
-    // Calculate heading to hub in field coordinates
-    Rotation2d headingToHub = robotToTarget.getAngle();
+    // Heading to hub from turret in field coordinates
+    Rotation2d headingToHub = turretToTarget.getAngle();
 
-    // Calculate required turret angle relative to robot forward direction
+    // Required turret angle relative to robot forward direction (0° = forward, CCW positive)
     Rotation2d robotRotation = robotPose.getRotation();
     Rotation2d turretRotation = headingToHub.minus(robotRotation);
 
-    // Normalize and clamp
-    double turretAngle = MathUtil.inputModulus(turretRotation.getRadians()-(Math.PI/2), -Math.PI, Math.PI);
+    // Normalize and clamp (turret convention: 0° = robot forward, CCW positive)
+    double turretAngle = MathUtil.inputModulus(turretRotation.getRadians(), -Math.PI, Math.PI);
     turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
     setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
 
