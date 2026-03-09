@@ -66,6 +66,7 @@ import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.turret.TurretIOReal;
+import frc.robot.util.misc.LoggedTunableNumber;
 
 /**
  * Shooter super-subsystem that coordinates Flywheel, Hood, and Turret.
@@ -98,6 +99,14 @@ public class Shooter extends SubsystemBase {
       (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
   /** Adjustable flywheel test velocity (rotations per second) for manual tuning / data collection. */
   private double testFlywheelVelocityRps = 250.0;
+
+  /** Elastic / SmartDashboard: desired flywheel velocity (RPS) and hood position (rotations) for "Apply Setpoints" button. */
+  private final LoggedTunableNumber elasticDesiredFlywheelRps =
+      new LoggedTunableNumber("Shooter/Elastic/DesiredFlywheelRps", 250.0);
+  private final LoggedTunableNumber elasticDesiredHoodRotations =
+      new LoggedTunableNumber(
+          "Shooter/Elastic/DesiredHoodRotations",
+          (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0);
 
   private boolean prep = true;
 
@@ -145,6 +154,25 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("Shooter/Hood/AtSetpoint", hoodAtSetpoint());
     SmartDashboard.putNumber("Shooter/Hood/DesiredAngle", turretIO.getDesiredAngle());
     SmartDashboard.putNumber("flywheel/flywheelVel", testFlywheelVelocityRps);
+    // Publish Elastic setpoint inputs when tuning mode is on so they appear in Elastic
+    if (Constants.tuningMode) {
+      elasticDesiredFlywheelRps.get();
+      elasticDesiredHoodRotations.get();
+    }
+
+    // Elastic: horizontal distance from turret (robot) to hub, not including height (meters)
+    Pose2d robotPoseForDistance =
+        (Constants.currentMode == Constants.Mode.SIM && driveTrainSimulation != null)
+            ? driveTrainSimulation.getSimulatedDriveTrainPose()
+            : drive.getPose();
+    Translation2d hubCenter2d =
+        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red)
+            ? FieldConstants.Hub.oppTopCenterPoint.toTranslation2d()
+            : FieldConstants.Hub.topCenterPoint.toTranslation2d();
+    double distanceToHubHorizontal =
+        hubCenter2d.minus(robotPoseForDistance.getTranslation()).getNorm();
+    SmartDashboard.putNumber("Shooter/Elastic/DistanceToHub", distanceToHubHorizontal);
+    Logger.recordOutput("Shooter/Elastic/DistanceToHub", distanceToHubHorizontal);
 
     if (moveAndShootEnabled) {
       if (depotAimModeEnabled) {
@@ -409,6 +437,23 @@ public class Shooter extends SubsystemBase {
   public Command decrementTestFlywheelVelocityCommand() {
     return Commands.runOnce(() -> adjustTestFlywheelVelocity(-10.0), this)
         .withName("Shooter/DecTestFlywheelVel");
+  }
+
+  /**
+   * Command that reads Elastic/SmartDashboard desired flywheel RPS and hood position (rotations),
+   * then applies both. Put this on the dashboard with {@code SmartDashboard.putData("Shooter/Elastic/ApplySetpoints", shooter.applyElasticSetpointsCommand());}
+   * so in Elastic you can add a button that runs this command.
+   */
+  public Command applyElasticSetpointsCommand() {
+    return Commands.runOnce(
+            () -> {
+              double rps = elasticDesiredFlywheelRps.get();
+              double hoodRotations = elasticDesiredHoodRotations.get();
+              setFlywheelVelocity(rps);
+              setDesiredHoodPositionRotations(hoodRotations);
+            },
+            this)
+        .withName("Shooter/Elastic/ApplySetpoints");
   }
 
   /**

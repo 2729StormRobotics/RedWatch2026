@@ -18,10 +18,78 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
+import frc.robot.subsystems.shooter.hood.HoodConstants;
+
 /**
- * Constants for the Shooter subsystem including 3D transforms for mechanism visualization.
+ * Constants for the Shooter subsystem including 3D transforms for mechanism visualization
+ * and distance-based lookup table for shooter speed and hood angle.
  */
 public final class ShooterConstants {
+
+  // ========== Lookup table: distance from hub → shooter speed (RPS) and hood (motor rotations) ==========
+  /** One row in the shooter lookup table. */
+  public record LookupTableEntry(
+      /** Distance from hub in meters. */
+      double distanceFromHubMeters,
+      /** Flywheel speed in rotations per second. */
+      double shooterSpeedRps,
+      /** Hood position in motor rotations (same units as HoodConstants.MIN/MAX_POSITION_ROTATIONS). */
+      double hoodPositionRotations) {}
+
+  /**
+   * Lookup table: (distance from hub, shooter speed RPS, hood motor rotations).
+   * Fill in with real data from characterization; entries should be ordered by distance ascending.
+   */
+  public static final LookupTableEntry[] LOOKUP_TABLE = {
+    new LookupTableEntry(2.0, 200.0, 5.0),
+    new LookupTableEntry(4.0, 280.0, 12.0),
+    new LookupTableEntry(6.0, 350.0, 20.0),
+    new LookupTableEntry(8.0, 420.0, 28.0),
+    new LookupTableEntry(10.0, 500.0, 37.0),
+  };
+
+  /**
+   * Interpolates shooter speed (RPS) for a given distance using {@link #LOOKUP_TABLE}.
+   * Clamps to first/last table value if distance is outside the table range.
+   */
+  public static double getShooterSpeedRpsForDistance(double distanceMeters) {
+    if (LOOKUP_TABLE.length == 0) return 0.0;
+    if (distanceMeters <= LOOKUP_TABLE[0].distanceFromHubMeters())
+      return LOOKUP_TABLE[0].shooterSpeedRps();
+    if (distanceMeters >= LOOKUP_TABLE[LOOKUP_TABLE.length - 1].distanceFromHubMeters())
+      return LOOKUP_TABLE[LOOKUP_TABLE.length - 1].shooterSpeedRps();
+    for (int i = 0; i < LOOKUP_TABLE.length - 1; i++) {
+      double d0 = LOOKUP_TABLE[i].distanceFromHubMeters();
+      double d1 = LOOKUP_TABLE[i + 1].distanceFromHubMeters();
+      if (distanceMeters >= d0 && distanceMeters <= d1) {
+        double t = (distanceMeters - d0) / (d1 - d0);
+        return LOOKUP_TABLE[i].shooterSpeedRps() + t * (LOOKUP_TABLE[i + 1].shooterSpeedRps() - LOOKUP_TABLE[i].shooterSpeedRps());
+      }
+    }
+    return LOOKUP_TABLE[LOOKUP_TABLE.length - 1].shooterSpeedRps();
+  }
+
+  /**
+   * Interpolates hood position (motor rotations) for a given distance using {@link #LOOKUP_TABLE}.
+   * Clamps to first/last table value if distance is outside the table range.
+   */
+  public static double getHoodPositionRotationsForDistance(double distanceMeters) {
+    if (LOOKUP_TABLE.length == 0) return (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
+    if (distanceMeters <= LOOKUP_TABLE[0].distanceFromHubMeters())
+      return LOOKUP_TABLE[0].hoodPositionRotations();
+    if (distanceMeters >= LOOKUP_TABLE[LOOKUP_TABLE.length - 1].distanceFromHubMeters())
+      return LOOKUP_TABLE[LOOKUP_TABLE.length - 1].hoodPositionRotations();
+    for (int i = 0; i < LOOKUP_TABLE.length - 1; i++) {
+      double d0 = LOOKUP_TABLE[i].distanceFromHubMeters();
+      double d1 = LOOKUP_TABLE[i + 1].distanceFromHubMeters();
+      if (distanceMeters >= d0 && distanceMeters <= d1) {
+        double t = (distanceMeters - d0) / (d1 - d0);
+        return LOOKUP_TABLE[i].hoodPositionRotations() + t * (LOOKUP_TABLE[i + 1].hoodPositionRotations() - LOOKUP_TABLE[i].hoodPositionRotations());
+      }
+    }
+    return LOOKUP_TABLE[LOOKUP_TABLE.length - 1].hoodPositionRotations();
+  }
+
   /** Transform from robot center to turret pivot point */
   public static final Transform3d robotToTurret =
       new Transform3d(

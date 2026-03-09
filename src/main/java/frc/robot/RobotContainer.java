@@ -211,6 +211,9 @@ public class RobotContainer {
     field = new Field2d();
     SmartDashboard.putData("Field", field);
 
+    // Elastic: set TunableNumbers/Shooter/Elastic/DesiredFlywheelRps and DesiredHoodRotations, then run this command to apply both
+    SmartDashboard.putData("Shooter/Elastic/ApplySetpoints", shooter.applyElasticSetpointsCommand());
+
     System.out.println("[Init] Setting up Path Planner Logging");
 
     // Logging callback for current robot pose

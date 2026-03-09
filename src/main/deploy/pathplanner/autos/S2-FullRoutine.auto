@@ -1,0 +1,67 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDeploy"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "S2-N2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "N2-B2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PrepShooter"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShots5seconds"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 6.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "B2-S2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ClimbExtend"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "S2",
+  "choreoAuto": false
+}
