@@ -141,7 +141,7 @@ public final class Constants {
 
     // LED system
     /** Blinkin LED controller PWM port */
-    public static final int BLINKIN_LED_CONTROLLER_PORT = 7;
+    public static final int BLINKIN_LED_CONTROLLER_PORT = 0;
 
     // Sample motor (example subsystem)
     /** Sample motor CAN ID */

@@ -171,7 +171,7 @@ public class Shooter extends SubsystemBase {
             : FieldConstants.Hub.topCenterPoint.toTranslation2d();
     double distanceToHubHorizontal =
         hubCenter2d.minus(robotPoseForDistance.getTranslation()).getNorm();
-    SmartDashboard.putNumber("Shooter/Elastic/DistanceToHub", distanceToHubHorizontal);
+    SmartDashboard.putNumber("Shooter/Turret/DistanceToHub", distanceToHubHorizontal);
     Logger.recordOutput("Shooter/Elastic/DistanceToHub", distanceToHubHorizontal);
 
     if (moveAndShootEnabled) {
@@ -244,6 +244,7 @@ public class Shooter extends SubsystemBase {
     // Check if target is valid (non-zero distance)
     double distanceToHub = robotToTarget.getNorm();
     if (distanceToHub < 0.01) {
+
       disableMoveAndShoot();
       return;
     }

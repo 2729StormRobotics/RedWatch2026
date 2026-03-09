@@ -141,6 +141,7 @@ public class TurretIOReal implements TurretIO {
     // Seed the internal encoder ONCE from CRT, then use internal encoder for smooth continuous angle.
     // This avoids occasional CRT "branch" jumps due to ambiguity/noise.
     if (!initializedFromCrt) {
+      crtAngleDeg = 0;
       internalEncoder.setPosition(crtAngleDeg);
       m_pidController.reset(crtAngleDeg);
       inputs.motorPositionDeg = crtAngleDeg;

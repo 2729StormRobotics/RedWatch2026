@@ -276,8 +276,8 @@ public class DriveControls {
     INC_TEST_FLYWHEEL = m_translator.button(10);
     DEC_TEST_FLYWHEEL = m_translator.button(11);
 
-    enableMoveShoot = m_translator.button(1);
-    disableMoveShoot = m_translator.button(2);
+    enableMoveShoot = m_rotator.button(1);
+    disableMoveShoot = m_rotator.button(2);
 
   }
 }

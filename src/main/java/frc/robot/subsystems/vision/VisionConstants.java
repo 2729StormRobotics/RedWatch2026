@@ -38,7 +38,7 @@ public final class VisionConstants {
   public static final int THROTTLE_ENABLED = 0;
 
   /** IMU mode for MegaTag 2 (0=external only, 1=seed internal, 2=use internal for MT2) */
-  public static final int IMU_MODE = 2; // Recommended: use internal IMU for best performance
+  public static final int IMU_MODE = 4; // Recommended: use internal IMU for best performance
 
   /** Maximum angular velocity to accept vision updates (degrees per second) */
   public static final double MAX_ACCEPTABLE_ANGULAR_VELOCITY_DEG_PER_SEC = 720.0;
