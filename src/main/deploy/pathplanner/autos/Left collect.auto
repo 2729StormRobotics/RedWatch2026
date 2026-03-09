@@ -3,7 +3,38 @@
   "command": {
     "type": "sequential",
     "data": {
-      "commands": []
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDeploy"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "S3-N3-B3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "B3-S3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDeploy"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShots5seconds"
+          }
+        }
+      ]
     }
   },
   "resetOdom": true,

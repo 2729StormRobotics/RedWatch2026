@@ -44,6 +44,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOSim;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.drive.AllianceFlipUtil;
 import frc.robot.util.drive.DriveControls;
 
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
@@ -216,25 +217,29 @@ public class RobotContainer {
 
     System.out.println("[Init] Setting up Path Planner Logging");
 
-    // Logging callback for current robot pose
+    // Logging callback for current robot pose (alliance-relative for driver view)
     PathPlannerLogging.setLogCurrentPoseCallback(
-        (pose) -> {
-          field.setRobotPose(pose);
-          Logger.recordOutput("PathPlanner/RobotPose", pose);
+        (unusedPose) -> {
+          Pose2d alliancePose = drive.getAlliancePose();
+          field.setRobotPose(alliancePose);
+          Logger.recordOutput("PathPlanner/RobotPose", alliancePose);
         });
 
-    // Logging callback for target robot pose
+    // Logging callback for target robot pose (alliance-relative)
     PathPlannerLogging.setLogTargetPoseCallback(
         (pose) -> {
-          field.getObject("target pose").setPose(pose);
-          Logger.recordOutput("PathPlanner/TargetPose", pose);
+          Pose2d alliancePose = AllianceFlipUtil.apply(pose);
+          field.getObject("target pose").setPose(alliancePose);
+          Logger.recordOutput("PathPlanner/TargetPose", alliancePose);
         });
 
-    // Logging callback for the active path, this is sent as a list of poses
+    // Logging callback for the active path, sent as a list of poses (alliance-relative)
     PathPlannerLogging.setLogActivePathCallback(
         (poses) -> {
-          field.getObject("path").setPoses(poses);
-          Logger.recordOutput("PathPlanner/ActivePath", poses.toArray(new Pose2d[0]));
+          Pose2d[] alliancePath =
+              AllianceFlipUtil.apply(poses.toArray(new Pose2d[0]));
+          field.getObject("path").setPoses(alliancePath);
+          Logger.recordOutput("PathPlanner/ActivePath", alliancePath);
         });
 
     // Set up auto routines chooser

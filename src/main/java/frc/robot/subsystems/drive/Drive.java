@@ -53,6 +53,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.drive.AllianceFlipUtil;
 
 public class Drive extends SubsystemBase {
   static final Lock odometryLock = new ReentrantLock();
@@ -359,6 +360,16 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "Odometry/Robot")
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
+  }
+
+  /**
+   * Returns the current odometry pose transformed into the alliance-relative field frame.
+   * This keeps all internal math in the WPI blue coordinate system while providing a
+   * driver-friendly view that automatically mirrors on red.
+   */
+  @AutoLogOutput(key = "Odometry/RobotAlliance")
+  public Pose2d getAlliancePose() {
+    return AllianceFlipUtil.apply(getPose());
   }
 
   /** Returns the current odometry rotation. */
