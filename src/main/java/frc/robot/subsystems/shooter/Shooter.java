@@ -258,7 +258,7 @@ public class Shooter extends SubsystemBase {
     Rotation2d turretRotation = headingToHub.minus(robotRotation);
 
     // Normalize and clamp
-    double turretAngle = MathUtil.inputModulus(turretRotation.getRadians(), -Math.PI, Math.PI);
+    double turretAngle = MathUtil.inputModulus(turretRotation.getRadians()-(Math.PI/2), -Math.PI, Math.PI);
     turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
     setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
 
