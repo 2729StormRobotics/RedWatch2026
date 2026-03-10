@@ -141,15 +141,17 @@ public class TurretIOReal implements TurretIO {
         });
     ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
 
-    // Seed the internal encoder ONCE from CRT, then use internal encoder for smooth continuous angle.
-    // This avoids occasional CRT "branch" jumps due to ambiguity/noise.
+    // Seed the internal (relative) encoder ONCE at startup, then use it for smooth continuous angle.
+    // We still compute CRT above so it can be used later for resync if needed, but the initial
+    // zero is defined purely by the relative encoder (whatever angle the turret boots at).
     if (!initializedFromCrt) {
-      internalEncoder.setPosition(crtAngleDeg); // hardware angle
-      double conventionDeg = MathUtil.inputModulus(crtAngleDeg + conventionOffset, -180.0, 180.0);
+      // Define boot-up position as 0° in both the hardware-relative and convention frames.
+      internalEncoder.setPosition(0.0);
+      double conventionDeg = 0.0;
       m_pidController.reset(conventionDeg);
       inputs.motorPositionDeg = conventionDeg;
       inputs.absoluteAngleDeg = conventionDeg;
-      lastAbsoluteAngleDeg = crtAngleDeg;
+      lastAbsoluteAngleDeg = 0.0;
       initializedFromCrt = true;
     } else {
       // If the internal encoder ever resets (Spark reboot/brownout), the reported angle will jump.
@@ -189,6 +191,15 @@ public class TurretIOReal implements TurretIO {
             m_pidController.setPID(p, i, d);
           },
           kP_tunable, kI_tunable, kD_tunable);
+    }
+
+    // Software safety guard: if angle ever leaves the allowed command band, stop the turret.
+    // Convention frame here (0° = forward, CCW positive). We keep motion inside [-180°, 90°],
+    // which maps to the physical [-90°, 180°] hardware range.
+    if (inputs.motorPositionDeg < -180.0 || inputs.motorPositionDeg > 90.0) {
+      isClosedLoop = false;
+      motor.stopMotor();
+      return;
     }
 
     // Run Profiled PID calculation if in closed loop mode (both in convention: 0° = forward)
