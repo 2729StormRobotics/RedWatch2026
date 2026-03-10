@@ -43,8 +43,15 @@ public final class TurretConstants {
   /** Minimum turret angle in degrees (typically -180 to +180 degrees) */
   public static final double MIN_ANGLE_DEG = -180.0;
 
-  /** Maximum turret angle in degrees */
+  /** Maximum turret angle in degrees (full mechanical range) */
   public static final double MAX_ANGLE_DEG = 180.0;
+
+  /**
+   * Maximum turret angle we allow for commands (convention frame).
+   * Hardware can only reach -90° to +180°; in convention (0° = forward) that's -180° to 90°.
+   * Use this when clamping so we never command an unreachable angle.
+   */
+  public static final double ALLOWED_MAX_DEG = 90.0;
 
   /** Angle tolerance for atSetpoint check (degrees) */
   public static final double ANGLE_TOLERANCE_DEG = 2.0;
@@ -69,6 +76,7 @@ public final class TurretConstants {
   // Radian equivalents used internally by simulation
   public static final double MIN_ANGLE_RAD = Units.degreesToRadians(MIN_ANGLE_DEG);
   public static final double MAX_ANGLE_RAD = Units.degreesToRadians(MAX_ANGLE_DEG);
+  public static final double ALLOWED_MAX_RAD = Units.degreesToRadians(ALLOWED_MAX_DEG);
   public static final double ANGLE_TOLERANCE_RAD = Units.degreesToRadians(ANGLE_TOLERANCE_DEG);
   
   /** Gear ratio (motor rotations per turret rotation) */

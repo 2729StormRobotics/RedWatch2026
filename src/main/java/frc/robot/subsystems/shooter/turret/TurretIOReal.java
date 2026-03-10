@@ -194,9 +194,9 @@ public class TurretIOReal implements TurretIO {
     }
 
     // Software safety guard: if angle ever leaves the allowed command band, stop the turret.
-    // Convention frame here (0° = forward, CCW positive). We keep motion inside [-180°, 90°],
-    // which maps to the physical [-90°, 180°] hardware range.
-    if (inputs.motorPositionDeg < -180.0 || inputs.motorPositionDeg > 90.0) {
+    // Convention frame (0° = forward). Allowed range matches hardware -90° to 180°.
+    if (inputs.motorPositionDeg < TurretConstants.MIN_ANGLE_DEG
+        || inputs.motorPositionDeg > TurretConstants.ALLOWED_MAX_DEG) {
       isClosedLoop = false;
       motor.stopMotor();
       return;
@@ -276,8 +276,9 @@ public class TurretIOReal implements TurretIO {
 
   @Override
   public void setAngle(double degrees) {
-    // Convention: 0° = forward, CCW positive. Clamp to valid range (maps to hardware -90° to 180°).
-    double clampedDegrees = MathUtil.clamp(degrees, -180.0, 90.0);
+    // Convention: 0° = forward, CCW positive. Clamp to allowed range (maps to hardware -90° to 180°).
+    double clampedDegrees =
+        MathUtil.clamp(degrees, TurretConstants.MIN_ANGLE_DEG, TurretConstants.ALLOWED_MAX_DEG);
 
     if (!isClosedLoop) {
       // Sync internal encoder (hardware) and PID (convention) before starting closed loop

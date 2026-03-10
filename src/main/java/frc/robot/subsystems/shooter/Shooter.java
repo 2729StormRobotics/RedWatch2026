@@ -261,13 +261,22 @@ public class Shooter extends SubsystemBase {
     // Heading to hub from turret in field coordinates
     Rotation2d headingToHub = turretToTarget.getAngle();
 
-    // Required turret angle relative to robot forward direction (0° = forward, CCW positive)
+    // Required turret angle relative to robot forward direction (0° = forward, CCW positive).
+    // Current hardware/setup is 180° reversed relative to the ideal math, so add π here so that
+    // the commanded angle points the turret toward the hub instead of directly away from it.
     Rotation2d robotRotation = robotPose.getRotation();
     Rotation2d turretRotation = headingToHub.minus(robotRotation);
 
-    // Normalize and clamp (turret convention: 0° = robot forward, CCW positive)
-    double turretAngle = MathUtil.inputModulus(turretRotation.getRadians(), -Math.PI, Math.PI);
-    turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
+    // Normalize and clamp (turret convention: 0° = robot forward, CCW positive), with 180° flip
+    double turretAngle =
+        MathUtil.inputModulus(turretRotation.getRadians() + Math.PI, -Math.PI, Math.PI);
+    // Keep in turret's allowed range [-180°, 90°] so setAngle/safety don't clamp to wrong direction.
+    // Angles in (90°, 180°] wrap to equivalent in [-180°, -90°) (e.g. 180° → -180°).
+    if (turretAngle > TurretConstants.ALLOWED_MAX_RAD) {
+      turretAngle -= 2 * Math.PI;
+    }
+    turretAngle =
+        MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.ALLOWED_MAX_RAD);
     setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
 
     // Calculate required flywheel RPM (now using field-relative velocity for better
