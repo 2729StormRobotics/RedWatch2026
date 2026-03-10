@@ -288,17 +288,13 @@ public class RobotContainer {
     DecHood.onTrue(shooter.decrementPositionCommand());
     IncHood.onTrue(shooter.incrementPositionCommand());
 
-    // Flywheel / kicker controls for testing and data collection.
-    // While held: run flywheel at the current test velocity stored in Shooter and run the kicker.
-    // On release: stop both.
+    // Flywheel controls for testing and data collection.
+    // While held: run flywheel at the current test velocity stored in Shooter.
+    // On release: stop the flywheel.
     flyWheelTrigger.whileTrue(
-        Commands.parallel(
-            shooter.runTestFlywheelCommand(),
-            Commands.run(() -> kicker.setPercent(1), kicker)));
+        shooter.runTestFlywheelCommand());
     flyWheelTrigger.onFalse(
-        Commands.parallel(
-            Commands.runOnce(shooter::stop, shooter),
-            Commands.runOnce(kicker::stop, kicker)));
+        Commands.runOnce(shooter::stop, shooter));
 
     // Translator buttons 10/11: bump the test flywheel velocity up/down.
     INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());
@@ -332,9 +328,26 @@ public class RobotContainer {
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 
-    HopperTrigger.whileTrue(hopper.runContinuous());
-    HopperTrigger.onFalse(hopper.stopCommand());
-    
+    // Translator button 5: run hopper + kicker together
+    ReverseHopperTrigger.whileTrue(
+        Commands.parallel(
+            hopper.runContinuous(),
+            Commands.run(() -> kicker.setPercent(1), kicker)));
+    ReverseHopperTrigger.onFalse(
+        Commands.parallel(
+            hopper.stopCommand(),
+            Commands.runOnce(kicker::stop, kicker)));
+
+    // Translator button 6: run intake + hopper together
+    HopperTrigger.whileTrue(
+        Commands.parallel(
+            hopper.runContinuous(),
+            intake.intakeCommand()));
+    HopperTrigger.onFalse(
+        Commands.parallel(
+            hopper.stopCommand(),
+            intake.stopCommand()));
+
     HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
     HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
     

@@ -248,8 +248,10 @@ public class DriveControls {
 
     INTAKE_TRIGGER = m_weaponsController.rightTrigger();
 
-    flyWheelTrigger = m_weaponsController.a();
-    HopperOutake = m_weaponsController.b();
+    // B button: run flywheel at current test velocity
+    flyWheelTrigger = m_weaponsController.b();
+    // Disable old hopper outtake mapping (no button assigned now)
+    HopperOutake = new Trigger(() -> false);
     stopFlyWheelTrigger = m_translator.button(11); // currently unused
 
     turretTrigger0 = m_weaponsController.povUp();
@@ -269,12 +271,15 @@ public class DriveControls {
     // TICK_2_HOOD = m_translator.button(8);
     // TICK_37_HOOD = m_translator.button(7);
 
+    // Translator buttons:
+    // 5: hopper + kicker
+    // 6: intake + hopper
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
 
-    // Translator buttons 10/11: adjust shooter test flywheel velocity
-    INC_TEST_FLYWHEEL = m_translator.button(10);
-    DEC_TEST_FLYWHEEL = m_translator.button(11);
+    // Weapons controller Y/A: adjust shooter test flywheel velocity
+    INC_TEST_FLYWHEEL = m_weaponsController.y();
+    DEC_TEST_FLYWHEEL = m_weaponsController.a();
 
     enableMoveShoot = m_rotator.button(1);
     disableMoveShoot = m_rotator.button(2);
