@@ -17,6 +17,7 @@ import static frc.robot.util.drive.DriveControls.*;
 import java.lang.constant.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,10 +29,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.LED.BlinkinLEDController;
+import frc.robot.subsystems.LED.BlinkinLEDController.BlinkinPattern;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -212,6 +218,27 @@ public class RobotContainer {
     field = new Field2d();
     SmartDashboard.putData("Field", field);
 
+    // StartShots5seconds
+    NamedCommands.registerCommand("StartIntake", new ParallelCommandGroup(new WaitCommand(5), new SequentialCommandGroup(new InstantCommand( () -> {shooter.enableMoveAndShoot(); shooter.setFlywheelArmed(true);}), Commands.parallel(
+            hopper.runContinuous(),
+            Commands.run(() -> kicker.setPercent(1), kicker)))));
+
+    // IntakeRetract
+    NamedCommands.registerCommand("IntakeRetract", new InstantCommand(() -> intake.retract()));
+    // PrepShooter
+    NamedCommands.registerCommand("PrepShooter", new InstantCommand(() -> shooter.enableMoveAndShoot()));
+    // IntakeDeploy
+    NamedCommands.registerCommand("IntakeDeploy", new InstantCommand(() -> intake.deploy()));
+    // StartIntake
+    NamedCommands.registerCommand("StartIntake", new InstantCommand(() -> intake.intake()));
+    // LockHood
+    NamedCommands.registerCommand("LockHood", new InstantCommand(() -> shooter.lockTrench()));
+    // UnlockHood
+    NamedCommands.registerCommand("UnlockHood", new InstantCommand(() -> shooter.unlockTrench()));
+    // Raise Climber
+    NamedCommands.registerCommand("RaiseClimber", climber.AutoCommandRaiseClimber());
+    // PullClimber
+    NamedCommands.registerCommand("PullClimber", climber.AutoCommandPullClimber());
     // Elastic: set TunableNumbers/Shooter/Elastic/DesiredFlywheelRps and DesiredHoodRotations, then run this command to apply both
     SmartDashboard.putData("Shooter/Elastic/ApplySetpoints", shooter.applyElasticSetpointsCommand());
 
@@ -261,20 +288,14 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
   }
-  /**
-   * Resets the gyro yaw angle to zero.
-   * Useful for resetting the robot's heading reference.
-   */
-  public void reset() {
-    // drive.();
-  }
+  
 
   private void configureButtonBindings() {
     // Configure drive controls based on driver preferences
     DriveControls.configureControls();
 
     // Set LED to orange on initialization
-    ledController.orange();
+    ledController.setPattern(BlinkinPattern.COLOR_WAVES_LAVA_PALETTE);
 
 
     // Shooter / Hood: set desired position (periodic applies it; no need to "run" or stop).
@@ -285,17 +306,21 @@ public class RobotContainer {
     // Hood manual nudging for calibration / lookup-table data collection.
     // Left bumper: step hood down (toward MIN_POSITION_ROTATIONS).
     // Right bumper: step hood up   (toward MAX_POSITION_ROTATIONS).
-    DecHood.onTrue(shooter.decrementPositionCommand());
-    IncHood.onTrue(shooter.incrementPositionCommand());
+    // DecHood.onTrue(shooter.decrementPositionCommand());
+    // IncHood.onTrue(shooter.incrementPositionCommand());
 
     // Flywheel controls: while held, arm flywheel to use lookup-table speed
     // (otherwise it idles at a low speed while MoveAndShoot aiming is active).
     flyWheelTrigger.whileTrue(
         shooter.armFlywheelLookupCommand());
 
+    PASS_LOCK.whileTrue(shooter.passCommand());
+
+    HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
+
     // Translator buttons 10/11: bump the test flywheel velocity up/down.
-    INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());
-    DEC_TEST_FLYWHEEL.onTrue(shooter.decrementTestFlywheelVelocityCommand());
+    // INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());
+    // DEC_TEST_FLYWHEEL.onTrue(shooter.decrementTestFlywheelVelocityCommand());
 
     // reverseFlyWheelTrigger.whileTrue(
     //     Commands.parallel(
@@ -306,10 +331,10 @@ public class RobotContainer {
     //         Commands.runOnce(shooter::stop, shooter),
     //         Commands.runOnce(kicker::stop, kicker)));
 
-    turretTrigger0.onTrue(shooter.setTurretAngleDegreesCommand(0.0));
-    turretTrigger180.onTrue(shooter.setTurretAngleDegreesCommand(180.0));
-    turretTrigger45.onTrue(shooter.setTurretAngleDegreesCommand(45.0));
-    turretTrigger90.onTrue(shooter.setTurretAngleDegreesCommand(90.0));
+    // turretTrigger0.onTrue(shooter.setTurretAngleDegreesCommand(0.0));
+    // turretTrigger180.onTrue(shooter.setTurretAngleDegreesCommand(180.0));
+    // turretTrigger45.onTrue(shooter.setTurretAngleDegreesCommand(45.0));
+    // turretTrigger90.onTrue(shooter.setTurretAngleDegreesCommand(90.0));
 
     // Climb Controls
     EXTEND_CLIMBER.whileTrue(climber.climbCommand());
@@ -317,7 +342,6 @@ public class RobotContainer {
 
     RETRACT_CLIMBER.whileTrue(climber.retractCommand());
     RETRACT_CLIMBER.onFalse(climber.stopCommand());
-
     // Intake Controls
     INTAKE_TRIGGER.whileTrue(intake.intakeCommand());
     INTAKE_TRIGGER.onFalse(intake.stopCommand());
@@ -397,13 +421,6 @@ public class RobotContainer {
               drive.resetYaw();
             },
             drive));
-
-
-    new Trigger(edu.wpi.first.wpilibj.RobotState::isDisabled)
-    .onTrue(
-      shooter.runPositionCommand(15)
-      .ignoringDisable(true)
-    );
   }
 
   /**

@@ -10,6 +10,8 @@ public final class ClimbConstants {
   public static final boolean FOLLOWER_INVERTED = true;
   public static final double CLIMB_VOLTAGE = 10.0;
   public static final double MOI_KG_M2 = 0.01;
-  
+  public static final double TimeToGoDown = 2; // Seconds
+
+
   private ClimbConstants() {}
 }

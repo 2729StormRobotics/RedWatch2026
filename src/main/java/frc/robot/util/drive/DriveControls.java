@@ -191,6 +191,9 @@ public class DriveControls {
   public static Trigger IncHood;
   public static Trigger DecHood;
 
+  public static Trigger PASS_LOCK;
+  public static Trigger HOOD_DROP_LOCK;
+
   /**
    * Configures all controls based on the current driver and operator settings.
    * This method should be called during robot initialization.
@@ -244,29 +247,33 @@ public class DriveControls {
    */
   private static void configureSubsystemBindings() {
     hoodTrigger = m_weaponsController.leftTrigger();
-    DecHood = m_weaponsController.leftBumper();
+    // DecHood = m_weaponsController.leftBumper();
 
     INTAKE_TRIGGER = m_weaponsController.rightTrigger();
 
-    // B button: run flywheel at current test velocity
+    // B button: run flywheel at aimed velocity
     flyWheelTrigger = m_weaponsController.b();
     // Disable old hopper outtake mapping (no button assigned now)
     HopperOutake = new Trigger(() -> false);
     stopFlyWheelTrigger = m_translator.button(11); // currently unused
 
-    turretTrigger0 = m_weaponsController.povUp();
-    turretTrigger90 = m_weaponsController.povDown();
-    turretTrigger180 = m_weaponsController.povLeft();
-    turretTrigger45 = m_weaponsController.povRight();
+    HOOD_DROP_LOCK = m_weaponsController.rightBumper();
 
-    EXTEND_CLIMBER = m_translator.button(1);
-    RETRACT_CLIMBER = m_translator.button(2);
+    // turretTrigger0 = m_weaponsController.povUp();
+    // turretTrigger90 = m_weaponsController.povDown();
+    // turretTrigger180 = m_weaponsController.povLeft();
+    // turretTrigger45 = m_weaponsController.povRight();
+
+    EXTEND_CLIMBER = m_weaponsController.start();
+    RETRACT_CLIMBER = m_weaponsController.back();
 
     EXTEND_INTAKE = m_weaponsController.x();
     RETRACT_INTAKE = m_weaponsController.y();
 
-    IncHood = m_weaponsController.rightBumper();
-    MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
+    PASS_LOCK = m_weaponsController.a();
+
+    // IncHood = m_weaponsController.rightBumper();
+    // MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
 
     // TICK_2_HOOD = m_translator.button(8);
     // TICK_37_HOOD = m_translator.button(7);
@@ -278,8 +285,8 @@ public class DriveControls {
     ReverseHopperTrigger = m_translator.button(5);
 
     // Weapons controller Y/A: adjust shooter test flywheel velocity
-    INC_TEST_FLYWHEEL = m_weaponsController.y();
-    DEC_TEST_FLYWHEEL = m_weaponsController.a();
+    // INC_TEST_FLYWHEEL = m_weaponsController.y();
+    // DEC_TEST_FLYWHEEL = m_weaponsController.a();
 
     enableMoveShoot = m_rotator.button(1);
     disableMoveShoot = m_rotator.button(2);

@@ -17,9 +17,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "RaiseClimber"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "D-H2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PullClimber"
           }
         }
       ]

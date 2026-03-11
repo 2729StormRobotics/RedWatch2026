@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.LED.BlinkinLEDController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionConstants;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -264,6 +265,16 @@ public class Vision extends SubsystemBase {
   @AutoLogOutput(key = "Vision/TotalTagCount")
   public int getTotalTagCount() {
     return leftInputs.tagCount + rightInputs.tagCount;
+  }
+  /**
+   * Gets whether the robot sees a tag.
+   *
+   * @return True if the robot sees a tag
+   */
+  @AutoLogOutput(key = "Vision/SeesTag")
+  public boolean getSeeTag() {
+    BlinkinLEDController.getInstance().tagsSeen = ((leftInputs.tagCount + rightInputs.tagCount) > 0);
+    return (leftInputs.tagCount + rightInputs.tagCount) > 0;
   }
 
   /**

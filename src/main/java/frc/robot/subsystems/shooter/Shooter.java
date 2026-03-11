@@ -51,6 +51,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.AlphaMechanism3d;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
+import frc.robot.subsystems.LED.BlinkinLEDController;
 import frc.robot.subsystems.drive.Drive;
 // import frc.robot.subsystems.intake.Intake;
 // import frc.robot.subsystems.kicker.Kicker;
@@ -90,27 +91,38 @@ public class Shooter extends SubsystemBase {
 
   // State variables
   private double desiredFlywheelVelocity = 0.0;
-  /** Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive). */
+  /**
+   * Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive).
+   */
   private double desiredTurretAngleDeg = 0.0;
   /**
-   * Desired hood position in motor rotations. Single source of truth; periodic() applies it every
+   * Desired hood position in motor rotations. Single source of truth; periodic()
+   * applies it every
    * cycle (like the turret). All hood methods only change this value.
    */
-  private double desiredHoodPositionRotations =
-      (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
-  /** Adjustable flywheel test velocity (rotations per second) for manual tuning / data collection. */
+  private double desiredHoodPositionRotations = (HoodConstants.MIN_POSITION_ROTATIONS
+      + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
+  /**
+   * Adjustable flywheel test velocity (rotations per second) for manual tuning /
+   * data collection.
+   */
   private double testFlywheelVelocityRps = 250.0;
 
-  /** Whether the flywheel should use full lookup-table speed instead of idle speed. */
+  /**
+   * Whether the flywheel should use full lookup-table speed instead of idle
+   * speed.
+   */
   private boolean flywheelArmed = false;
 
-  /** Elastic / SmartDashboard: desired flywheel velocity (RPS) and hood position (rotations) for "Apply Setpoints" button. */
-  private final LoggedTunableNumber elasticDesiredFlywheelRps =
-      new LoggedTunableNumber("Shooter/Elastic/DesiredFlywheelRps", 250.0);
-  private final LoggedTunableNumber elasticDesiredHoodRotations =
-      new LoggedTunableNumber(
-          "Shooter/Elastic/DesiredHoodRotations",
-          (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0);
+  /**
+   * Elastic / SmartDashboard: desired flywheel velocity (RPS) and hood position
+   * (rotations) for "Apply Setpoints" button.
+   */
+  private final LoggedTunableNumber elasticDesiredFlywheelRps = new LoggedTunableNumber(
+      "Shooter/Elastic/DesiredFlywheelRps", 250.0);
+  private final LoggedTunableNumber elasticDesiredHoodRotations = new LoggedTunableNumber(
+      "Shooter/Elastic/DesiredHoodRotations",
+      (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0);
 
   private boolean prep = true;
 
@@ -132,7 +144,8 @@ public class Shooter extends SubsystemBase {
    * @param turretIO   Turret IO implementation
    * @param drive      Drive subsystem for robot pose
    */
-  public Shooter(FlywheelIO flywheelIO, HoodIO hoodIO, TurretIO turretIO, Drive drive, SwerveDriveSimulation driveTrainSimulation) {
+  public Shooter(FlywheelIO flywheelIO, HoodIO hoodIO, TurretIO turretIO, Drive drive,
+      SwerveDriveSimulation driveTrainSimulation) {
     this.flywheelIO = flywheelIO;
     this.hoodIO = hoodIO;
     this.turretIO = turretIO;
@@ -142,11 +155,11 @@ public class Shooter extends SubsystemBase {
     this.setDefaultCommand(idleFlywheelCommand());
   }
 
-@Override
+  @Override
   public void periodic() {
     // Update inputs from hardware
-    flywheelIO.updateInputs(flywheelInputs); 
-    hoodIO.updateInputs(hoodInputs); 
+    flywheelIO.updateInputs(flywheelInputs);
+    hoodIO.updateInputs(hoodInputs);
     turretIO.updateInputs(turretInputs);
 
     // Process inputs for logging
@@ -158,23 +171,23 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("Shooter/Hood/AtSetpoint", hoodAtSetpoint());
     SmartDashboard.putNumber("Shooter/Hood/DesiredAngle", turretIO.getDesiredAngle());
     SmartDashboard.putNumber("flywheel/flywheelVel", testFlywheelVelocityRps);
-    // Publish Elastic setpoint inputs when tuning mode is on so they appear in Elastic
+    // Publish Elastic setpoint inputs when tuning mode is on so they appear in
+    // Elastic
     if (Constants.tuningMode) {
       elasticDesiredFlywheelRps.get();
       elasticDesiredHoodRotations.get();
     }
 
-    // Elastic: horizontal distance from turret (robot) to hub, not including height (meters)
-    Pose2d robotPoseForDistance =
-        (Constants.currentMode == Constants.Mode.SIM && driveTrainSimulation != null)
-            ? driveTrainSimulation.getSimulatedDriveTrainPose()
-            : drive.getPose();
-    Translation2d hubCenter2d =
-        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red)
+    // Elastic: horizontal distance from turret (robot) to hub, not including height
+    // (meters)
+    Pose2d robotPoseForDistance = (Constants.currentMode == Constants.Mode.SIM && driveTrainSimulation != null)
+        ? driveTrainSimulation.getSimulatedDriveTrainPose()
+        : drive.getPose();
+    Translation2d hubCenter2d = (DriverStation.getAlliance().isPresent()
+        && DriverStation.getAlliance().get() == Alliance.Red)
             ? FieldConstants.Hub.oppTopCenterPoint.toTranslation2d()
             : FieldConstants.Hub.topCenterPoint.toTranslation2d();
-    double distanceToHubHorizontal =
-        hubCenter2d.minus(robotPoseForDistance.getTranslation()).getNorm();
+    double distanceToHubHorizontal = hubCenter2d.minus(robotPoseForDistance.getTranslation()).getNorm();
     SmartDashboard.putNumber("Shooter/Turret/DistanceToHub", distanceToHubHorizontal);
     Logger.recordOutput("Shooter/hubpose", FieldConstants.Hub.topCenterPoint.toTranslation2d());
     Logger.recordOutput("Shooter/Elastic/DistanceToHub", distanceToHubHorizontal);
@@ -197,15 +210,15 @@ public class Shooter extends SubsystemBase {
 
     Logger.recordOutput("Shooter/TrenchSafetyActive", safetyActive);
 
-    // Apply desired setpoints every cycle (turret-style: one desired value, always applied)
+    // Apply desired setpoints every cycle (turret-style: one desired value, always
+    // applied)
     if (desiredFlywheelVelocity != 0.0) {
       flywheelIO.setVelocity(desiredFlywheelVelocity);
     }
-    double clampedHood =
-        MathUtil.clamp(
-            desiredHoodPositionRotations,
-            HoodConstants.MIN_POSITION_ROTATIONS,
-            HoodConstants.MAX_POSITION_ROTATIONS);
+    double clampedHood = MathUtil.clamp(
+        desiredHoodPositionRotations,
+        HoodConstants.MIN_POSITION_ROTATIONS,
+        HoodConstants.MAX_POSITION_ROTATIONS);
     hoodIO.setPosition(clampedHood);
     turretIO.setAngle(desiredTurretAngleDeg);
 
@@ -243,15 +256,16 @@ public class Shooter extends SubsystemBase {
       robotVelocity = drive.getChassisSpeeds();
     }
 
-    // Turret position in field frame (robot center + offset rotated by robot heading)
-    Translation2d robotToTurret2d =
-        new Translation2d(
-            Constants.MechanismConstants.robotToTurret.getX(),
-            Constants.MechanismConstants.robotToTurret.getY());
-    Translation2d turretPositionField =
-        robotPose.getTranslation().plus(robotToTurret2d.rotateBy(robotPose.getRotation()));
+    // Turret position in field frame (robot center + offset rotated by robot
+    // heading)
+    Translation2d robotToTurret2d = new Translation2d(
+        Constants.MechanismConstants.robotToTurret.getX(),
+        Constants.MechanismConstants.robotToTurret.getY());
+    Translation2d turretPositionField = robotPose.getTranslation()
+        .plus(robotToTurret2d.rotateBy(robotPose.getRotation()));
 
-    // Vector from turret to target (hub) in field coordinates for correct angle and distance
+    // Vector from turret to target (hub) in field coordinates for correct angle and
+    // distance
     Translation2d turretToTarget = targetPoint.minus(turretPositionField);
 
     // Check if target is valid (non-zero distance)
@@ -265,29 +279,31 @@ public class Shooter extends SubsystemBase {
     // Heading to hub from turret in field coordinates
     Rotation2d headingToHub = turretToTarget.getAngle();
 
-    // Required turret angle relative to robot forward direction (0° = forward, CCW positive).
-    // Current hardware/setup is 180° reversed relative to the ideal math, so add π here so that
-    // the commanded angle points the turret toward the hub instead of directly away from it.
+    // Required turret angle relative to robot forward direction (0° = forward, CCW
+    // positive).
+    // Current hardware/setup is 180° reversed relative to the ideal math, so add π
+    // here so that
+    // the commanded angle points the turret toward the hub instead of directly away
+    // from it.
     Rotation2d robotRotation = robotPose.getRotation();
     Rotation2d turretRotation = headingToHub.minus(robotRotation);
 
-    // Normalize and clamp (turret convention: 0° = robot forward, CCW positive), with 180° flip
-    double turretAngle =
-        MathUtil.inputModulus(turretRotation.getRadians() + Math.PI, -Math.PI, Math.PI);
-    // Keep in turret's allowed range [-180°, 90°] so setAngle/safety don't clamp to wrong direction.
-    // Angles in (90°, 180°] wrap to equivalent in [-180°, -90°) (e.g. 180° → -180°).
+    // Normalize and clamp (turret convention: 0° = robot forward, CCW positive),
+    // with 180° flip
+    double turretAngle = MathUtil.inputModulus(turretRotation.getRadians() + Math.PI, -Math.PI, Math.PI);
+    // Keep in turret's allowed range [-180°, 90°] so setAngle/safety don't clamp to
+    // wrong direction.
+    // Angles in (90°, 180°] wrap to equivalent in [-180°, -90°) (e.g. 180° →
+    // -180°).
     if (turretAngle > TurretConstants.ALLOWED_MAX_RAD) {
       turretAngle -= 2 * Math.PI;
     }
-    turretAngle =
-        MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.ALLOWED_MAX_RAD);
+    turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.ALLOWED_MAX_RAD);
     setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
 
     // Lookup-table based flywheel speed and hood position from distance
-    double lookupShooterRps =
-        ShooterConstants.getShooterSpeedRpsForDistance(distanceToHub);
-    double lookupHoodRotations =
-        ShooterConstants.getHoodPositionRotationsForDistance(distanceToHub);
+    double lookupShooterRps = ShooterConstants.getShooterSpeedRpsForDistance(distanceToHub);
+    double lookupHoodRotations = ShooterConstants.getHoodPositionRotationsForDistance(distanceToHub);
 
     // Always set hood based on lookup so it tracks accurately with distance
     setDesiredHoodPositionRotations(lookupHoodRotations);
@@ -314,9 +330,8 @@ public class Shooter extends SubsystemBase {
     // Get hub center position (alliance-relative)
     Translation2d hubCenter;
 
-    boolean isFlipped =
-        DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
+    boolean isFlipped = DriverStation.getAlliance().isPresent()
+        && DriverStation.getAlliance().get() == Alliance.Red;
 
     if (isFlipped) {
       hubCenter = FieldConstants.Hub.oppTopCenterPoint.toTranslation2d();
@@ -332,10 +347,9 @@ public class Shooter extends SubsystemBase {
    * Uses alliance-flipped depot center so it always represents "our" depot.
    */
   private void updateDepotAim(boolean isPrep) {
-    Translation2d depotCenter =
-        frc.robot.util.drive.AllianceFlipUtil
-            .apply(FieldConstants.Depot.depotCenter)
-            .toTranslation2d();
+    Translation2d depotCenter = frc.robot.util.drive.AllianceFlipUtil
+        .apply(FieldConstants.Depot.depotCenter)
+        .toTranslation2d();
     updateAimToTarget(depotCenter, isPrep);
   }
 
@@ -455,7 +469,8 @@ public class Shooter extends SubsystemBase {
   }
 
   /**
-   * Command that runs the flywheel at the current {@code testFlywheelVelocityRps}.
+   * Command that runs the flywheel at the current
+   * {@code testFlywheelVelocityRps}.
    * Use this with whileTrue(...) so the flywheel runs while held.
    */
   public Command runTestFlywheelCommand() {
@@ -463,13 +478,18 @@ public class Shooter extends SubsystemBase {
         .withName("Shooter/RunTestFlywheel");
   }
 
-  /** Command to bump the test flywheel velocity up by a fixed step (e.g. +50 RPS). */
+  /**
+   * Command to bump the test flywheel velocity up by a fixed step (e.g. +50 RPS).
+   */
   public Command incrementTestFlywheelVelocityCommand() {
     return Commands.runOnce(() -> adjustTestFlywheelVelocity(10.0), this)
         .withName("Shooter/IncTestFlywheelVel");
   }
 
-  /** Command to bump the test flywheel velocity down by a fixed step (e.g. -50 RPS). */
+  /**
+   * Command to bump the test flywheel velocity down by a fixed step (e.g. -50
+   * RPS).
+   */
   public Command decrementTestFlywheelVelocityCommand() {
     return Commands.runOnce(() -> adjustTestFlywheelVelocity(-10.0), this)
         .withName("Shooter/DecTestFlywheelVel");
@@ -482,26 +502,28 @@ public class Shooter extends SubsystemBase {
    */
   public Command armFlywheelLookupCommand() {
     return Commands.startEnd(
-            () -> setFlywheelArmed(true),
-            () -> setFlywheelArmed(false),
-            this)
+        () -> setFlywheelArmed(true),
+        () -> setFlywheelArmed(false),
+        this)
         .withName("Shooter/ArmFlywheelLookup");
   }
 
   /**
-   * Command that reads Elastic/SmartDashboard desired flywheel RPS and hood position (rotations),
-   * then applies both. Put this on the dashboard with {@code SmartDashboard.putData("Shooter/Elastic/ApplySetpoints", shooter.applyElasticSetpointsCommand());}
+   * Command that reads Elastic/SmartDashboard desired flywheel RPS and hood
+   * position (rotations),
+   * then applies both. Put this on the dashboard with
+   * {@code SmartDashboard.putData("Shooter/Elastic/ApplySetpoints", shooter.applyElasticSetpointsCommand());}
    * so in Elastic you can add a button that runs this command.
    */
   public Command applyElasticSetpointsCommand() {
     return Commands.runOnce(
-            () -> {
-              double rps = elasticDesiredFlywheelRps.get();
-              double hoodRotations = elasticDesiredHoodRotations.get();
-              setFlywheelVelocity(rps);
-              setDesiredHoodPositionRotations(hoodRotations);
-            },
-            this)
+        () -> {
+          double rps = elasticDesiredFlywheelRps.get();
+          double hoodRotations = elasticDesiredHoodRotations.get();
+          setFlywheelVelocity(rps);
+          setDesiredHoodPositionRotations(hoodRotations);
+        },
+        this)
         .withName("Shooter/Elastic/ApplySetpoints");
   }
 
@@ -514,6 +536,7 @@ public class Shooter extends SubsystemBase {
       return true;
     }
     double error = Math.abs(flywheelInputs.leaderVelocityRotationsPerSec - desiredFlywheelVelocity);
+    BlinkinLEDController.getInstance().readyToFire = error < FlywheelConstants.VELOCITY_TOLERANCE;
     return error < FlywheelConstants.VELOCITY_TOLERANCE;
   }
 
@@ -525,15 +548,15 @@ public class Shooter extends SubsystemBase {
     return flywheelInputs.leaderVelocityRotationsPerSec;
   }
 
-  // ========== Hood Methods (turret-style: all methods only set desired; periodic applies it) ==========
+  // ========== Hood Methods (turret-style: all methods only set desired; periodic
+  // applies it) ==========
 
   /** Sets the desired hood position (motor rotations). Clamped to soft limits. */
   public void setDesiredHoodPositionRotations(double rotations) {
-    desiredHoodPositionRotations =
-        MathUtil.clamp(
-            rotations,
-            HoodConstants.MIN_POSITION_ROTATIONS,
-            HoodConstants.MAX_POSITION_ROTATIONS);
+    desiredHoodPositionRotations = MathUtil.clamp(
+        rotations,
+        HoodConstants.MIN_POSITION_ROTATIONS,
+        HoodConstants.MAX_POSITION_ROTATIONS);
   }
 
   /** Returns the current desired hood position (motor rotations). */
@@ -546,26 +569,28 @@ public class Shooter extends SubsystemBase {
     setDesiredHoodPositionRotations(desiredHoodPositionRotations + deltaRotations);
   }
 
-  /** Converts desired position (rotations) to desired angle (radians) for logging / atSetpoint. */
+  /**
+   * Converts desired position (rotations) to desired angle (radians) for logging
+   * / atSetpoint.
+   */
   private double getDesiredHoodAngleRad() {
-    double norm =
-        (desiredHoodPositionRotations - HoodConstants.MIN_POSITION_ROTATIONS)
-            / (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
+    double norm = (desiredHoodPositionRotations - HoodConstants.MIN_POSITION_ROTATIONS)
+        / (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
     return HoodConstants.MIN_ANGLE_RAD
         + norm * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD);
   }
 
-  /** Sets the desired hood angle (radians). Converts to motor rotations and updates desired. */
+  /**
+   * Sets the desired hood angle (radians). Converts to motor rotations and
+   * updates desired.
+   */
   public void setHoodAngle(double angleRadians) {
-    double clamped =
-        MathUtil.clamp(angleRadians, HoodConstants.MIN_ANGLE_RAD, HoodConstants.MAX_ANGLE_RAD);
-    double normalizedAngle =
-        (clamped - HoodConstants.MIN_ANGLE_RAD)
-            / (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD);
-    double rotations =
-        HoodConstants.MIN_POSITION_ROTATIONS
-            + normalizedAngle
-                * (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
+    double clamped = MathUtil.clamp(angleRadians, HoodConstants.MIN_ANGLE_RAD, HoodConstants.MAX_ANGLE_RAD);
+    double normalizedAngle = (clamped - HoodConstants.MIN_ANGLE_RAD)
+        / (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD);
+    double rotations = HoodConstants.MIN_POSITION_ROTATIONS
+        + normalizedAngle
+            * (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
     setDesiredHoodPositionRotations(rotations);
   }
 
@@ -595,11 +620,10 @@ public class Shooter extends SubsystemBase {
   public double getHoodCurrentAngle() {
     double normalized = hoodInputs.absolutePositionRotations;
     // Convert from 0-1 range back to angle in radians:
-    //   normalized = (angle - MIN) / (MAX - MIN)
-    //   angle      = normalized * (MAX - MIN) + MIN
-    double angle =
-        normalized * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD)
-            + HoodConstants.MIN_ANGLE_RAD;
+    // normalized = (angle - MIN) / (MAX - MIN)
+    // angle = normalized * (MAX - MIN) + MIN
+    double angle = normalized * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD)
+        + HoodConstants.MIN_ANGLE_RAD;
     return angle;
   }
 
@@ -628,8 +652,8 @@ public class Shooter extends SubsystemBase {
    * Sets the turret angle setpoint (degrees).
    */
   public void setTurretAngleDegrees(double angleDegrees) {
-    desiredTurretAngleDeg =
-        MathUtil.inputModulus(angleDegrees, TurretConstants.MIN_ANGLE_DEG, TurretConstants.MAX_ANGLE_DEG);
+    desiredTurretAngleDeg = MathUtil.inputModulus(angleDegrees, TurretConstants.MIN_ANGLE_DEG,
+        TurretConstants.MAX_ANGLE_DEG);
   }
 
   /**
@@ -641,8 +665,7 @@ public class Shooter extends SubsystemBase {
     double setpointDeg = desiredTurretAngleDeg;
 
     // Calculate error with proper wrap-around handling in degrees
-    double errorDeg =
-        MathUtil.inputModulus(setpointDeg - currentDeg, -180.0, 180.0);
+    double errorDeg = MathUtil.inputModulus(setpointDeg - currentDeg, -180.0, 180.0);
     return Math.abs(errorDeg) < TurretConstants.ANGLE_TOLERANCE_DEG;
   }
 
@@ -672,37 +695,37 @@ public class Shooter extends SubsystemBase {
     }, this);
   }
 
-//   public Command autoScoreCommand(Intake intake, Kicker kicker) {
-//     if (Constants.currentMode == Constants.Mode.SIM) {
-//       return Commands.parallel(
-//           Commands.run(() -> this.prep = false),
-//           // Always keep aiming while the button is held
-//           Commands.run(this::enableMoveAndShoot, this),
+  // public Command autoScoreCommand(Intake intake, Kicker kicker) {
+  // if (Constants.currentMode == Constants.Mode.SIM) {
+  // return Commands.parallel(
+  // Commands.run(() -> this.prep = false),
+  // // Always keep aiming while the button is held
+  // Commands.run(this::enableMoveAndShoot, this),
 
-//           // Repeating sequence for the actual "shots"
-//           Commands.repeatingSequence(
-//               // 1. Wait until the shooter is physically ready
-//               Commands.waitUntil(() -> true),
+  // // Repeating sequence for the actual "shots"
+  // Commands.repeatingSequence(
+  // // 1. Wait until the shooter is physically ready
+  // Commands.waitUntil(() -> true),
 
-//               // 2. Fire the hardware/kicker and physics sim simultaneously
-//               Commands.parallel(
-//                   kicker.fireCommand().withTimeout(0.1), // Quick pulse of the kicker
-//                   Commands.runOnce(() -> this.launchSimulatedFuel(intake))),
+  // // 2. Fire the hardware/kicker and physics sim simultaneously
+  // Commands.parallel(
+  // kicker.fireCommand().withTimeout(0.1), // Quick pulse of the kicker
+  // Commands.runOnce(() -> this.launchSimulatedFuel(intake))),
 
-//               // 3. The "Stagger" delay (e.g., 0.1s = 10 balls per second)
-//               Commands.waitSeconds(0.2)));
-//     } else {
-//       return Commands.parallel(
-//           Commands.run(() -> {
-//             // Coordinate aim uses robot pose to calculate heading to hub
-//             this.prep = false;
-//             this.enableMoveAndShoot();
-//           }, this),
-//           Commands.sequence(
-//               Commands.waitUntil(this::isReadyToFire),
-//               kicker.fireCommand()));
-//     }
-//   }
+  // // 3. The "Stagger" delay (e.g., 0.1s = 10 balls per second)
+  // Commands.waitSeconds(0.2)));
+  // } else {
+  // return Commands.parallel(
+  // Commands.run(() -> {
+  // // Coordinate aim uses robot pose to calculate heading to hub
+  // this.prep = false;
+  // this.enableMoveAndShoot();
+  // }, this),
+  // Commands.sequence(
+  // Commands.waitUntil(this::isReadyToFire),
+  // kicker.fireCommand()));
+  // }
+  // }
 
   public Command prepCommand() {
     return new InstantCommand(() -> {
@@ -711,49 +734,57 @@ public class Shooter extends SubsystemBase {
     }, this);
   }
 
-//   public Command shootforseconds(Intake intake, Kicker kicker, double seconds) {
-//     return new ParallelCommandGroup(
-//         new RepeatCommand(autoScoreCommand(intake, kicker)),
-//         new WaitCommand(seconds)).withTimeout(seconds);
-//   }
+  // public Command shootforseconds(Intake intake, Kicker kicker, double seconds)
+  // {
+  // return new ParallelCommandGroup(
+  // new RepeatCommand(autoScoreCommand(intake, kicker)),
+  // new WaitCommand(seconds)).withTimeout(seconds);
+  // }
 
   // SIMULATION STUFF
 
-//   private void launchSimulatedFuel(Intake intake) {
-//     if (Constants.currentMode != Constants.Mode.SIM || driveTrainSimulation == null || !intake.decrementBall())
-//       return;
+  // private void launchSimulatedFuel(Intake intake) {
+  // if (Constants.currentMode != Constants.Mode.SIM || driveTrainSimulation ==
+  // null || !intake.decrementBall())
+  // return;
 
-//     // 1. Gather current robot state
-//     var robotPose = driveTrainSimulation.getSimulatedDriveTrainPose();
-//     ChassisSpeeds chassisSpeeds = driveTrainSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative();
+  // // 1. Gather current robot state
+  // var robotPose = driveTrainSimulation.getSimulatedDriveTrainPose();
+  // ChassisSpeeds chassisSpeeds =
+  // driveTrainSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative();
 
-//     // 2. Calculate launch parameters
-//     // We combine robot rotation + turret rotation for the total field-relative
-//     // heading
-//     Rotation2d totalHeader = robotPose.getRotation().plus(Rotation2d.fromDegrees(this.getTurretCurrentAngleDeg()));
+  // // 2. Calculate launch parameters
+  // // We combine robot rotation + turret rotation for the total field-relative
+  // // heading
+  // Rotation2d totalHeader =
+  // robotPose.getRotation().plus(Rotation2d.fromDegrees(this.getTurretCurrentAngleDeg()));
 
-//     GamePieceProjectile fuelProjectile = new GamePieceProjectile(
-//         Constants.FUEL_INFO,
-//         robotPose.getTranslation(),
-//         new Translation2d(0.1, 0), // Shooter offset from robot center (meters)
-//         chassisSpeeds, // Adds robot inertia to the ball
-//         totalHeader,
-//         Distance.ofBaseUnits(0.5, Meters), // Launch height (meters)
-//         LinearVelocity.ofBaseUnits(
-//             this.getFlywheelVelocity() / 4, MetersPerSecond), // Convert RPM to meters/sec (example scaling)
-//         Angle.ofBaseUnits((Math.PI / 2) - ((Math.PI / 8) + this.getHoodCurrentAngle()), Radians) // Vertical launch
-//                                                                                                  // angle
-//     );
+  // GamePieceProjectile fuelProjectile = new GamePieceProjectile(
+  // Constants.FUEL_INFO,
+  // robotPose.getTranslation(),
+  // new Translation2d(0.1, 0), // Shooter offset from robot center (meters)
+  // chassisSpeeds, // Adds robot inertia to the ball
+  // totalHeader,
+  // Distance.ofBaseUnits(0.5, Meters), // Launch height (meters)
+  // LinearVelocity.ofBaseUnits(
+  // this.getFlywheelVelocity() / 4, MetersPerSecond), // Convert RPM to
+  // meters/sec (example scaling)
+  // Angle.ofBaseUnits((Math.PI / 2) - ((Math.PI / 8) +
+  // this.getHoodCurrentAngle()), Radians) // Vertical launch
+  // // angle
+  // );
 
-//     // 3. Optional: Configure scoring visualization
-//     fuelProjectile.withProjectileTrajectoryDisplayCallBack(
-//         (poses) -> Logger.recordOutput("Sim/FuelTrajectory", poses.toArray(new Pose3d[0])),
-//         (poses) -> Logger.recordOutput("Sim/FuelTrajectoryMiss", poses.toArray(new Pose3d[0])));
+  // // 3. Optional: Configure scoring visualization
+  // fuelProjectile.withProjectileTrajectoryDisplayCallBack(
+  // (poses) -> Logger.recordOutput("Sim/FuelTrajectory", poses.toArray(new
+  // Pose3d[0])),
+  // (poses) -> Logger.recordOutput("Sim/FuelTrajectoryMiss", poses.toArray(new
+  // Pose3d[0])));
 
-//     fuelProjectile.enableBecomesGamePieceOnFieldAfterTouchGround();
-//     // 4. Register with the arena
-//     SimulatedArena.getInstance().addGamePieceProjectile(fuelProjectile);
-//   }
+  // fuelProjectile.enableBecomesGamePieceOnFieldAfterTouchGround();
+  // // 4. Register with the arena
+  // SimulatedArena.getInstance().addGamePieceProjectile(fuelProjectile);
+  // }
 
   /** Sets the desired hood position (motor rotations). Periodic applies it. */
   public Command runPositionCommand(double ticks) {
@@ -773,12 +804,14 @@ public class Shooter extends SubsystemBase {
         .withName("Hood/DecPosition");
   }
 
-  /** While running, updates desired hood position from joystick; periodic applies it. */
+  /**
+   * While running, updates desired hood position from joystick; periodic applies
+   * it.
+   */
   public Command runPositionCommandConstant(CommandXboxController m_operatorController) {
     return run(
-            () ->
-                setDesiredHoodPositionRotations(
-                    -(19 + (-m_operatorController.getLeftY() * 18))))
+        () -> setDesiredHoodPositionRotations(
+            -(19 + (-m_operatorController.getLeftY() * 18))))
         .withName("HoodJoystick");
   }
 
@@ -787,19 +820,56 @@ public class Shooter extends SubsystemBase {
   }
 
   // public Command runHoodCommand(double joyStick) {
-  //   return runOnce(() -> hoodIO.setPercent(joyStick * 0.5));
+  // return runOnce(() -> hoodIO.setPercent(joyStick * 0.5));
   // }
   // public Command reverseHoodCommand() {
-  //   return runOnce(() -> hoodIO.setPercent(-0.05)).withName("HoodStop");
+  // return runOnce(() -> hoodIO.setPercent(-0.05)).withName("HoodStop");
   // }
 
   // public Command stopHoodCommand() {
-  //   return runOnce(() -> hoodIO.setPercent(0)).withName("HoodStop");
+  // return runOnce(() -> hoodIO.setPercent(0)).withName("HoodStop");
 
-
-  public Command setTurretAngleDegreesCommand(double degrees){
+  public Command setTurretAngleDegreesCommand(double degrees) {
     return runOnce(() -> setTurretAngleDegrees(degrees)).withName("HoodStop");
   }
-  
+
+  public Command passCommand() {
+    return Commands.startEnd(
+        () -> {
+          this.disableMoveAndShoot();
+          this.setFlywheelArmed(true);
+          this.setDesiredHoodPositionRotations(20);
+          this.setTurretAngleDegrees(0);
+          this.setFlywheelVelocity(60);
+        },
+        () -> {
+          this.enableMoveAndShoot();
+          this.setFlywheelArmed(false);
+        },
+        this)
+        .withName("Shooter/Pass");
+  }
+
+  public Command trenchLockCommand() {
+    return Commands.startEnd(
+        () -> lockTrench(),
+        () -> unlockTrench(),
+        this)
+        .withName("Shooter/TrenchLock");
+  }
+
+  public void lockTrench() {
+    this.disableMoveAndShoot();
+    this.setFlywheelArmed(false);
+    this.setDesiredHoodPositionRotations(0.5);
+    // Set flywheel to idle/off so it doesn't get stuck at high speed (e.g. from
+    // passCommand)
+    this.setFlywheelVelocity(18.0);
+  }
+
+  public void unlockTrench() {
+    this.enableMoveAndShoot();
+    this.setFlywheelArmed(false);
+  }
 
 }

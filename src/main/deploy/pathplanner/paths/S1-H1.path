@@ -33,13 +33,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "ClimbExtend",
+      "name": "",
       "waypointRelativePos": 0.18345099667774115,
       "endWaypointRelativePos": null,
       "command": null
     },
     {
-      "name": "ClimbRetract",
+      "name": "",
       "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": null

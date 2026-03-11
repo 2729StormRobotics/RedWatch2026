@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 0.5640429687500004,
-        "y": 5.952730251736111
+        "x": 0.7678948929398153,
+        "y": 5.94846556712963
       },
       "prevControl": {
-        "x": 2.551714048032408,
-        "y": 5.763378255208333
+        "x": 2.755565972222222,
+        "y": 5.759113570601852
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,14 +31,14 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.7116159539473685,
-      "rotationDegrees": 0.0
+      "rotationDegrees": 180.0
     }
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "ClimbExtend",
+      "name": "",
       "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": null
@@ -53,8 +53,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 0.0
+    "velocity": 0.0,
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "S2",

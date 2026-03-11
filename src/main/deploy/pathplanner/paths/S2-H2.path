@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 0.6789270109953709,
-        "y": 4.5798954716435185
+        "x": 1.34021556712963,
+        "y": 4.6274631076388895
       },
       "prevControl": {
-        "x": 1.1964699797453717,
-        "y": 5.578404007523148
+        "x": 1.8577585358796311,
+        "y": 5.625971643518519
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,13 +33,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "ClimbExtend",
+      "name": "",
       "waypointRelativePos": 0.2,
       "endWaypointRelativePos": null,
       "command": null
     },
     {
-      "name": "ClimbRetract",
+      "name": "",
       "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": null

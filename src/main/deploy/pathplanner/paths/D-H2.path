@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.5640429687500004,
-        "y": 5.952730251736111
+        "x": 0.7678948929398153,
+        "y": 5.94846556712963
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.5298598813657411,
-        "y": 5.482958839699075
+        "x": 0.733711805555556,
+        "y": 5.478694155092594
       },
       "isLocked": false,
       "linkedName": "D"
     },
     {
       "anchor": {
-        "x": 0.6789270109953709,
-        "y": 4.5798954716435185
+        "x": 1.34021556712963,
+        "y": 4.6274631076388895
       },
       "prevControl": {
-        "x": 0.4483716001157413,
-        "y": 5.149263671875001
+        "x": 1.1096601562500006,
+        "y": 5.196831307870372
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,7 +39,7 @@
       "command": null
     },
     {
-      "name": "ClimbRetract",
+      "name": "",
       "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": null
@@ -61,7 +61,7 @@
   "folder": "S2",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }
