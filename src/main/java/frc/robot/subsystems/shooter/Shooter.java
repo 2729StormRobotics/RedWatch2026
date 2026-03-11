@@ -310,8 +310,8 @@ public class Shooter extends SubsystemBase {
 
     // Flywheel: idle at low speed while move-and-shoot aiming is active,
     // then rev to full lookup speed when armed (weapons B button).
-    double targetFlywheelRps = flywheelArmed ? lookupShooterRps : 18.0;
-    setFlywheelVelocity(targetFlywheelRps);
+    double targetFlywheelRps = flywheelArmed ? testFlywheelVelocityRps : 18.0;
+    setTestFlywheelVelocity(targetFlywheelRps);
 
     // Log target information
     Logger.recordOutput("Shooter/isPrep", isPrep);
@@ -545,7 +545,7 @@ public class Shooter extends SubsystemBase {
    */
   @AutoLogOutput(key = "Shooter/Flywheel/Velocity")
   public double getFlywheelVelocity() {
-    return flywheelInputs.leaderVelocityRotationsPerSec;
+    return testFlywheelVelocityRps;
   }
 
   // ========== Hood Methods (turret-style: all methods only set desired; periodic

@@ -41,15 +41,14 @@ public final class ShooterConstants {
    * Fill in with real data from characterization; entries should be ordered by distance ascending.
    */
   public static final LookupTableEntry[] LOOKUP_TABLE = {
-    new LookupTableEntry(2.47, 48.8, 20.8),
     new LookupTableEntry(1.9, 48.9, 4.8),
-    new LookupTableEntry(2.99, 53.3, 5.9),
-    // new LookupTableEntry(8.0, 420.0, 28.0),
-    new LookupTableEntry(3.5,56.8, 10.15),
-    new LookupTableEntry(3.1,47.1, 22),
-    new LookupTableEntry(3.0,49.1, 16.8),
-    new LookupTableEntry(2.75,49.1, 16.8),
+    new LookupTableEntry(2.47, 48.8, 20.8),
     new LookupTableEntry(2.6,47.6, 16.976),
+    new LookupTableEntry(2.75,49.1, 16.8),
+    new LookupTableEntry(2.99, 53.3, 5.9),
+    new LookupTableEntry(3.0,49.1, 16.8),
+    new LookupTableEntry(3.1,47.1, 22),
+    new LookupTableEntry(3.5,56.8, 10.15),
   };
 
   /**

@@ -319,8 +319,8 @@ public class RobotContainer {
     HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
 
     // Translator buttons 10/11: bump the test flywheel velocity up/down.
-    // INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());
-    // DEC_TEST_FLYWHEEL.onTrue(shooter.decrementTestFlywheelVelocityCommand());
+    INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());
+    DEC_TEST_FLYWHEEL.onTrue(shooter.decrementTestFlywheelVelocityCommand());
 
     // reverseFlyWheelTrigger.whileTrue(
     //     Commands.parallel(
