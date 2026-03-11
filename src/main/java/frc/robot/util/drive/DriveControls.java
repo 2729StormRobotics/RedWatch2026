@@ -268,9 +268,9 @@ public class DriveControls {
     RETRACT_CLIMBER = m_weaponsController.back();
 
     EXTEND_INTAKE = m_weaponsController.x();
-    // RETRACT_INTAKE = m_weaponsController.y();
+    RETRACT_INTAKE = m_weaponsController.y();
 
-    // PASS_LOCK = m_weaponsController.a();
+    PASS_LOCK = m_weaponsController.a();
 
     // IncHood = m_weaponsController.rightBumper();
     // MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
@@ -285,8 +285,8 @@ public class DriveControls {
     ReverseHopperTrigger = m_translator.button(5);
 
     // Weapons controller Y/A: adjust shooter test flywheel velocity
-    INC_TEST_FLYWHEEL = m_weaponsController.y();
-    DEC_TEST_FLYWHEEL = m_weaponsController.a();
+    // INC_TEST_FLYWHEEL = m_weaponsController.y();
+    // DEC_TEST_FLYWHEEL = m_weaponsController.a();
 
     enableMoveShoot = m_rotator.button(1);
     disableMoveShoot = m_rotator.button(2);

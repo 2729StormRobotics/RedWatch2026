@@ -40,8 +40,8 @@ public final class ShooterConstants {
    * Lookup table: (distance from hub, shooter speed RPS, hood motor rotations).
    * Fill in with real data from characterization; entries should be ordered by distance ascending.
    */
-  public static final LookupTableEntry[] LOOKUP_TABLE = {
-    new LookupTableEntry(1.9, 48.9, 4.8),
+  public static final LookupTableEntry[] LOOKUP_TABLE_HOOD = {
+    new LookupTableEntry(2.08, 48.9, 4.8),
     new LookupTableEntry(2.47, 48.8, 20.8),
     new LookupTableEntry(2.6,47.6, 16.976),
     new LookupTableEntry(2.75,49.1, 16.8),
@@ -51,25 +51,36 @@ public final class ShooterConstants {
     new LookupTableEntry(3.5,56.8, 10.15),
   };
 
+  public static final LookupTableEntry[] LOOKUP_TABLE_SHOOTER = {
+    new LookupTableEntry(1.74, 240, 22.7),
+    new LookupTableEntry(2.08, 250, 23.796),
+    new LookupTableEntry(2.46,240, 22),
+    new LookupTableEntry(2.48,240, 16.8),
+    new LookupTableEntry(2.86,250, 16.89),
+    new LookupTableEntry(2.9,260, 14),
+    new LookupTableEntry(3.67, 280, 10.15),
+    new LookupTableEntry(3.75,290, 10.15),
+  };
+
   /**
    * Interpolates shooter speed (RPS) for a given distance using {@link #LOOKUP_TABLE}.
    * Clamps to first/last table value if distance is outside the table range.
    */
   public static double getShooterSpeedRpsForDistance(double distanceMeters) {
-    if (LOOKUP_TABLE.length == 0) return 0.0;
-    if (distanceMeters <= LOOKUP_TABLE[0].distanceFromHubMeters())
-      return LOOKUP_TABLE[0].shooterSpeedRps();
-    if (distanceMeters >= LOOKUP_TABLE[LOOKUP_TABLE.length - 1].distanceFromHubMeters())
-      return LOOKUP_TABLE[LOOKUP_TABLE.length - 1].shooterSpeedRps();
-    for (int i = 0; i < LOOKUP_TABLE.length - 1; i++) {
-      double d0 = LOOKUP_TABLE[i].distanceFromHubMeters();
-      double d1 = LOOKUP_TABLE[i + 1].distanceFromHubMeters();
+    if (LOOKUP_TABLE_SHOOTER.length == 0) return 0.0;
+    if (distanceMeters <= LOOKUP_TABLE_SHOOTER[0].distanceFromHubMeters())
+      return LOOKUP_TABLE_SHOOTER[0].shooterSpeedRps();
+    if (distanceMeters >= LOOKUP_TABLE_SHOOTER[LOOKUP_TABLE_SHOOTER.length - 1].distanceFromHubMeters())
+      return LOOKUP_TABLE_SHOOTER[LOOKUP_TABLE_SHOOTER.length - 1].shooterSpeedRps();
+    for (int i = 0; i < LOOKUP_TABLE_SHOOTER.length - 1; i++) {
+      double d0 = LOOKUP_TABLE_SHOOTER[i].distanceFromHubMeters();
+      double d1 = LOOKUP_TABLE_SHOOTER[i + 1].distanceFromHubMeters();
       if (distanceMeters >= d0 && distanceMeters <= d1) {
         double t = (distanceMeters - d0) / (d1 - d0);
-        return LOOKUP_TABLE[i].shooterSpeedRps() + t * (LOOKUP_TABLE[i + 1].shooterSpeedRps() - LOOKUP_TABLE[i].shooterSpeedRps());
+        return LOOKUP_TABLE_SHOOTER[i].shooterSpeedRps() + t * (LOOKUP_TABLE_SHOOTER[i + 1].shooterSpeedRps() - LOOKUP_TABLE_SHOOTER[i].shooterSpeedRps());
       }
     }
-    return LOOKUP_TABLE[LOOKUP_TABLE.length - 1].shooterSpeedRps();
+    return LOOKUP_TABLE_SHOOTER[LOOKUP_TABLE_SHOOTER.length - 1].shooterSpeedRps();
   }
 
   /**
@@ -77,20 +88,20 @@ public final class ShooterConstants {
    * Clamps to first/last table value if distance is outside the table range.
    */
   public static double getHoodPositionRotationsForDistance(double distanceMeters) {
-    if (LOOKUP_TABLE.length == 0) return (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
-    if (distanceMeters <= LOOKUP_TABLE[0].distanceFromHubMeters())
-      return LOOKUP_TABLE[0].hoodPositionRotations();
-    if (distanceMeters >= LOOKUP_TABLE[LOOKUP_TABLE.length - 1].distanceFromHubMeters())
-      return LOOKUP_TABLE[LOOKUP_TABLE.length - 1].hoodPositionRotations();
-    for (int i = 0; i < LOOKUP_TABLE.length - 1; i++) {
-      double d0 = LOOKUP_TABLE[i].distanceFromHubMeters();
-      double d1 = LOOKUP_TABLE[i + 1].distanceFromHubMeters();
+    if (LOOKUP_TABLE_HOOD.length == 0) return (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
+    if (distanceMeters <= LOOKUP_TABLE_HOOD[0].distanceFromHubMeters())
+      return LOOKUP_TABLE_HOOD[0].hoodPositionRotations();
+    if (distanceMeters >= LOOKUP_TABLE_HOOD[LOOKUP_TABLE_HOOD.length - 1].distanceFromHubMeters())
+      return LOOKUP_TABLE_HOOD[LOOKUP_TABLE_HOOD.length - 1].hoodPositionRotations();
+    for (int i = 0; i < LOOKUP_TABLE_HOOD.length - 1; i++) {
+      double d0 = LOOKUP_TABLE_HOOD[i].distanceFromHubMeters();
+      double d1 = LOOKUP_TABLE_HOOD[i + 1].distanceFromHubMeters();
       if (distanceMeters >= d0 && distanceMeters <= d1) {
         double t = (distanceMeters - d0) / (d1 - d0);
-        return LOOKUP_TABLE[i].hoodPositionRotations() + t * (LOOKUP_TABLE[i + 1].hoodPositionRotations() - LOOKUP_TABLE[i].hoodPositionRotations());
+        return LOOKUP_TABLE_HOOD[i].hoodPositionRotations() + t * (LOOKUP_TABLE_HOOD[i + 1].hoodPositionRotations() - LOOKUP_TABLE_HOOD[i].hoodPositionRotations());
       }
     }
-    return LOOKUP_TABLE[LOOKUP_TABLE.length - 1].hoodPositionRotations();
+    return LOOKUP_TABLE_HOOD[LOOKUP_TABLE_HOOD.length - 1].hoodPositionRotations();
   }
 
   /** Transform from robot center to turret pivot point */

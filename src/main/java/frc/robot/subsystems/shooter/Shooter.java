@@ -310,7 +310,7 @@ public class Shooter extends SubsystemBase {
 
     // Flywheel: idle at low speed while move-and-shoot aiming is active,
     // then rev to full lookup speed when armed (weapons B button).
-    double targetFlywheelRps = flywheelArmed ? testFlywheelVelocityRps : 18.0;
+    double targetFlywheelRps = flywheelArmed ? lookupShooterRps : 18.0;
     setTestFlywheelVelocity(targetFlywheelRps);
 
     // Log target information
