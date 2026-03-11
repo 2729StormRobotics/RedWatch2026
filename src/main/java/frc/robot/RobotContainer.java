@@ -288,13 +288,10 @@ public class RobotContainer {
     DecHood.onTrue(shooter.decrementPositionCommand());
     IncHood.onTrue(shooter.incrementPositionCommand());
 
-    // Flywheel controls for testing and data collection.
-    // While held: run flywheel at the current test velocity stored in Shooter.
-    // On release: stop the flywheel.
+    // Flywheel controls: while held, arm flywheel to use lookup-table speed
+    // (otherwise it idles at a low speed while MoveAndShoot aiming is active).
     flyWheelTrigger.whileTrue(
-        shooter.runTestFlywheelCommand());
-    flyWheelTrigger.onFalse(
-        Commands.runOnce(shooter::stop, shooter));
+        shooter.armFlywheelLookupCommand());
 
     // Translator buttons 10/11: bump the test flywheel velocity up/down.
     INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());

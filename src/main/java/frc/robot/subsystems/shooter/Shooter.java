@@ -55,6 +55,7 @@ import frc.robot.subsystems.drive.Drive;
 // import frc.robot.subsystems.intake.Intake;
 // import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
+import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOReal;
@@ -99,6 +100,9 @@ public class Shooter extends SubsystemBase {
       (HoodConstants.MIN_POSITION_ROTATIONS + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
   /** Adjustable flywheel test velocity (rotations per second) for manual tuning / data collection. */
   private double testFlywheelVelocityRps = 250.0;
+
+  /** Whether the flywheel should use full lookup-table speed instead of idle speed. */
+  private boolean flywheelArmed = false;
 
   /** Elastic / SmartDashboard: desired flywheel velocity (RPS) and hood position (rotations) for "Apply Setpoints" button. */
   private final LoggedTunableNumber elasticDesiredFlywheelRps =
@@ -279,11 +283,19 @@ public class Shooter extends SubsystemBase {
         MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.ALLOWED_MAX_RAD);
     setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
 
-    // Calculate required flywheel RPM (now using field-relative velocity for better
-    // compensation)
-    double requiredRPM = calculateRequiredRPM(distanceToHub, robotVelocity);
-    setFlywheelVelocity(requiredRPM / 60.0);
-    setHoodAngleFromDistance(distanceToHub);
+    // Lookup-table based flywheel speed and hood position from distance
+    double lookupShooterRps =
+        ShooterConstants.getShooterSpeedRpsForDistance(distanceToHub);
+    double lookupHoodRotations =
+        ShooterConstants.getHoodPositionRotationsForDistance(distanceToHub);
+
+    // Always set hood based on lookup so it tracks accurately with distance
+    setDesiredHoodPositionRotations(lookupHoodRotations);
+
+    // Flywheel: idle at low speed while move-and-shoot aiming is active,
+    // then rev to full lookup speed when armed (weapons B button).
+    double targetFlywheelRps = flywheelArmed ? lookupShooterRps : 18.0;
+    setFlywheelVelocity(targetFlywheelRps);
 
     // Log target information
     Logger.recordOutput("Shooter/isPrep", isPrep);
@@ -417,6 +429,11 @@ public class Shooter extends SubsystemBase {
     desiredFlywheelVelocity = velocityRotationsPerSec;
   }
 
+  /** Enable or disable full-speed flywheel based on lookup-table distance. */
+  public void setFlywheelArmed(boolean armed) {
+    flywheelArmed = armed;
+  }
+
   /**
    * Sets the adjustable test flywheel velocity stored on the shooter.
    * Useful for manual tuning and building a distance/velocity lookup table.
@@ -456,6 +473,19 @@ public class Shooter extends SubsystemBase {
   public Command decrementTestFlywheelVelocityCommand() {
     return Commands.runOnce(() -> adjustTestFlywheelVelocity(-10.0), this)
         .withName("Shooter/DecTestFlywheelVel");
+  }
+
+  /**
+   * Command that, while active, arms the flywheel to use lookup-table speed
+   * instead of idle speed. Intended to be bound to the weapons B button
+   * with whileTrue(...).
+   */
+  public Command armFlywheelLookupCommand() {
+    return Commands.startEnd(
+            () -> setFlywheelArmed(true),
+            () -> setFlywheelArmed(false),
+            this)
+        .withName("Shooter/ArmFlywheelLookup");
   }
 
   /**
