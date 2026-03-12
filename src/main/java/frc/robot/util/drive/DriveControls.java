@@ -170,6 +170,8 @@ public class DriveControls {
   public static Trigger flyWheelTrigger;
   public static Trigger reverseFlyWheelTrigger;
 
+  public static Trigger reverseKicker;
+
   public static Trigger turretTrigger0;
   public static Trigger turretTrigger90;
   public static Trigger turretTrigger180;
@@ -283,6 +285,8 @@ public class DriveControls {
     // 6: intake + hopper
     HopperTrigger = m_translator.button(6);
     ReverseHopperTrigger = m_translator.button(5);
+
+    reverseKicker = m_weaponsController.leftBumper();
 
     // Weapons controller Y/A: adjust shooter test flywheel velocity
     // INC_TEST_FLYWHEEL = m_weaponsController.y();

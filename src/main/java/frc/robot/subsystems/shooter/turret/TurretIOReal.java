@@ -61,7 +61,7 @@ public class TurretIOReal implements TurretIO {
   private final ProfiledPIDController m_pidController = 
       new ProfiledPIDController(kP, kI, kD, m_constraints);
 
-  private double targetAngleDegrees = 0.0;
+  private double targetAngleDegrees = -90.0;
 
   private boolean isClosedLoop = false;
   private double lastAbsoluteAngleDeg = 0.0;

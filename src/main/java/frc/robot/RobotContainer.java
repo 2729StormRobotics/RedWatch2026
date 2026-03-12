@@ -218,27 +218,6 @@ public class RobotContainer {
     field = new Field2d();
     SmartDashboard.putData("Field", field);
 
-    // StartShots5seconds
-    NamedCommands.registerCommand("StartIntake", new ParallelCommandGroup(new WaitCommand(5), new SequentialCommandGroup(new InstantCommand( () -> {shooter.enableMoveAndShoot(); shooter.setFlywheelArmed(true);}), Commands.parallel(
-            hopper.runContinuous(),
-            Commands.run(() -> kicker.setPercent(1), kicker)))));
-
-    // IntakeRetract
-    NamedCommands.registerCommand("IntakeRetract", new InstantCommand(() -> intake.retract()));
-    // PrepShooter
-    NamedCommands.registerCommand("PrepShooter", new InstantCommand(() -> shooter.enableMoveAndShoot()));
-    // IntakeDeploy
-    NamedCommands.registerCommand("IntakeDeploy", new InstantCommand(() -> intake.deploy()));
-    // StartIntake
-    NamedCommands.registerCommand("StartIntake", new InstantCommand(() -> intake.intake()));
-    // LockHood
-    NamedCommands.registerCommand("LockHood", new InstantCommand(() -> shooter.lockTrench()));
-    // UnlockHood
-    NamedCommands.registerCommand("UnlockHood", new InstantCommand(() -> shooter.unlockTrench()));
-    // Raise Climber
-    NamedCommands.registerCommand("RaiseClimber", climber.AutoCommandRaiseClimber());
-    // PullClimber
-    NamedCommands.registerCommand("PullClimber", climber.AutoCommandPullClimber());
     // Elastic: set TunableNumbers/Shooter/Elastic/DesiredFlywheelRps and DesiredHoodRotations, then run this command to apply both
     SmartDashboard.putData("Shooter/Elastic/ApplySetpoints", shooter.applyElasticSetpointsCommand());
 
@@ -269,6 +248,34 @@ public class RobotContainer {
           Logger.recordOutput("PathPlanner/ActivePath", alliancePath);
         });
 
+    // StartShots5seconds
+    NamedCommands.registerCommand("StartShots5secondsFar", new ParallelCommandGroup(new WaitCommand(5), new SequentialCommandGroup(new InstantCommand( () -> {shooter.enableMoveAndShoot(); shooter.setFlywheelArmed(false); shooter.setFlywheelVelocity(285);}), Commands.parallel(
+            hopper.runContinuous(),
+            Commands.run(() -> kicker.setPercent(1), kicker),
+            Commands.run(() -> shooter.setFlywheelVelocity(285), shooter)))).withTimeout(5));
+
+            
+    NamedCommands.registerCommand("StartShots5seconds", new ParallelCommandGroup(new WaitCommand(5), new SequentialCommandGroup(new InstantCommand( () -> {shooter.enableMoveAndShoot(); shooter.setFlywheelArmed(false); shooter.setFlywheelVelocity(245);}), Commands.parallel(
+        hopper.runContinuous(),
+        Commands.run(() -> kicker.setPercent(1), kicker),
+        Commands.run(() -> shooter.setFlywheelVelocity(245), shooter)))).withTimeout(5));
+
+    // IntakeRetract
+    NamedCommands.registerCommand("IntakeRetract", new InstantCommand(() -> intake.retract()));
+    // PrepShooter
+    NamedCommands.registerCommand("PrepShooter", new InstantCommand(() -> shooter.enableMoveAndShoot()));
+    // IntakeDeploy
+    NamedCommands.registerCommand("IntakeDeploy", new InstantCommand(() -> intake.deploy()));
+    // StartIntake
+    NamedCommands.registerCommand("StartIntake", new RepeatCommand(new InstantCommand(() -> intake.intake())).withTimeout(0.1));
+    // LockHood
+    NamedCommands.registerCommand("LockHood", new InstantCommand(() -> shooter.lockTrench()));
+    // UnlockHood
+    NamedCommands.registerCommand("UnlockHood", new InstantCommand(() -> shooter.unlockTrench()));
+    // Raise Climber
+    NamedCommands.registerCommand("RaiseClimber", climber.AutoCommandRaiseClimber());
+    // PullClimber
+    NamedCommands.registerCommand("PullClimber", climber.AutoCommandPullClimber());
     // Set up auto routines chooser
     System.out.println("[Init] Setting up Logged Auto Chooser");
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -413,6 +420,8 @@ public class RobotContainer {
         DriveCommands.joystickDriveAtAngle(
             drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(315)));
 
+    reverseKicker.whileTrue(kicker.reverse());
+    reverseKicker.onFalse(new InstantCommand(() -> kicker.stop()));
     // Button bindings
     // Reset gyro when button is pressed
     RESET_GYRO.onTrue(

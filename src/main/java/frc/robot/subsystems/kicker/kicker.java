@@ -38,7 +38,7 @@ public class kicker extends SubsystemBase {
    * Returns a command that runs the kicker in reverse (for clearing jams).
    */
   public Command reverse() {
-    return this.run(() -> this.setPercent(kickerConstants.REVERSE_VOLTAGE))
+    return this.run(() -> this.setPercent(-1.0))
         .finallyDo(this::stop);
   }
 }

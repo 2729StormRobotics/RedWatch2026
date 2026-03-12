@@ -311,7 +311,8 @@ public class Shooter extends SubsystemBase {
     // Flywheel: idle at low speed while move-and-shoot aiming is active,
     // then rev to full lookup speed when armed (weapons B button).
     double targetFlywheelRps = flywheelArmed ? lookupShooterRps : 18.0;
-    setTestFlywheelVelocity(targetFlywheelRps);
+    // NEED TO TURN OFF DURING AUTO:
+    // setTestFlywheelVelocity(targetFlywheelRps);
 
     // Log target information
     Logger.recordOutput("Shooter/isPrep", isPrep);
@@ -453,7 +454,7 @@ public class Shooter extends SubsystemBase {
    * Useful for manual tuning and building a distance/velocity lookup table.
    */
   public void setTestFlywheelVelocity(double velocityRotationsPerSec) {
-    testFlywheelVelocityRps = velocityRotationsPerSec;
+    desiredFlywheelVelocity = velocityRotationsPerSec;
   }
 
   /** Returns the current test flywheel velocity (rotations per second). */
@@ -840,7 +841,7 @@ public class Shooter extends SubsystemBase {
           this.setFlywheelArmed(true);
           this.setDesiredHoodPositionRotations(20);
           this.setTurretAngleDegrees(0);
-          this.setFlywheelVelocity(60);
+          this.setFlywheelVelocity(280);
         },
         () -> {
           this.enableMoveAndShoot();
@@ -864,6 +865,7 @@ public class Shooter extends SubsystemBase {
     this.setDesiredHoodPositionRotations(0.5);
     // Set flywheel to idle/off so it doesn't get stuck at high speed (e.g. from
     // passCommand)
+    desiredHoodPositionRotations = 0.5;
     this.setFlywheelVelocity(18.0);
   }
 
