@@ -44,6 +44,10 @@ public class ClimbIOReal implements ClimbIO {
 
     leaderConfig.encoder.positionConversionFactor(1.0);
     
+    leaderConfig.softLimit.forwardSoftLimit(CURRENT_LIMIT_AMPS)
+    .forwardSoftLimitEnabled(false);
+    // .reverseSoftLimit(0)
+    // .reverseSoftLimitEnabled(true);
     // // 2. Configure Follower
     // followerConfig
     //     .idleMode(IdleMode.kBrake)

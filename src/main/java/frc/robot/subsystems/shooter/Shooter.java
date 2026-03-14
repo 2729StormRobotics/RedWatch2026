@@ -312,7 +312,9 @@ public class Shooter extends SubsystemBase {
     // then rev to full lookup speed when armed (weapons B button).
     double targetFlywheelRps = flywheelArmed ? lookupShooterRps : 18.0;
     // NEED TO TURN OFF DURING AUTO:
-    // setTestFlywheelVelocity(targetFlywheelRps);
+    if (!DriverStation.isAutonomous()){
+      setTestFlywheelVelocity(targetFlywheelRps);
+    }
 
     // Log target information
     Logger.recordOutput("Shooter/isPrep", isPrep);

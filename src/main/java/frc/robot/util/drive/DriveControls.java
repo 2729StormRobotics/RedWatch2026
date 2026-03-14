@@ -223,7 +223,7 @@ public class DriveControls {
     // Axes
     DRIVE_FORWARD = () -> applyDriveDeadband(-getY(m_translator));
     DRIVE_STRAFE = () -> applyDriveDeadband(-getX(m_translator));
-    DRIVE_ROTATE = () -> applyDriveDeadband(-getTwist(m_translator));
+    DRIVE_ROTATE = () -> applyDriveDeadband(-getTwist(m_rotator));
 
     // Buttons / modes
     RESET_GYRO = m_translator.button(12);
