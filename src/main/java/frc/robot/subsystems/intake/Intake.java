@@ -156,4 +156,19 @@ public class Intake extends SubsystemBase {
     }, this);
   }
 
+  public Command agitateCommand(){
+    double lowerPos = IntakeConstants.DEPLOYED_POSITION;
+    double upperPos = IntakeConstants.DEPLOYED_POSITION - 40;
+
+    return Commands.sequence(
+      Commands.runOnce(() -> desiredPivotPosition = lowerPos),
+      Commands.waitSeconds(0.5),
+      Commands.runOnce(() -> desiredPivotPosition = upperPos),
+      Commands.waitSeconds(0.5)
+    )
+
+    .repeatedly();
+
+  }
+
 }

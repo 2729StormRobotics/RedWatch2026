@@ -21,6 +21,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -101,7 +103,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
-  private final Shooter shooter;
+  public final Shooter shooter;
   private final kicker kicker;
   private final Intake intake;
   private final Hopper hopper;
@@ -296,6 +298,28 @@ public class RobotContainer {
     configureButtonBindings();
   }
   
+  private Rotation2d getChassisAngleToHub(){
+    Pose2d currentPose;
+    if (vision.getLeftPose() != null && vision.getTotalTagCount() < 0) {
+        currentPose = vision.getLeftPose();
+    } else 
+    if (vision.getRightPose() != null && vision.getTotalTagCount() < 0) {
+        currentPose = vision.getRightPose();
+    } else {
+        currentPose = drive.getPose();
+    }
+
+    Translation2d hubCenter;
+    boolean isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+
+    if (isRedAlliance) {
+        hubCenter = FieldConstants.Hub.oppTopCenterPoint.toTranslation2d();
+    } else {
+        hubCenter = FieldConstants.Hub.topCenterPoint.toTranslation2d();
+    }
+
+    return hubCenter.minus(currentPose.getTranslation().rotateBy(new Rotation2d(Math.PI))).getAngle();
+  }
 
   private void configureButtonBindings() {
     // Configure drive controls based on driver preferences
@@ -356,6 +380,9 @@ public class RobotContainer {
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 
+    agitateTrigger.whileTrue(intake.agitateCommand());
+    agitateTrigger.onFalse(intake.deployCommand());
+
     // Translator button 5: run hopper + kicker together
     ReverseHopperTrigger.whileTrue(
         Commands.parallel(
@@ -379,7 +406,7 @@ public class RobotContainer {
     HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
     HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
     
-    enableMoveShoot.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
+    enableMoveShoot.whileTrue(DriveCommands.joystickDriveAtAngle(drive, DRIVE_ROTATE, DRIVE_FORWARD, () -> getChassisAngleToHub()));
     disableMoveShoot.onTrue(new InstantCommand(() -> shooter.disableMoveAndShoot()));
     // HopperStopTrigger.onTrue(hopper.stopCommand());
     // stopFlyWheelTrigger.onTrue(shooter.stopCommand());

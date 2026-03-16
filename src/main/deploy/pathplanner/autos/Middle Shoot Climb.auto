@@ -23,6 +23,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "New Path"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "StartShots5seconds"

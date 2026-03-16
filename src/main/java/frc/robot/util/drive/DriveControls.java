@@ -125,6 +125,7 @@ public class DriveControls {
 
   /** Trigger to hold stop position */
   public static Trigger DRIVE_HOLD_STOP;
+  public static Trigger agitateTrigger;
 
   // Drive modes
   /** Trigger to enable robot-relative drive mode */
@@ -283,10 +284,10 @@ public class DriveControls {
     // Translator buttons:
     // 5: hopper + kicker
     // 6: intake + hopper
-    HopperTrigger = m_translator.button(6);
-    ReverseHopperTrigger = m_translator.button(5);
+    HopperTrigger = m_weaponsController.leftTrigger();
+    ReverseHopperTrigger = m_weaponsController.leftBumper();
 
-    reverseKicker = m_weaponsController.leftBumper();
+    reverseKicker = m_translator.button(10);
 
     // Weapons controller Y/A: adjust shooter test flywheel velocity
     // INC_TEST_FLYWHEEL = m_weaponsController.y();
@@ -294,6 +295,7 @@ public class DriveControls {
 
     enableMoveShoot = m_rotator.button(1);
     disableMoveShoot = m_rotator.button(2);
+    agitateTrigger = m_weaponsController.povUp();
 
   }
 }

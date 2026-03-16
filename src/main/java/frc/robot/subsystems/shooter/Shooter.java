@@ -91,6 +91,8 @@ public class Shooter extends SubsystemBase {
 
   // State variables
   private double desiredFlywheelVelocity = 0.0;
+
+  public boolean isAuto = true;
   /**
    * Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive).
    */
@@ -285,6 +287,7 @@ public class Shooter extends SubsystemBase {
     // here so that
     // the commanded angle points the turret toward the hub instead of directly away
     // from it.
+    
     Rotation2d robotRotation = robotPose.getRotation();
     Rotation2d turretRotation = headingToHub.minus(robotRotation);
 
@@ -312,9 +315,10 @@ public class Shooter extends SubsystemBase {
     // then rev to full lookup speed when armed (weapons B button).
     double targetFlywheelRps = flywheelArmed ? lookupShooterRps : 18.0;
     // NEED TO TURN OFF DURING AUTO:
-    if (!DriverStation.isAutonomous()){
+    if (!isAuto) {
       setTestFlywheelVelocity(targetFlywheelRps);
     }
+
 
     // Log target information
     Logger.recordOutput("Shooter/isPrep", isPrep);
@@ -509,6 +513,10 @@ public class Shooter extends SubsystemBase {
         () -> setFlywheelArmed(false),
         this)
         .withName("Shooter/ArmFlywheelLookup");
+  }
+
+  public void setAuto(boolean auto) {
+    isAuto = auto;
   }
 
   /**
@@ -841,7 +849,7 @@ public class Shooter extends SubsystemBase {
         () -> {
           this.disableMoveAndShoot();
           this.setFlywheelArmed(true);
-          this.setDesiredHoodPositionRotations(20);
+          this.setDesiredHoodPositionRotations(30);
           this.setTurretAngleDegrees(0);
           this.setFlywheelVelocity(280);
         },
