@@ -24,6 +24,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -278,6 +279,17 @@ public class RobotContainer {
     NamedCommands.registerCommand("RaiseClimber", climber.AutoCommandRaiseClimber());
     // PullClimber
     NamedCommands.registerCommand("PullClimber", climber.AutoCommandPullClimber());
+
+    // StartShooting
+    NamedCommands.registerCommand("StartShooting", Commands.parallel(
+        hopper.runContinuous(),
+        Commands.run(() -> kicker.setPercent(1), kicker),
+        Commands.run(() -> { shooter.setFlywheelArmed(true); shooter.setFlywheelVelocity(250); }, shooter)));
+    // StopShooting
+    NamedCommands.registerCommand("StopShooting", Commands.parallel(
+        hopper.stopCommand(),
+        new InstantCommand(() -> kicker.stop(), kicker),
+        new InstantCommand(() -> { shooter.setFlywheelArmed(false); shooter.stop(); }, shooter)));
     // Set up auto routines chooser
     System.out.println("[Init] Setting up Logged Auto Chooser");
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -296,29 +308,6 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
-  }
-  
-  private Rotation2d getChassisAngleToHub(){
-    Pose2d currentPose;
-    if (vision.getLeftPose() != null && vision.getTotalTagCount() < 0) {
-        currentPose = vision.getLeftPose();
-    } else 
-    if (vision.getRightPose() != null && vision.getTotalTagCount() < 0) {
-        currentPose = vision.getRightPose();
-    } else {
-        currentPose = drive.getPose();
-    }
-
-    Translation2d hubCenter;
-    boolean isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
-
-    if (isRedAlliance) {
-        hubCenter = FieldConstants.Hub.oppTopCenterPoint.toTranslation2d();
-    } else {
-        hubCenter = FieldConstants.Hub.topCenterPoint.toTranslation2d();
-    }
-
-    return hubCenter.minus(currentPose.getTranslation().rotateBy(new Rotation2d(Math.PI))).getAngle();
   }
 
   private void configureButtonBindings() {
@@ -406,7 +395,7 @@ public class RobotContainer {
     HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
     HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
     
-    enableMoveShoot.whileTrue(DriveCommands.joystickDriveAtAngle(drive, DRIVE_ROTATE, DRIVE_FORWARD, () -> getChassisAngleToHub()));
+    enableMoveShoot.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
     disableMoveShoot.onTrue(new InstantCommand(() -> shooter.disableMoveAndShoot()));
     // HopperStopTrigger.onTrue(hopper.stopCommand());
     // stopFlyWheelTrigger.onTrue(shooter.stopCommand());

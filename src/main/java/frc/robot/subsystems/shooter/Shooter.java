@@ -92,7 +92,6 @@ public class Shooter extends SubsystemBase {
   // State variables
   private double desiredFlywheelVelocity = 0.0;
 
-  public boolean isAuto = true;
   /**
    * Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive).
    */
@@ -255,7 +254,8 @@ public class Shooter extends SubsystemBase {
     } else {
       // Use Estimated Pose (Odometry/Vision) for Real or Replay
       robotPose = drive.getPose();
-      robotVelocity = drive.getChassisSpeeds();
+      // Convert robot-relative chassis speeds to field-relative so math aligns with field target
+      robotVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(drive.getChassisSpeeds(), robotPose.getRotation());
     }
 
     // Turret position in field frame (robot center + offset rotated by robot
@@ -266,9 +266,18 @@ public class Shooter extends SubsystemBase {
     Translation2d turretPositionField = robotPose.getTranslation()
         .plus(robotToTurret2d.rotateBy(robotPose.getRotation()));
 
-    // Vector from turret to target (hub) in field coordinates for correct angle and
-    // distance
-    Translation2d turretToTarget = targetPoint.minus(turretPositionField);
+    // --- SHOOT ON THE MOVE COMPENSATION ---
+    double rawDistanceToHub = targetPoint.minus(turretPositionField).getNorm();
+    
+    // Estimate time of flight (ToF). Tweak the denominator (average note speed in m/s) to match your physical shooter.
+    double estimatedTimeOfFlight = rawDistanceToHub / 15.0; 
+    
+    // Offset the target backwards based on our current velocity to create a "Lead Target"
+    Translation2d robotVelocityTranslation = new Translation2d(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
+    Translation2d virtualTargetPoint = targetPoint.minus(robotVelocityTranslation.times(estimatedTimeOfFlight));
+
+    // Vector from turret to VIRTUAL target in field coordinates
+    Translation2d turretToTarget = virtualTargetPoint.minus(turretPositionField);
 
     // Check if target is valid (non-zero distance)
     double distanceToHub = turretToTarget.getNorm();
@@ -311,13 +320,8 @@ public class Shooter extends SubsystemBase {
     // Always set hood based on lookup so it tracks accurately with distance
     setDesiredHoodPositionRotations(lookupHoodRotations);
 
-    // Flywheel: idle at low speed while move-and-shoot aiming is active,
-    // then rev to full lookup speed when armed (weapons B button).
-    double targetFlywheelRps = flywheelArmed ? lookupShooterRps : 18.0;
-    // NEED TO TURN OFF DURING AUTO:
-    if (!isAuto) {
-      setTestFlywheelVelocity(targetFlywheelRps);
-    }
+    // Flywheel: automatically spin to the distance-based lookup velocity whenever aiming
+    setFlywheelVelocity(lookupShooterRps);
 
 
     // Log target information
@@ -515,10 +519,6 @@ public class Shooter extends SubsystemBase {
         .withName("Shooter/ArmFlywheelLookup");
   }
 
-  public void setAuto(boolean auto) {
-    isAuto = auto;
-  }
-
   /**
    * Command that reads Elastic/SmartDashboard desired flywheel RPS and hood
    * position (rotations),
@@ -603,24 +603,6 @@ public class Shooter extends SubsystemBase {
         + normalizedAngle
             * (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
     setDesiredHoodPositionRotations(rotations);
-  }
-
-  /**
-   * Sets the hood angle based on distance to target.
-   */
-  public void setHoodAngleFromDistance(double distanceMeters) {
-    // Simple linear interpolation (should be replaced with lookup table)
-    // TODO MAKE LOOKUP TABLE
-    double minDistance = 1.0; // meters
-    double maxDistance = 10.0; // meters
-    double minAngle = HoodConstants.MIN_ANGLE_RAD;
-    double maxAngle = HoodConstants.MAX_ANGLE_RAD;
-
-    double normalizedDistance = (distanceMeters - minDistance) / (maxDistance - minDistance);
-    normalizedDistance = Math.max(0.0, Math.min(1.0, normalizedDistance));
-
-    double angle = minAngle + normalizedDistance * (maxAngle - minAngle);
-    setHoodAngle(angle);
   }
 
   /**
