@@ -16,6 +16,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -35,6 +36,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
+  private PowerDistribution powerDistribution;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -94,6 +96,9 @@ public class Robot extends LoggedRobot {
     DataLogManager.start();
     Logger.start();
 
+    // Instantiate the Power Distribution panel/hub (uses default CAN ID and type automatically)
+    powerDistribution = new PowerDistribution();
+
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
@@ -108,6 +113,17 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    // Log overall power statistics
+    Logger.recordOutput("PowerDistribution/TotalCurrentAmps", powerDistribution.getTotalCurrent());
+    Logger.recordOutput("PowerDistribution/TotalPowerWatts", powerDistribution.getTotalPower());
+    
+    // Log an array of current draw for every individual channel
+    double[] channelCurrents = new double[powerDistribution.getNumChannels()];
+    for (int i = 0; i < powerDistribution.getNumChannels(); i++) {
+      channelCurrents[i] = powerDistribution.getCurrent(i);
+    }
+    Logger.recordOutput("PowerDistribution/ChannelCurrentsAmps", channelCurrents);
 
     SmartDashboard.putNumber(
       "CAN Utilization %", RobotController.getCANStatus().percentBusUtilization * 100.0);
@@ -150,7 +166,6 @@ public class Robot extends LoggedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
-    robotContainer.shooter.setAuto(false);
   }
 
   /** This function is called periodically during operator control. */
