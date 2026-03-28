@@ -196,6 +196,9 @@ public class DriveControls {
 
   public static Trigger PASS_LOCK;
   public static Trigger HOOD_DROP_LOCK;
+  public static Trigger runFFCharcterization;
+  public static Trigger runWRCharcterization;
+
 
   /**
    * Configures all controls based on the current driver and operator settings.
@@ -273,7 +276,7 @@ public class DriveControls {
     EXTEND_INTAKE = m_weaponsController.x();
     RETRACT_INTAKE = m_weaponsController.y();
 
-    PASS_LOCK = m_weaponsController.a();
+    // PASS_LOCK = m_weaponsController.a();
 
     // IncHood = m_weaponsController.rightBumper();
     // MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
@@ -296,6 +299,10 @@ public class DriveControls {
     enableMoveShoot = m_rotator.button(1);
     disableMoveShoot = m_rotator.button(2);
     agitateTrigger = m_weaponsController.povUp();
+
+
+
+
 
   }
 }

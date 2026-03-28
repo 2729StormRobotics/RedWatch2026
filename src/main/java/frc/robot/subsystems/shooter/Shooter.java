@@ -95,7 +95,7 @@ public class Shooter extends SubsystemBase {
   /**
    * Desired turret angle in degrees (robot‑relative, 0° = forward, CCW positive).
    */
-  private double desiredTurretAngleDeg = 0.0;
+  private double desiredTurretAngleDeg = -90.0;
   /**
    * Desired hood position in motor rotations. Single source of truth; periodic()
    * applies it every
@@ -221,7 +221,7 @@ public class Shooter extends SubsystemBase {
         HoodConstants.MIN_POSITION_ROTATIONS,
         HoodConstants.MAX_POSITION_ROTATIONS);
     hoodIO.setPosition(clampedHood);
-    turretIO.setAngle(desiredTurretAngleDeg);
+    // turretIO.setAngle(desiredTurretAngleDeg);
 
     // Log shooter state
     Logger.recordOutput("Shooter/ReadyToFire", isReadyToFire());
@@ -321,7 +321,12 @@ public class Shooter extends SubsystemBase {
     setDesiredHoodPositionRotations(lookupHoodRotations);
 
     // Flywheel: automatically spin to the distance-based lookup velocity whenever aiming
-    setFlywheelVelocity(lookupShooterRps);
+    if (flywheelArmed) {
+      setFlywheelVelocity(lookupShooterRps);
+    } else {
+      setFlywheelVelocity(0);
+    }
+      
 
 
     // Log target information
@@ -559,15 +564,16 @@ public class Shooter extends SubsystemBase {
     return testFlywheelVelocityRps;
   }
 
+
   // ========== Hood Methods (turret-style: all methods only set desired; periodic
   // applies it) ==========
 
   /** Sets the desired hood position (motor rotations). Clamped to soft limits. */
   public void setDesiredHoodPositionRotations(double rotations) {
-    desiredHoodPositionRotations = MathUtil.clamp(
+    desiredHoodPositionRotations = -MathUtil.clamp(
         rotations,
-        HoodConstants.MIN_POSITION_ROTATIONS,
-        HoodConstants.MAX_POSITION_ROTATIONS);
+        HoodConstants.MAX_POSITION_ROTATIONS,
+        HoodConstants.MIN_POSITION_ROTATIONS);
   }
 
   /** Returns the current desired hood position (motor rotations). */
@@ -591,19 +597,19 @@ public class Shooter extends SubsystemBase {
         + norm * (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD);
   }
 
-  /**
-   * Sets the desired hood angle (radians). Converts to motor rotations and
-   * updates desired.
-   */
-  public void setHoodAngle(double angleRadians) {
-    double clamped = MathUtil.clamp(angleRadians, HoodConstants.MIN_ANGLE_RAD, HoodConstants.MAX_ANGLE_RAD);
-    double normalizedAngle = (clamped - HoodConstants.MIN_ANGLE_RAD)
-        / (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD);
-    double rotations = HoodConstants.MIN_POSITION_ROTATIONS
-        + normalizedAngle
-            * (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
-    setDesiredHoodPositionRotations(rotations);
-  }
+  // /**
+  //  * Sets the desired hood angle (radians). Converts to motor rotations and
+  //  * updates desired.
+  //  */
+  // public void setHoodAngle(double angleRadians) {
+  //   double clamped = MathUtil.clamp(angleRadians, HoodConstants.MIN_ANGLE_RAD, HoodConstants.MAX_ANGLE_RAD);
+  //   double normalizedAngle = (clamped - HoodConstants.MIN_ANGLE_RAD)
+  //       / (HoodConstants.MAX_ANGLE_RAD - HoodConstants.MIN_ANGLE_RAD);
+  //   double rotations = HoodConstants.MIN_POSITION_ROTATIONS
+  //       + normalizedAngle
+  //           * (HoodConstants.MAX_POSITION_ROTATIONS - HoodConstants.MIN_POSITION_ROTATIONS);
+  //   setDesiredHoodPositionRotations(rotations);
+  // }
 
   /**
    * Gets the current hood angle.

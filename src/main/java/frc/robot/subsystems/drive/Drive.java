@@ -73,9 +73,11 @@ public class Drive extends SubsystemBase {
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
   private boolean poseInitialized = false;
 
-  // --- RATE LIMITERS ---
-  private final SlewRateLimiter magnitudeLimiter = new SlewRateLimiter(3.5);
-  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(10.0);
+  // --- ASYMMETRIC RATE LIMITERS ---
+  // Positive rate = Acceleration, Negative rate = Deceleration
+  // Deceleration is set to -100.0 to make it virtually instant.
+  private final SlewRateLimiter magnitudeLimiter = new SlewRateLimiter(3.5, -100.0, 0.0);
+  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(10.0, -100.0, 0.0);
 
   public Drive(
       GyroIO gyroIO,
@@ -167,6 +169,7 @@ public class Drive extends SubsystemBase {
       double magnitude = linearVelocity.getNorm();
       Rotation2d direction = magnitude > 1e-6 ? linearVelocity.getAngle() : Rotation2d.kZero;
 
+      // The limiter now allows instant deceleration but smooth acceleration
       double limitedMagnitude = magnitudeLimiter.calculate(magnitude);
       double limitedRot = rotLimiter.calculate(speeds.omegaRadiansPerSecond);
 

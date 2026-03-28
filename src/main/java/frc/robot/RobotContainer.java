@@ -109,7 +109,7 @@ public class RobotContainer {
   private final Intake intake;
   private final Hopper hopper;
 
-  private final Climb climber;
+//   private final Climb climber;
 
   // LEDs
   private final BlinkinLEDController ledController = BlinkinLEDController.getInstance();
@@ -139,7 +139,7 @@ public class RobotContainer {
                 new ModuleIOSpark(3));
 
         HoodIOReal hoodIOReal = new HoodIOReal();
-        climber = new Climb(new ClimbIOReal());
+        // climber = new Climb(new ClimbIOReal());
         shooter = new Shooter(
             new FlywheelIOReal(),
             hoodIOReal,
@@ -177,7 +177,7 @@ public class RobotContainer {
         kicker = new kicker(new kickerIOSim());
         intake = new Intake(new IntakeIOSim(driveSimulation));
         hopper = new Hopper(new HopperIOSim());
-        climber = new Climb(new ClimbIOSim());
+        // climber = new Climb(new ClimbIOSim());
         
         // Vision subsystem with simulation IO (no vision data)
         vision =
@@ -206,7 +206,7 @@ public class RobotContainer {
         kicker = new kicker(new kickerIOReal());
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIOReal());
-        climber = new Climb(new ClimbIOReal());
+        // climber = new Climb(new ClimbIOReal());
 
 
         // Vision subsystem with empty IO for replay
@@ -222,7 +222,7 @@ public class RobotContainer {
     SmartDashboard.putData("Field", field);
 
     // Elastic: set TunableNumbers/Shooter/Elastic/DesiredFlywheelRps and DesiredHoodRotations, then run this command to apply both
-    SmartDashboard.putData("Shooter/Elastic/ApplySetpoints", shooter.applyElasticSetpointsCommand());
+    // SmartDashboard.putData("Shooter/Elastic/ApplySetpoints", shooter.applyElasticSetpointsCommand());
 
     System.out.println("[Init] Setting up Path Planner Logging");
 
@@ -265,7 +265,7 @@ public class RobotContainer {
 
     // IntakeRetract
     NamedCommands.registerCommand("IntakeRetract", new InstantCommand(() -> intake.retract()));
-    // PrepShooter
+    //PrepShooter
     NamedCommands.registerCommand("PrepShooter", new InstantCommand(() -> shooter.enableMoveAndShoot()));
     // IntakeDeploy
     NamedCommands.registerCommand("IntakeDeploy", new InstantCommand(() -> intake.deploy()));
@@ -275,22 +275,22 @@ public class RobotContainer {
     NamedCommands.registerCommand("LockHood", new InstantCommand(() -> shooter.lockTrench()));
     // UnlockHood
     NamedCommands.registerCommand("UnlockHood", new InstantCommand(() -> shooter.unlockTrench()));
-    // Raise Climber
-    NamedCommands.registerCommand("RaiseClimber", climber.AutoCommandRaiseClimber());
-    // PullClimber
-    NamedCommands.registerCommand("PullClimber", climber.AutoCommandPullClimber());
+    //Raise Climber
+    NamedCommands.registerCommand("RaiseClimber", shooter.decrementPositionCommand());
+    // // PullClimber
+    NamedCommands.registerCommand("PullClimber", shooter.decrementTestFlywheelVelocityCommand());
 
     // StartShooting
     NamedCommands.registerCommand("StartShooting", Commands.parallel(
         hopper.runContinuous(),
         Commands.run(() -> kicker.setPercent(1), kicker),
-        Commands.run(() -> { shooter.setFlywheelArmed(true); shooter.setFlywheelVelocity(250); }, shooter)));
+        Commands.run(() -> {shooter.setFlywheelVelocity(250); }, shooter)));
     // StopShooting
     NamedCommands.registerCommand("StopShooting", Commands.parallel(
         hopper.stopCommand(),
         new InstantCommand(() -> kicker.stop(), kicker),
         new InstantCommand(() -> { shooter.setFlywheelArmed(false); shooter.stop(); }, shooter)));
-    // Set up auto routines chooser
+    //Set up auto routines chooser
     System.out.println("[Init] Setting up Logged Auto Chooser");
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -315,7 +315,7 @@ public class RobotContainer {
     DriveControls.configureControls();
 
     // Set LED to orange on initialization
-    ledController.setPattern(BlinkinPattern.COLOR_WAVES_LAVA_PALETTE);
+    ledController.setPattern(BlinkinPattern.BREATH_GRAY);
 
 
     // Shooter / Hood: set desired position (periodic applies it; no need to "run" or stop).
@@ -331,12 +331,17 @@ public class RobotContainer {
 
     // Flywheel controls: while held, arm flywheel to use lookup-table speed
     // (otherwise it idles at a low speed while MoveAndShoot aiming is active).
-    flyWheelTrigger.whileTrue(
-        shooter.armFlywheelLookupCommand());
+    // flyWheelTrigger.whileTrue(
+    //     shooter.runTestFlywheelCommand());
+    flyWheelTrigger.onTrue(new InstantCommand( () -> shooter.setFlywheelArmed(true)));
+    flyWheelTrigger.onFalse(new InstantCommand( () -> shooter.setFlywheelArmed(false)));
+    // runFFCharcterization.whileTrue(DriveCommands.feedforwardCharacterization(drive));
 
-    PASS_LOCK.whileTrue(shooter.passCommand());
+    // runWRCharcterization.whileTrue(DriveCommands.wheelRadiusCharacterization(drive));
 
-    HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
+    // PASS_LOCK.whileTrue(shooter.passCommand());
+
+    // HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
 
     // Translator buttons 10/11: bump the test flywheel velocity up/down.
     // INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());
@@ -357,11 +362,11 @@ public class RobotContainer {
     // turretTrigger90.onTrue(shooter.setTurretAngleDegreesCommand(90.0));
 
     // Climb Controls
-    EXTEND_CLIMBER.whileTrue(climber.climbCommand());
-    EXTEND_CLIMBER.onFalse(climber.stopCommand());
+    // EXTEND_CLIMBER.whileTrue(climber.climbCommand());
+    // EXTEND_CLIMBER.onFalse(climber.stopCommand());
 
-    RETRACT_CLIMBER.whileTrue(climber.retractCommand());
-    RETRACT_CLIMBER.onFalse(climber.stopCommand());
+    // RETRACT_CLIMBER.whileTrue(climber.retractCommand());
+    // RETRACT_CLIMBER.onFalse(climber.stopCommand());
     // Intake Controls
     INTAKE_TRIGGER.whileTrue(intake.intakeCommand());
     INTAKE_TRIGGER.onFalse(intake.stopCommand());
@@ -392,13 +397,13 @@ public class RobotContainer {
             hopper.stopCommand(),
             intake.stopCommand()));
 
-    HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
-    HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
+    // HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
+    // HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
     
     enableMoveShoot.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
     disableMoveShoot.onTrue(new InstantCommand(() -> shooter.disableMoveAndShoot()));
     // HopperStopTrigger.onTrue(hopper.stopCommand());
-    // stopFlyWheelTrigger.onTrue(shooter.stopCommand());
+    stopFlyWheelTrigger.onTrue(shooter.stopCommand());
 
 
 

@@ -35,7 +35,7 @@ public final class TurretConstants {
   public static final int HOOD_ENCODER_TEETH = 21;
   
   /** Position PID constants */
-  public static final double kP = 0.015;
+  public static final double kP = 0.03;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
   public static final double kFF = 0.015;
@@ -51,7 +51,7 @@ public final class TurretConstants {
    * Hardware can only reach -90° to +180°; in convention (0° = forward) that's -180° to 90°.
    * Use this when clamping so we never command an unreachable angle.
    */
-  public static final double ALLOWED_MAX_DEG = 90.0;
+  public static final double ALLOWED_MAX_DEG = 180.0;
 
   /** Angle tolerance for atSetpoint check (degrees) */
   public static final double ANGLE_TOLERANCE_DEG = 2.0;

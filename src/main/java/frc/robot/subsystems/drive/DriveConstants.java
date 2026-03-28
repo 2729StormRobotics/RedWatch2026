@@ -41,6 +41,7 @@ public final class DriveConstants {
   // Wheel diameter - MEASURE YOUR ACTUAL WHEELS! They wear down over time.
   // Stock MAXSwerve uses 3" billet wheels. Worn wheels may be ~2.9"
   public static final double wheelDiameterMeters = Units.inchesToMeters(2.8669);
+//   public static final double wheelDiameterMeters = 0.038;
   public static final double wheelRadiusMeters = wheelDiameterMeters / 2.0;
   public static final double wheelCircumferenceMeters = wheelDiameterMeters * Math.PI;
 
@@ -129,8 +130,8 @@ public final class DriveConstants {
   // kV: Voltage per rad/s = 12V / freeWheelSpeed(rad/s)
   //     Free wheel speed = 6784 RPM / 4.71 / 60 × 2π = 150.7 rad/s
   //     kV = 12 / 150.7 = 0.0796 ≈ 0.08
-  public static final double driveKs = 0.05;
-  public static final double driveKv = 0.08;
+  public static final double driveKs = 0.19599;
+  public static final double driveKv = 0.07793;
 
   // Simulation values
   public static final double driveSimP = 0.05;

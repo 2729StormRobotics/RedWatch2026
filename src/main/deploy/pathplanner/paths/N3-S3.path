@@ -4,44 +4,44 @@
     {
       "anchor": {
         "x": 5.769935897435898,
-        "y": 0.7442179487179499
+        "y": 0.7
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.642153846146414,
-        "y": 2.4419358974334386
+        "x": 4.794780545670226,
+        "y": 0.4779054202025721
       },
       "isLocked": false,
       "linkedName": "N3"
     },
     {
       "anchor": {
-        "x": 6.072269230761798,
-        "y": 0.5000256410231827
+        "x": 4.235302491103203,
+        "y": 0.6297153024911029
       },
       "prevControl": {
-        "x": 6.200179487164619,
-        "y": 3.290794871789954
+        "x": 5.526405693950179,
+        "y": 0.694270462633451
       },
       "nextControl": {
-        "x": 6.053121231585978,
-        "y": 0.0822511135268395
+        "x": 3.6029661655020684,
+        "y": 0.5980984862110464
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.816371794864361,
-        "y": 0.7442179487179499
+        "x": 1.298042704626335,
+        "y": 0.9309727164887294
       },
       "prevControl": {
-        "x": 3.1092361842797,
-        "y": 0.44369343215804374
+        "x": 1.0263833642263926,
+        "y": 0.6893574182182125
       },
       "nextControl": {
-        "x": 2.3744999999925667,
-        "y": 1.1976472912215115
+        "x": 1.569702045026277,
+        "y": 1.1725880147592462
       },
       "isLocked": false,
       "linkedName": null
@@ -57,21 +57,17 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Shootbro"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.12631578947369587,
-      "rotationDegrees": 59.99999999999999
+      "waypointRelativePos": 0,
+      "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 1.0894736842105037,
-      "rotationDegrees": 180.0
-    },
-    {
-      "waypointRelativePos": 2.0,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [],
@@ -93,7 +89,7 @@
   "folder": "N3",
   "idealStartingState": {
     "velocity": 2.0,
-    "rotation": 45.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

@@ -50,7 +50,7 @@ public final class HoodConstants {
   public static final double MIN_POSITION_ROTATIONS = 0;
 
   /** Maximum hood motor position in rotations (fully up) */
-  public static final double MAX_POSITION_ROTATIONS = 37;
+  public static final double MAX_POSITION_ROTATIONS = -37;
   
   /** Gear ratio (motor rotations per hood rotation) */
   public static final double GEAR_RATIO = 25.0;

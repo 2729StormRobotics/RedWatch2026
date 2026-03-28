@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 5.769935897435898,
-        "y": 0.7442179487179499
+        "y": 0.7
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.269935897435898,
-        "y": 0.24421794871794977
+        "y": 0.19999999999999984
       },
       "isLocked": false,
       "linkedName": "N3"
@@ -53,7 +53,7 @@
   "folder": "N3",
   "idealStartingState": {
     "velocity": 2.0,
-    "rotation": 45.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }
