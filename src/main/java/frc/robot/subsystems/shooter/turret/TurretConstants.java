@@ -47,8 +47,8 @@ public final class TurretConstants {
   public static final double MAX_ANGLE_DEG = 180.0;
 
   /**
-   * Maximum turret angle we allow for commands (convention frame).
-   * Hardware can only reach -90° to +180°; in convention (0° = forward) that's -180° to 90°.
+   * Maximum turret angle we allow for commands.
+   * Hardware can now reach full -180° to +180°.
    * Use this when clamping so we never command an unreachable angle.
    */
   public static final double ALLOWED_MAX_DEG = 180.0;

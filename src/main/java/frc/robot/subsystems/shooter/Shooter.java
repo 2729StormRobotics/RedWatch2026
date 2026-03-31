@@ -221,7 +221,7 @@ public class Shooter extends SubsystemBase {
         HoodConstants.MIN_POSITION_ROTATIONS,
         HoodConstants.MAX_POSITION_ROTATIONS);
     hoodIO.setPosition(clampedHood);
-    // turretIO.setAngle(desiredTurretAngleDeg);
+    turretIO.setAngle(desiredTurretAngleDeg);
 
     // Log shooter state
     Logger.recordOutput("Shooter/ReadyToFire", isReadyToFire());
@@ -267,28 +267,61 @@ public class Shooter extends SubsystemBase {
         .plus(robotToTurret2d.rotateBy(robotPose.getRotation()));
 
     // --- SHOOT ON THE MOVE COMPENSATION ---
-    double rawDistanceToHub = targetPoint.minus(turretPositionField).getNorm();
+    Translation2d turretToHub = targetPoint.minus(turretPositionField);
+    double actualDistance = turretToHub.getNorm();
     
-    // Estimate time of flight (ToF). Tweak the denominator (average note speed in m/s) to match your physical shooter.
-    double estimatedTimeOfFlight = rawDistanceToHub / 15.0; 
-    
-    // Offset the target backwards based on our current velocity to create a "Lead Target"
-    Translation2d robotVelocityTranslation = new Translation2d(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
-    Translation2d virtualTargetPoint = targetPoint.minus(robotVelocityTranslation.times(estimatedTimeOfFlight));
-
-    // Vector from turret to VIRTUAL target in field coordinates
-    Translation2d turretToTarget = virtualTargetPoint.minus(turretPositionField);
-
-    // Check if target is valid (non-zero distance)
-    double distanceToHub = turretToTarget.getNorm();
-    if (distanceToHub < 0.01) {
-
-      disableMoveAndShoot();
+    // Check if target is valid (non-zero distance and not NaN)
+    if (Double.isNaN(actualDistance) || actualDistance < 0.01) {
+      // Don't permanently disable, just skip this cycle so it recovers automatically.
       return;
     }
 
-    // Heading to hub from turret in field coordinates
-    Rotation2d headingToHub = turretToTarget.getAngle();
+    // 1. Get baseline Time of Flight for current physical distance
+    double baselineTof = ShooterConstants.getTimeOfFlightForDistance(actualDistance);
+
+    // 2. Calculate ideal stationary shot velocity vector (vs = d / t)
+    // This is the horizontal velocity the ball needs to hit the target if the robot were stationary
+    Translation2d stationaryShotVel = new Translation2d(actualDistance / baselineTof, turretToHub.getAngle());
+
+    // 3. Compensate for robot velocity (vc = vs - vr)
+    Translation2d robotVel = new Translation2d(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
+    Translation2d compensatedShotVel = stationaryShotVel.minus(robotVel);
+
+    // The heading is the direction the turret needs to point
+    Rotation2d headingToHub = compensatedShotVel.getAngle();
+    // The required velocity is the new magnitude we need the ball to exit at
+    double requiredVelocity = compensatedShotVel.getNorm();
+
+    if (Double.isNaN(requiredVelocity) || Double.isNaN(headingToHub.getRadians())) {
+      return; // Skip cycle if math resulted in NaN (e.g. pose estimation missing)
+    }
+
+    // 4. Use Newton's Method to find the "Virtual Distance" that provides the required velocity
+    double virtualDistance = actualDistance;
+    double currentVelocity = virtualDistance / ShooterConstants.getTimeOfFlightForDistance(virtualDistance);
+    
+    // Iterate up to 10 times to find the root
+    for (int i = 0; i < 10 && Math.abs(currentVelocity - requiredVelocity) > 0.005; i++) {
+      double EPSILON = 0.001;
+      double lowVel = (virtualDistance - EPSILON) / ShooterConstants.getTimeOfFlightForDistance(virtualDistance - EPSILON);
+      double highVel = (virtualDistance + EPSILON) / ShooterConstants.getTimeOfFlightForDistance(virtualDistance + EPSILON);
+      double velDeriv = (highVel - lowVel) / (EPSILON * 2.0); // Estimate derivative
+      
+      if (Math.abs(velDeriv) < 1e-6 || Double.isNaN(velDeriv)) {
+        break; // Prevent division by zero / infinite distance
+      }
+
+      double nextDistance = virtualDistance - (currentVelocity - requiredVelocity) / velDeriv;
+      if (Double.isNaN(nextDistance) || Double.isInfinite(nextDistance)) {
+        break; // Stop if iterating goes entirely out of bounds
+      }
+      virtualDistance = nextDistance;
+      currentVelocity = virtualDistance / ShooterConstants.getTimeOfFlightForDistance(virtualDistance);
+    }
+    
+    if (Double.isNaN(virtualDistance) || Double.isInfinite(virtualDistance)) {
+      virtualDistance = actualDistance; // Safe fallback
+    }
 
     // Required turret angle relative to robot forward direction (0° = forward, CCW
     // positive).
@@ -301,21 +334,14 @@ public class Shooter extends SubsystemBase {
     Rotation2d turretRotation = headingToHub.minus(robotRotation);
 
     // Normalize and clamp (turret convention: 0° = robot forward, CCW positive),
-    // with 180° flip
+    // with 180° flip. Allowed range is now full [-180°, 180°].
     double turretAngle = MathUtil.inputModulus(turretRotation.getRadians() + Math.PI, -Math.PI, Math.PI);
-    // Keep in turret's allowed range [-180°, 90°] so setAngle/safety don't clamp to
-    // wrong direction.
-    // Angles in (90°, 180°] wrap to equivalent in [-180°, -90°) (e.g. 180° →
-    // -180°).
-    if (turretAngle > TurretConstants.ALLOWED_MAX_RAD) {
-      turretAngle -= 2 * Math.PI;
-    }
-    turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.ALLOWED_MAX_RAD);
+    turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
     setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
 
     // Lookup-table based flywheel speed and hood position from distance
-    double lookupShooterRps = ShooterConstants.getShooterSpeedRpsForDistance(distanceToHub);
-    double lookupHoodRotations = ShooterConstants.getHoodPositionRotationsForDistance(distanceToHub);
+    double lookupShooterRps = ShooterConstants.getShooterSpeedRpsForDistance(virtualDistance);
+    double lookupHoodRotations = ShooterConstants.getHoodPositionRotationsForDistance(virtualDistance);
 
     // Always set hood based on lookup so it tracks accurately with distance
     setDesiredHoodPositionRotations(lookupHoodRotations);
@@ -331,7 +357,8 @@ public class Shooter extends SubsystemBase {
 
     // Log target information
     Logger.recordOutput("Shooter/isPrep", isPrep);
-    Logger.recordOutput("Shooter/TargetDistance", distanceToHub);
+    Logger.recordOutput("Shooter/ActualDistance", actualDistance);
+    Logger.recordOutput("Shooter/VirtualDistance", virtualDistance);
     Logger.recordOutput("Shooter/TargetHeading", headingToHub.getDegrees());
     SmartDashboard.putNumber("Shooter/FLyWheelVel", testFlywheelVelocityRps);
 
@@ -683,6 +710,7 @@ public class Shooter extends SubsystemBase {
    * Stops all shooter components.
    */
   public void stop() {
+    this.disableMoveAndShoot();
     desiredFlywheelVelocity = 0.0;
     desiredHoodPositionRotations = hoodIO.getPosition(); // Hold current hood position
     flywheelIO.stop();
@@ -865,6 +893,7 @@ public class Shooter extends SubsystemBase {
     // passCommand)
     desiredHoodPositionRotations = 0.5;
     this.setFlywheelVelocity(18.0);
+    this.setTurretAngleDegrees(-90.0);
   }
 
   public void unlockTrench() {

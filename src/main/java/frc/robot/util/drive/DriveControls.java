@@ -88,21 +88,9 @@ public class DriveControls {
   public static final CommandXboxController m_weaponsController = new CommandXboxController(
       Constants.ElectricalLayout.CONTROLLER_WEAPONS_ID);
 
-  // Useful for things that don't need to be triggered
-  /** Empty trigger that never fires */
-  private static final Trigger EMPTY_TRIGGER = new Trigger(() -> false);
-
-  /** Empty double supplier that always returns 0.0 */
-  private static final DoubleSupplier EMPTY_DOUBLE_SUPPLIER = () -> 0.0;
-
   private static double applyDriveDeadband(double value) {
     return MathUtil.applyDeadband(value, Constants.OperatorConstants.kDriveDeadband);
   }
-
-  public static Trigger TICK_2_HOOD;
-  public static Trigger TICK_37_HOOD;
-  public static Trigger MOVE_HOOD;
-  public static DoubleSupplier MOVE_HOOD_JOYSTICK;
   public static Trigger EXTEND_CLIMBER;
   public static Trigger RETRACT_CLIMBER;
 
@@ -116,12 +104,7 @@ public class DriveControls {
   /** Rotation drive input */
   public static DoubleSupplier DRIVE_ROTATE;
 
-  /** Trigger to enable slow mode */
-  public static Trigger DRIVE_SLOW;
   public static Trigger EXTEND_INTAKE;
-
-  /** Trigger to stop drive and reset gyro */
-  public static Trigger DRIVE_STOP;
 
   /** Trigger to hold stop position */
   public static Trigger DRIVE_HOLD_STOP;
@@ -148,51 +131,19 @@ public class DriveControls {
   public static Trigger POV_DOWN_LEFT;
   public static Trigger POV_UP_LEFT;
 
-  // SysId controls
-  /** Trigger for quasistatic forward test */
-  public static Trigger QUASISTATIC_FORWARD;
-  // public static DoubleSupplier INTAKE;
-
   public static Trigger INTAKE_TRIGGER;
   public static Trigger RETRACT_INTAKE;
 
-  /** Trigger for quasistatic reverse test */
-  public static Trigger QUASISTATIC_REVERSE;
-
-  /** Trigger for dynamic forward test */
-  public static Trigger DYNAMIC_FORWARD;
-
-  /** Trigger for dynamic reverse test */
-  public static Trigger DYNAMIC_REVERSE;
-
-  public static Trigger hoodTrigger;
-  public static Trigger reverseHoodTrigger;
-
   public static Trigger flyWheelTrigger;
-  public static Trigger reverseFlyWheelTrigger;
 
   public static Trigger reverseKicker;
 
-  public static Trigger turretTrigger0;
-  public static Trigger turretTrigger90;
-  public static Trigger turretTrigger180;
-  public static Trigger turretTrigger45;
-
   public static Trigger HopperTrigger;
   public static Trigger ReverseHopperTrigger;
-  public static Trigger HopperStopTrigger;
-  public static Trigger stopFlyWheelTrigger;
   public static Trigger enableMoveShoot;
   public static Trigger disableMoveShoot;
 
   public static Trigger HopperOutake;
-
-  // Flywheel test velocity adjustment (translator buttons 10/11)
-  public static Trigger INC_TEST_FLYWHEEL;
-  public static Trigger DEC_TEST_FLYWHEEL;
-
-  public static Trigger IncHood;
-  public static Trigger DecHood;
 
   public static Trigger PASS_LOCK;
   public static Trigger HOOD_DROP_LOCK;
@@ -231,8 +182,6 @@ public class DriveControls {
 
     // Buttons / modes
     RESET_GYRO = m_translator.button(12);
-    // DRIVE_SLOW = m_translator.button(1);
-    // DRIVE_STOP = m_translator.button(2);
     DRIVE_HOLD_STOP = m_translator.button(3);
     DRIVE_ROBOT_RELATIVE = m_translator.button(4);
 
@@ -252,23 +201,14 @@ public class DriveControls {
    * Configure weapons / subsystem controls (hood, intake, turret, hopper, etc.).
    */
   private static void configureSubsystemBindings() {
-    hoodTrigger = m_weaponsController.leftTrigger();
-    // DecHood = m_weaponsController.leftBumper();
-
     INTAKE_TRIGGER = m_weaponsController.rightTrigger();
 
     // B button: run flywheel at aimed velocity
     flyWheelTrigger = m_weaponsController.b();
     // Disable old hopper outtake mapping (no button assigned now)
     HopperOutake = new Trigger(() -> false);
-    stopFlyWheelTrigger = m_translator.button(11); // currently unused
 
     HOOD_DROP_LOCK = m_weaponsController.rightBumper();
-
-    // turretTrigger0 = m_weaponsController.povUp();
-    // turretTrigger90 = m_weaponsController.povDown();
-    // turretTrigger180 = m_weaponsController.povLeft();
-    // turretTrigger45 = m_weaponsController.povRight();
 
     EXTEND_CLIMBER = m_weaponsController.start();
     RETRACT_CLIMBER = m_weaponsController.back();
@@ -278,12 +218,6 @@ public class DriveControls {
 
     // PASS_LOCK = m_weaponsController.a();
 
-    // IncHood = m_weaponsController.rightBumper();
-    // MOVE_HOOD_JOYSTICK = () -> m_weaponsController.getRightY();
-
-    // TICK_2_HOOD = m_translator.button(8);
-    // TICK_37_HOOD = m_translator.button(7);
-
     // Translator buttons:
     // 5: hopper + kicker
     // 6: intake + hopper
@@ -291,10 +225,6 @@ public class DriveControls {
     ReverseHopperTrigger = m_weaponsController.leftBumper();
 
     reverseKicker = m_translator.button(10);
-
-    // Weapons controller Y/A: adjust shooter test flywheel velocity
-    // INC_TEST_FLYWHEEL = m_weaponsController.y();
-    // DEC_TEST_FLYWHEEL = m_weaponsController.a();
 
     enableMoveShoot = m_rotator.button(1);
     disableMoveShoot = m_rotator.button(2);

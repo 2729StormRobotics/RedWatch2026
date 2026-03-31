@@ -14,18 +14,13 @@
 package frc.robot;
 
 import static frc.robot.util.drive.DriveControls.*;
-import java.lang.constant.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -317,18 +312,6 @@ public class RobotContainer {
     // Set LED to orange on initialization
     ledController.setPattern(BlinkinPattern.BREATH_GRAY);
 
-
-    // Shooter / Hood: set desired position (periodic applies it; no need to "run" or stop).
-    // TICK_2_HOOD.onTrue(shooter.runPositionCommand(2));
-    // TICK_37_HOOD.onTrue(shooter.runPositionCommand(37));
-    // shooter.runHoodCommand(MOVE_HOOD_JOYSTICK.getAsDouble());
-
-    // Hood manual nudging for calibration / lookup-table data collection.
-    // Left bumper: step hood down (toward MIN_POSITION_ROTATIONS).
-    // Right bumper: step hood up   (toward MAX_POSITION_ROTATIONS).
-    // DecHood.onTrue(shooter.decrementPositionCommand());
-    // IncHood.onTrue(shooter.incrementPositionCommand());
-
     // Flywheel controls: while held, arm flywheel to use lookup-table speed
     // (otherwise it idles at a low speed while MoveAndShoot aiming is active).
     // flyWheelTrigger.whileTrue(
@@ -343,24 +326,6 @@ public class RobotContainer {
 
     // HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
 
-    // Translator buttons 10/11: bump the test flywheel velocity up/down.
-    // INC_TEST_FLYWHEEL.onTrue(shooter.incrementTestFlywheelVelocityCommand());
-    // DEC_TEST_FLYWHEEL.onTrue(shooter.decrementTestFlywheelVelocityCommand());
-
-    // reverseFlyWheelTrigger.whileTrue(
-    //     Commands.parallel(
-    //         Commands.run(() -> shooter.setFlywheelVelocity(-40), shooter),
-    //         Commands.run(() -> kicker.setVoltage(-0.5), kicker)));
-    // reverseFlyWheelTrigger.onFalse(
-    //     Commands.parallel(
-    //         Commands.runOnce(shooter::stop, shooter),
-    //         Commands.runOnce(kicker::stop, kicker)));
-
-    // turretTrigger0.onTrue(shooter.setTurretAngleDegreesCommand(0.0));
-    // turretTrigger180.onTrue(shooter.setTurretAngleDegreesCommand(180.0));
-    // turretTrigger45.onTrue(shooter.setTurretAngleDegreesCommand(45.0));
-    // turretTrigger90.onTrue(shooter.setTurretAngleDegreesCommand(90.0));
-
     // Climb Controls
     // EXTEND_CLIMBER.whileTrue(climber.climbCommand());
     // EXTEND_CLIMBER.onFalse(climber.stopCommand());
@@ -370,7 +335,6 @@ public class RobotContainer {
     // Intake Controls
     INTAKE_TRIGGER.whileTrue(intake.intakeCommand());
     INTAKE_TRIGGER.onFalse(intake.stopCommand());
-    // intake.setDefaultCommand(intake.intakeCommandTrigger(INTAKE));
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 
@@ -402,10 +366,6 @@ public class RobotContainer {
     
     enableMoveShoot.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
     disableMoveShoot.onTrue(new InstantCommand(() -> shooter.disableMoveAndShoot()));
-    // HopperStopTrigger.onTrue(hopper.stopCommand());
-    stopFlyWheelTrigger.onTrue(shooter.stopCommand());
-
-
 
     // Add command scheduler to SmartDashboard for debugging
     SmartDashboard.putData("commandscheduler", CommandScheduler.getInstance());

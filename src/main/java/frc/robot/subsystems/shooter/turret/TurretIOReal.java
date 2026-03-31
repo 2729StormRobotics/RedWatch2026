@@ -3,6 +3,8 @@ package frc.robot.subsystems.shooter.turret;
 import static frc.robot.subsystems.shooter.turret.TurretConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
+import java.util.function.DoubleSupplier;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -62,14 +64,16 @@ public class TurretIOReal implements TurretIO {
             .positionConversionFactor(positionFactor)
             .velocityConversionFactor(positionFactor / 60.0);
 
-        // --- SOFT LIMITS ---
-        // We subtract FORWARD_OFFSET_DEG because the motor's "0" is actually the offset point.
-        // This ensures the hardware-level limits align with your subsystem-level range.
-        motorConfig.softLimit
-            .forwardSoftLimit(TurretConstants.ALLOWED_MAX_DEG - TurretConstants.FORWARD_OFFSET_DEG)
-            .forwardSoftLimitEnabled(true)
-            .reverseSoftLimit(TurretConstants.MIN_ANGLE_DEG - TurretConstants.FORWARD_OFFSET_DEG)
-            .reverseSoftLimitEnabled(true);
+    motorConfig.absoluteEncoder
+        .positionConversionFactor(1.0)
+        .velocityConversionFactor(1.0);
+
+    // Hardware Soft Limits map to Convention [-180, 180] (Hardware = Convention + 90)
+    motorConfig.softLimit
+        .forwardSoftLimit(270.0)
+        .forwardSoftLimitEnabled(true)
+        .reverseSoftLimit(-90.0)
+        .reverseSoftLimitEnabled(true);
 
         tryUntilOk(motor, 5, () -> motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
 
@@ -81,8 +85,8 @@ public class TurretIOReal implements TurretIO {
         ifOk(motor, encoder19::getPosition, (val) -> inputs.absoluteEncoder19Pos = val);
         ifOk(auxSpark, encoder21::getPosition, (val) -> inputs.absoluteEncoder21Pos = val);
 
-        double[] crtResult = calculateCrtAngle(inputs.absoluteEncoder19Pos, inputs.absoluteEncoder21Pos);
-        inputs.crtError = crtResult[1];
+    // CRT removed per user request. 
+    inputs.crtError = 0.0;
 
         final double conventionOffset = TurretConstants.FORWARD_OFFSET_DEG;
         ifOk(motor, internalEncoder::getPosition, (val) -> {
@@ -93,74 +97,68 @@ public class TurretIOReal implements TurretIO {
         
         ifOk(motor, internalEncoder::getVelocity, (val) -> inputs.motorVelocityDegPerSec = val);
 
-        // Initialize position based on CRT logic to ensure we aren't starting at a random offset
-        if (!initializedFromCrt && inputs.absoluteEncoder19Pos != 0) {
-            double initialAngle = MathUtil.inputModulus(crtResult[0] + TurretConstants.ZERO_OFFSET_DEG, -180.0, 180.0);
-            setInternalPosition(initialAngle);
-            initializedFromCrt = true;
-        }
+    if (!initializedFromCrt) {
+      // We assume the robot starts physically at -90 degrees convention (0 degrees hardware).
+      internalEncoder.setPosition(0.0);
+      double conventionDeg = -90.0;
+      m_pidController.reset(conventionDeg);
+      inputs.motorPositionDeg = conventionDeg;
+      inputs.absoluteAngleDeg = conventionDeg;
+      lastAbsoluteAngleDeg = 0.0;
+      initializedFromCrt = true;
+    }
+    
+    ifOk(motor, new DoubleSupplier[] {motor::getAppliedOutput, motor::getBusVoltage}, 
+        (values) -> inputs.appliedVolts = values[0] * values[1]);
+    ifOk(motor, motor::getOutputCurrent, (val) -> inputs.currentAmps = val);
+    ifOk(motor, motor::getMotorTemperature, (val) -> inputs.temperatureCelsius = val);
 
-        if (Constants.tuningMode) {
-            LoggedTunableNumber.ifChanged(this.hashCode(), values -> 
-                m_pidController.setPID(values[0], values[1], values[2]), 
-                kP_tunable, kI_tunable, kD_tunable);
-        }
+    // Allow runtime brake/coast selection for turret motor.
+    // SparkIdleModeTuner.syncIdleMode(motor, "Shooter/TurretBrake", IdleMode.kBrake);
 
-        if (isClosedLoop) {
-            double output = m_pidController.calculate(inputs.motorPositionDeg, targetAngleDegrees);
-            motor.set(MathUtil.clamp(output, -0.8, 0.8));
-        }
+    // Turret PID tuning from Elastic / SmartDashboard when in tuning mode.
+    if (Constants.tuningMode) {
+      LoggedTunableNumber.ifChanged(
+          this.hashCode(),
+          values -> {
+            double p = values[0];
+            double i = values[1];
+            double d = values[2];
+            m_pidController.setPID(p, i, d);
+          },
+          kP_tunable, kI_tunable, kD_tunable);
     }
 
-    @Override
-    public void setInternalPosition(double degrees) {
-        // Adjusts the internal encoder so that its current physical position 
-        // maps to the 'degrees' provided in your subsystem convention.
-        internalEncoder.setPosition(degrees - TurretConstants.FORWARD_OFFSET_DEG);
-        m_pidController.reset(degrees);
+    // Software safety guard: if angle ever leaves the allowed command band, stop the turret.
+    // Convention frame (0° = forward). Allowed range matches hardware -180° to 180°.
+    if (inputs.motorPositionDeg < TurretConstants.MIN_ANGLE_DEG
+        || inputs.motorPositionDeg > TurretConstants.ALLOWED_MAX_DEG) {
+      isClosedLoop = false;
+      motor.stopMotor();
+      return;
     }
 
-    private static double frac(double x) {
-        double f = x - Math.floor(x);
-        return (f >= 1.0 - 1e-12) ? 0.0 : f;
+    // Run Profiled PID calculation if in closed loop mode (both in convention: 0° = forward)
+    if (isClosedLoop) {
+      double output = m_pidController.calculate(inputs.motorPositionDeg, targetAngleDegrees);
+      motor.set(MathUtil.clamp(output, -.8, 0.8));
     }
+  }
 
-    private static double circularError(double a, double b) {
-        double diff = Math.abs(a - b);
-        return (diff > 0.5) ? (1.0 - diff) : diff;
+  @Override
+  public void setAngle(double degrees) {
+    // Convention: 0° = forward, CCW positive. Clamp to allowed range (maps to hardware -90° to 180°).
+    double clampedDegrees =
+        MathUtil.clamp(degrees, TurretConstants.MIN_ANGLE_DEG, TurretConstants.ALLOWED_MAX_DEG);
+
+    if (!isClosedLoop) {
+      // Sync internal encoder (hardware) and PID (convention) before starting closed loop
+      double conventionDeg = MathUtil.inputModulus(lastAbsoluteAngleDeg + TurretConstants.FORWARD_OFFSET_DEG, -180.0, 180.0);
+      m_pidController.reset(conventionDeg);
+      isClosedLoop = true;
     }
-
-    private double[] calculateCrtAngle(double raw19, double raw21) {
-        double r19 = frac(raw19 - k_enc19Offset);
-        double r21 = frac(raw21 - k_enc21Offset);
-        double bestError = Double.MAX_VALUE;
-        double bestTurretDegrees = 0.0;
-        final double inv19 = k_gear19 / k_turretRingTeeth;
-        final double ratio19to21 = k_gear19 / k_gear21;
-
-        for (int k = -15; k <= 15; k++) {
-            double totalRotations19 = k + r19;
-            double turretRotations = totalRotations19 * inv19;
-            double expectedR21 = frac(totalRotations19 * ratio19to21);
-            double error = circularError(r21, expectedR21);
-            double candidateDegrees = -turretRotations * 360.0;
-
-            if (error < bestError) {
-                bestError = error;
-                bestTurretDegrees = candidateDegrees;
-            }
-        }
-        return new double[] {MathUtil.inputModulus(bestTurretDegrees, -180.0, 180.0), bestError};
-    }
-
-    @Override
-    public void setAngle(double degrees) {
-        if (!isClosedLoop) {
-            m_pidController.reset(lastAbsoluteAngleDeg + TurretConstants.FORWARD_OFFSET_DEG);
-            isClosedLoop = true;
-        }
-        targetAngleDegrees = degrees;
-    }
+    targetAngleDegrees = clampedDegrees;
+  }
 
     @Override
     public void setVoltage(double volts) {

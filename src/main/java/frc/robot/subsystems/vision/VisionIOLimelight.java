@@ -56,38 +56,24 @@ public class VisionIOLimelight implements VisionIO {
     inputs.connected = true; // Limelight is always "connected" if it's on the network
 
     try {
-      // Get pose estimate from MegaTag 2
-      // LimelightHelpers.GetBotPose2d() returns the robot pose estimate
-      // Note: This requires LimelightHelpers library
-      Pose2d botPose = getBotPose2d();
+      // Get full pose estimate from MegaTag 2
+      LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
 
-      if (botPose != null && isValidPose(botPose)) {
+      if (mt2 != null && mt2.pose != null && isValidPose(mt2.pose)) {
         inputs.hasPose = true;
         
-        int tagCount = getTagCountFromMegaTag2();
-        double latencyMs = getLatencyMsFromMegaTag2();
-        LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-        if (mt2 != null) {
-            inputs.tagCount = mt2.tagCount;
-            inputs.averageTagDistance = mt2.avgTagDist;
-            inputs.poseTimestamp = mt2.timestampSeconds;
-            inputs.visionPose = mt2.pose;
-        } else {
-          inputs.tagCount = tagCount;
-          inputs.poseTimestamp = Timer.getFPGATimestamp() - (latencyMs / 1000.0);
-          inputs.visionPose = botPose;
-        }
-        // Get tag count and latency from MegaTag 2 pose array
-        // Format: [x, y, z, roll, pitch, yaw, latency, tagCount, tagSpan, avgTagDist, avgTagArea]
+        inputs.tagCount = mt2.tagCount;
+        inputs.averageTagDistance = mt2.avgTagDist;
+        inputs.closestTagDistance = mt2.avgTagDist; // Use average as closest for now
         
-        inputs.poseTimestamp = Timer.getFPGATimestamp() - (latencyMs / 1000.0);
-        inputs.averageTagDistance = getAverageTagDistanceFromMegaTag2();
-        inputs.closestTagDistance = inputs.averageTagDistance; // Use average as closest for now
-        inputs.latencyMs = latencyMs;
+        // LimelightHelpers already computes the fully latency-compensated timestamp
+        inputs.poseTimestamp = mt2.timestampSeconds; 
+        inputs.visionPose = mt2.pose;
+        inputs.latencyMs = mt2.latency;
         inputs.megaTag2Active = true;
 
         // Update cached values
-        lastPose = botPose;
+        lastPose = mt2.pose;
         lastAverageDistance = inputs.averageTagDistance;
       } else {
         // No valid pose
@@ -245,4 +231,3 @@ public class VisionIOLimelight implements VisionIO {
     LimelightHelpers.SetIMUMode(limelightName, mode);
   }
 }
-

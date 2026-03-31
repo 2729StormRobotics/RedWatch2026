@@ -20,6 +20,7 @@ public class ShooterConstants {
 
   private static final InterpolatingDoubleTreeMap shooterSpeedMap = new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap hoodPositionMap = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap tofMap = new InterpolatingDoubleTreeMap();
 
   static {
     // --- Flywheel Speed (Rotations per Second) vs Distance (Meters) ---
@@ -41,13 +42,33 @@ public class ShooterConstants {
     hoodPositionMap.put(3.0, 49.1);
     hoodPositionMap.put(3.1, 47.1);
     hoodPositionMap.put(3.5, 56.8);
+
+    // --- Time of Flight (Seconds) vs Distance (Meters) ---
+    // TODO: TUNE THESE VALUES! Record a video at 60fps, count frames from launch to target.
+    // (e.g., 30 frames at 60fps = 0.5 seconds).
+    tofMap.put(1.74, 0.45);
+    tofMap.put(2.08, 0.52);
+    tofMap.put(2.46, 0.60);
+    tofMap.put(2.86, 0.68);
+    tofMap.put(3.67, 0.85);
+    tofMap.put(4.00, 0.95);
   }
 
   public static double getShooterSpeedRpsForDistance(double distanceMeters) {
-    return shooterSpeedMap.get(distanceMeters);
+    if (Double.isNaN(distanceMeters)) return 250.0;
+    Double val = shooterSpeedMap.get(distanceMeters);
+    return val != null ? val : 250.0;
   }
 
   public static double getHoodPositionRotationsForDistance(double distanceMeters) {
-    return hoodPositionMap.get(distanceMeters);
+    if (Double.isNaN(distanceMeters)) return 48.9;
+    Double val = hoodPositionMap.get(distanceMeters);
+    return val != null ? val : 48.9;
+  }
+
+  public static double getTimeOfFlightForDistance(double distanceMeters) {
+    if (Double.isNaN(distanceMeters)) return 0.5;
+    Double val = tofMap.get(distanceMeters);
+    return val != null ? val : 0.5;
   }
 }

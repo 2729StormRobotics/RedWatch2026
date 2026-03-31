@@ -74,14 +74,14 @@ public class DriveCommands {
     return Commands.run(
         () -> {
           
-          SmartDashboard.putNumber("Drive/XSupplier", (xSupplier.getAsDouble()));
-          SmartDashboard.putNumber("Drive/YSupplier", (ySupplier.getAsDouble()));
-          SmartDashboard.putNumber("Drive/RotateSupplier", (omegaSupplier.getAsDouble()));
+          // SmartDashboard.putNumber("Drive/XSupplier", (xSupplier.getAsDouble()));
+          // SmartDashboard.putNumber("Drive/YSupplier", (ySupplier.getAsDouble()));
+          // SmartDashboard.putNumber("Drive/RotateSupplier", (omegaSupplier.getAsDouble()));
 
           Translation2d linearVelocity =
               getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-              SmartDashboard.putNumber("Drive/LinearVelX", (linearVelocity.getX()));
-              SmartDashboard.putNumber("Drive/LinearVelY", (linearVelocity.getY()));
+              // SmartDashboard.putNumber("Drive/LinearVelX", (linearVelocity.getX()));
+              // SmartDashboard.putNumber("Drive/LinearVelY", (linearVelocity.getY()));
 
           // Apply rotation deadband
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);

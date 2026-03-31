@@ -97,19 +97,20 @@ public class Vision extends SubsystemBase {
 
     // Get current gyro data from drive subsystem
     Rotation2d currentYaw = drive.getRotation();
-    double yawRadians = currentYaw.getDegrees();
     
-    // Calculate angular velocity (simple difference, could be improved with filtering)
-    double yawVelocity = (yawRadians - lastYaw) / 0.02; // 20ms loop period
-    double yawVelocityDegPerSec = Math.abs(yawVelocity);
-    lastYaw = yawRadians;
-    lastYawVelocity = yawVelocity;
+    // Use precise angular velocity from gyro for MT2 latency compensation
+    double yawVelocityRadPerSec = drive.getYawVelocityRadPerSec();
+    double yawVelocityDegPerSec = Math.toDegrees(yawVelocityRadPerSec);
+    
+    lastYaw = currentYaw.getDegrees();
+    lastYawVelocity = yawVelocityRadPerSec;
 
     // CRITICAL: Update robot orientation to Limelight every cycle for MegaTag 2
     // Only update when enabled (MegaTag 2 not needed when disabled)
     if (isEnabled) {
-  leftCameraIO.setRobotOrientation(currentYaw.getDegrees(), Math.toDegrees(yawVelocity));
-  rightCameraIO.setRobotOrientation(currentYaw.getDegrees(), Math.toDegrees(yawVelocity));    }
+      leftCameraIO.setRobotOrientation(currentYaw.getDegrees(), yawVelocityDegPerSec);
+      rightCameraIO.setRobotOrientation(currentYaw.getDegrees(), yawVelocityDegPerSec);
+    }
 
     // Update inputs from cameras
     leftCameraIO.updateInputs(leftInputs);
@@ -124,8 +125,8 @@ public class Vision extends SubsystemBase {
     processVisionMeasurement(rightInputs, "Right");
 
     // Log outputs
-    Logger.recordOutput("Vision/GyroYawRad", yawRadians);
-    Logger.recordOutput("Vision/GyroYawVelocityRadPerSec", yawVelocity);
+    Logger.recordOutput("Vision/GyroYawRad", currentYaw.getRadians());
+    Logger.recordOutput("Vision/GyroYawVelocityRadPerSec", yawVelocityRadPerSec);
   }
 
   /**
@@ -295,4 +296,3 @@ public class Vision extends SubsystemBase {
     return rightInputs.hasPose ? rightInputs.visionPose : null;
   }
 }
-

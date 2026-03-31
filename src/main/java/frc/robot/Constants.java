@@ -35,9 +35,6 @@ public final class Constants {
   /** Current robot mode (automatically determined based on runtime environment) */
   public static final Mode currentMode = getRobotMode();
 
-  /** Enable tuning mode for PID and other parameters */
-  public static final boolean tuning = true;
-
   /** Enable tuning mode (duplicate - consider removing) */
   public static final boolean tuningMode = true;
   
@@ -142,12 +139,6 @@ public final class Constants {
     // LED system
     /** Blinkin LED controller PWM port */
     public static final int BLINKIN_LED_CONTROLLER_PORT = 0;
-
-    // Sample motor (example subsystem)
-    /** Sample motor CAN ID */
-    public static final int SAMPLE_MOTOR_CAN_ID = 20;
-
-    // Note: Game-specific subsystem CAN IDs should be added here when the 2026 game is announced
   }
 
   /** Mathematical constant PI */
@@ -168,63 +159,6 @@ public final class Constants {
 
   /** Current limit for standard NEO motors in amps */
   public static final int NEO_CURRENT_LIMIT = 40;
-
-
-  /** Constants for vision processing and AprilTag detection */
-  public static class VisionConstants {
-    // Camera configuration
-    /** AprilTag pipeline number */
-    public static final double kAprilTagPipeline = 1;
-
-    /** LED off value for camera */
-    public static final double kLightOffValue = 0;
-
-    // PID values for driving with vision
-    /** Distance tolerance for vision alignment */
-    public static final double kDistanceTolerance = 0;
-
-    /** Proportional gain for X-axis vision control */
-    public static final double kPX = 0;
-
-    /** Static feedforward for drive control */
-    public static final double kSDrive = 0;
-
-    /** Proportional gain for Y-axis vision control */
-    public static final double kPY = 0;
-
-    /** General tolerance for vision alignment */
-    public static final double kTolerance = 0;
-
-    /** Proportional gain for turn control */
-    public static final double kPTurn = 0.0065;
-
-    /** Integral gain for turn control */
-    public static final double kITurn = 0;
-
-    /** Derivative gain for turn control */
-    public static final double kDTurn = 0.003;
-
-    /** Static feedforward for turn control */
-    public static final double kSTurn = 0.025;
-
-    // Camera physical configuration
-    /** Limelight camera height from ground in meters */
-    public static final double limelightHeight = Units.inchesToMeters(11.5);
-
-    /** Limelight camera angle from horizontal in degrees */
-    public static final double limelightAngle = 30.5;
-
-    /** AprilTag width in meters */
-    public static final double apriltagWidth = Units.inchesToMeters(6.5);
-
-    /** Tolerance for AprilTag alignment in meters */
-    public static final double aprilTagAlignTolerance = 0.5;
-
-    // Note: Game-specific AprilTag heights should be added here when the 2026 game is announced
-
-
-
-  }
 
   public static final class MechanismConstants {
     /** Shooter: Turret base position relative to robot center (closer to back than front) */
