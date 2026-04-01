@@ -216,7 +216,7 @@ public class DriveControls {
     EXTEND_INTAKE = m_weaponsController.x();
     RETRACT_INTAKE = m_weaponsController.y();
 
-    // PASS_LOCK = m_weaponsController.a();
+    PASS_LOCK = m_weaponsController.a();
 
     // Translator buttons:
     // 5: hopper + kicker

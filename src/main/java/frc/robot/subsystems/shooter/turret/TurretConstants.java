@@ -41,10 +41,10 @@ public final class TurretConstants {
   public static final double kFF = 0.015;
 
   /** Minimum turret angle in degrees (typically -180 to +180 degrees) */
-  public static final double MIN_ANGLE_DEG = -180.0;
+  public static final double MIN_ANGLE_DEG = -100.0;
 
   /** Maximum turret angle in degrees (full mechanical range) */
-  public static final double MAX_ANGLE_DEG = 180.0;
+  public static final double MAX_ANGLE_DEG = 100.0;
 
   /**
    * Maximum turret angle we allow for commands.

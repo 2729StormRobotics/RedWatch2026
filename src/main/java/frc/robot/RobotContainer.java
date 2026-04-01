@@ -338,6 +338,10 @@ public class RobotContainer {
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 
+    m_weaponsController.povUp().onTrue(shooter.incrementPositionCommand());
+
+    m_weaponsController.povDown().onTrue(shooter.decrementPositionCommand());
+
     agitateTrigger.whileTrue(intake.agitateCommand());
     agitateTrigger.onFalse(intake.deployCommand());
 

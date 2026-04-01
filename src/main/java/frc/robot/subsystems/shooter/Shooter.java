@@ -597,7 +597,7 @@ public class Shooter extends SubsystemBase {
 
   /** Sets the desired hood position (motor rotations). Clamped to soft limits. */
   public void setDesiredHoodPositionRotations(double rotations) {
-    desiredHoodPositionRotations = -MathUtil.clamp(
+    desiredHoodPositionRotations = MathUtil.clamp(
         rotations,
         HoodConstants.MAX_POSITION_ROTATIONS,
         HoodConstants.MIN_POSITION_ROTATIONS);
