@@ -7,12 +7,6 @@
         {
           "type": "named",
           "data": {
-            "name": "StartShots5secondsFar"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "LockHood"
           }
         },
@@ -49,7 +43,7 @@
         {
           "type": "named",
           "data": {
-            "name": "StartShots5seconds"
+            "name": "StartShooting"
           }
         }
       ]

@@ -84,7 +84,7 @@ public class DriveCommands {
               // SmartDashboard.putNumber("Drive/LinearVelY", (linearVelocity.getY()));
 
           // Apply rotation deadband
-          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), 0.025);
 
           // Square rotation value for more precise control
           omega = Math.copySign(omega * omega, omega);

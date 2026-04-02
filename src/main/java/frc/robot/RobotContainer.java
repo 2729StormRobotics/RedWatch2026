@@ -279,7 +279,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("StartShooting", Commands.parallel(
         hopper.runContinuous(),
         Commands.run(() -> kicker.setPercent(1), kicker),
-        Commands.run(() -> {shooter.setFlywheelVelocity(250); }, shooter)));
+        Commands.run(() -> shooter.armFlywheelAuto(), shooter)));
     // StopShooting
     NamedCommands.registerCommand("StopShooting", Commands.parallel(
         hopper.stopCommand(),
@@ -324,7 +324,7 @@ public class RobotContainer {
 
     // PASS_LOCK.whileTrue(shooter.passCommand());
 
-    // HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
+    HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
 
     // Climb Controls
     // EXTEND_CLIMBER.whileTrue(climber.climbCommand());

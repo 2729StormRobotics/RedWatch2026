@@ -24,46 +24,57 @@ public class ShooterConstants {
 
   static {
     // --- Flywheel Speed (Rotations per Second) vs Distance (Meters) ---
-    shooterSpeedMap.put(1.74, 340.0);
-    shooterSpeedMap.put(2.08, 350.0);
-    shooterSpeedMap.put(2.46, 340.0);
-    shooterSpeedMap.put(2.48, 340.0);
-    shooterSpeedMap.put(2.86, 350.0);
-    shooterSpeedMap.put(2.9, 360.0);
-    shooterSpeedMap.put(3.67, 380.0);
-    shooterSpeedMap.put(3.75, 390.0);
+    shooterSpeedMap.put(1.74, 240.0);
+    shooterSpeedMap.put(2.08, 250.0);
+    shooterSpeedMap.put(2.46, 260.0);
+    shooterSpeedMap.put(2.48, 270.0);
+    shooterSpeedMap.put(2.86, 271.0);
+    shooterSpeedMap.put(2.9, 273.0);
+    shooterSpeedMap.put(3.10, 275.0);
+    shooterSpeedMap.put(3.67, 275.0);
+    shooterSpeedMap.put(3.75, 280.0);
+    shooterSpeedMap.put(4.0, 285.0);
+    shooterSpeedMap.put(5.0, 290.0);
 
-    // --- Hood Position (Motor Rotations) vs Distance (Meters) ---
-    hoodPositionMap.put(2.08, 28.9);
-    hoodPositionMap.put(2.47, 28.8);
-    hoodPositionMap.put(2.6, 27.6);
-    hoodPositionMap.put(2.75, 29.1);
-    hoodPositionMap.put(2.99, 33.3);
-    hoodPositionMap.put(3.0, 29.1);
-    hoodPositionMap.put(3.1, 27.1);
-    hoodPositionMap.put(3.5, 36.8);
+    // --- Hood Position (Motor Rotations) vs Distance (Meters) --
+    //2.8-
+    //1.7
+    //2.08
+    //2.5
+//2.75
+//3.0
+    hoodPositionMap.put(2.08, 1.9);
+    hoodPositionMap.put(2.47, 5.8);
+    hoodPositionMap.put(2.6, 8.6);
+    hoodPositionMap.put(2.75, 9.1);
+    hoodPositionMap.put(2.99, 11.7);
+    hoodPositionMap.put(3.0, 13.1);
+    hoodPositionMap.put(3.1, 15.1);
+    hoodPositionMap.put(3.5, 19.8);
 
     // --- Time of Flight (Seconds) vs Distance (Meters) ---
     // TODO: TUNE THESE VALUES! Record a video at 60fps, count frames from launch to target.
     // (e.g., 30 frames at 60fps = 0.5 seconds).
-    tofMap.put(1.74, 0.45);
-    tofMap.put(2.08, 0.52);
-    tofMap.put(2.46, 0.60);
-    tofMap.put(2.86, 0.68);
-    tofMap.put(3.67, 0.85);
-    tofMap.put(4.00, 0.95);
+    tofMap.put(1.7, 0.9);
+    tofMap.put(2.08, 0.9);
+    tofMap.put(2.5, 1.0);
+    tofMap.put(2.8, 1.2);
+    tofMap.put(2.75, 1.5);
+    tofMap.put(3.00, 1.6);
+    tofMap.put(3.8, 2.5);
   }
 
   public static double getShooterSpeedRpsForDistance(double distanceMeters) {
-    if (Double.isNaN(distanceMeters)) return 250.0;
+    // if (Double.isNaN(distanceMeters)) return 250.0;
     Double val = shooterSpeedMap.get(distanceMeters);
+    // System.out.println(val);
     return val != null ? val : 250.0;
   }
 
   public static double getHoodPositionRotationsForDistance(double distanceMeters) {
-    if (Double.isNaN(distanceMeters)) return 28.9;
+    // if (Double.isNaN(distanceMeters)) return 28.9;
     Double val = hoodPositionMap.get(distanceMeters);
-    return val != null ? val : 48.9;
+    return val != null ? val : 18.9;
   }
 
   public static double getTimeOfFlightForDistance(double distanceMeters) {

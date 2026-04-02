@@ -101,8 +101,7 @@ public class Shooter extends SubsystemBase {
    * applies it every
    * cycle (like the turret). All hood methods only change this value.
    */
-  private double desiredHoodPositionRotations = (HoodConstants.MIN_POSITION_ROTATIONS
-      + HoodConstants.MAX_POSITION_ROTATIONS) / 2.0;
+  private double desiredHoodPositionRotations = 1;
   /**
    * Adjustable flywheel test velocity (rotations per second) for manual tuning /
    * data collection.
@@ -110,7 +109,7 @@ public class Shooter extends SubsystemBase {
   private double testFlywheelVelocityRps = 250.0;
 
   /**
-   * Whether the flywheel should use full lookup-table speed instead of idle
+   * Whether the flywheel should use full -table speed instead of idle
    * speed.
    */
   private boolean flywheelArmed = false;
@@ -216,6 +215,7 @@ public class Shooter extends SubsystemBase {
     if (desiredFlywheelVelocity != 0.0) {
       flywheelIO.setVelocity(desiredFlywheelVelocity);
     }
+    // System.out.println(desiredHoodPositionRotations);
     double clampedHood = MathUtil.clamp(
         desiredHoodPositionRotations,
         HoodConstants.MIN_POSITION_ROTATIONS,
@@ -338,10 +338,11 @@ public class Shooter extends SubsystemBase {
     double turretAngle = MathUtil.inputModulus(turretRotation.getRadians() + Math.PI, -Math.PI, Math.PI);
     turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
     setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
-
+    // System.out.println(virtualDistance);
     // Lookup-table based flywheel speed and hood position from distance
     double lookupShooterRps = ShooterConstants.getShooterSpeedRpsForDistance(virtualDistance);
     double lookupHoodRotations = ShooterConstants.getHoodPositionRotationsForDistance(virtualDistance);
+    // System.out.println(lookupHoodRotations);
 
     // Always set hood based on lookup so it tracks accurately with distance
     setDesiredHoodPositionRotations(lookupHoodRotations);
@@ -350,7 +351,7 @@ public class Shooter extends SubsystemBase {
     if (flywheelArmed) {
       setFlywheelVelocity(lookupShooterRps);
     } else {
-      setFlywheelVelocity(0);
+      setFlywheelVelocity(100);
     }
       
 
@@ -545,12 +546,16 @@ public class Shooter extends SubsystemBase {
    */
   public Command armFlywheelLookupCommand() {
     return Commands.startEnd(
-        () -> setFlywheelArmed(true),
+        () -> {setFlywheelArmed(true); enableMoveAndShoot();},
         () -> setFlywheelArmed(false),
         this)
         .withName("Shooter/ArmFlywheelLookup");
   }
-
+  public Command armFlywheelAuto() {
+    return new InstantCommand(
+        () -> {setFlywheelArmed(true); enableMoveAndShoot();})
+        .withName("Shooter/ArmFlywheelAuto");
+  }
   /**
    * Command that reads Elastic/SmartDashboard desired flywheel RPS and hood
    * position (rotations),
@@ -599,8 +604,8 @@ public class Shooter extends SubsystemBase {
   public void setDesiredHoodPositionRotations(double rotations) {
     desiredHoodPositionRotations = MathUtil.clamp(
         rotations,
-        HoodConstants.MAX_POSITION_ROTATIONS,
-        HoodConstants.MIN_POSITION_ROTATIONS);
+        HoodConstants.MIN_POSITION_ROTATIONS,
+        HoodConstants.MAX_POSITION_ROTATIONS);
   }
 
   /** Returns the current desired hood position (motor rotations). */
