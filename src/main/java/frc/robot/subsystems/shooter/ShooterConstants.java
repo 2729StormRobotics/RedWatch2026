@@ -22,6 +22,7 @@ public class ShooterConstants {
   private static final InterpolatingDoubleTreeMap hoodPositionMap = new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap tofMap = new InterpolatingDoubleTreeMap();
 
+  private static final Double shooterSpeedBump = 1.5;
   static {
     // --- Flywheel Speed (Rotations per Second) vs Distance (Meters) ---
     shooterSpeedMap.put(1.74, 240.0);
@@ -66,7 +67,7 @@ public class ShooterConstants {
 
   public static double getShooterSpeedRpsForDistance(double distanceMeters) {
     // if (Double.isNaN(distanceMeters)) return 250.0;
-    Double val = shooterSpeedMap.get(distanceMeters);
+    Double val = shooterSpeedMap.get(distanceMeters) + shooterSpeedBump;
     // System.out.println(val);
     return val != null ? val : 250.0;
   }

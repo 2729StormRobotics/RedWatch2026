@@ -32,7 +32,7 @@ public final class VisionConstants {
   public static final int MIN_TAGS_FOR_HIGH_CONFIDENCE = 2;
 
   /** Throttle value when robot is disabled (100-200 recommended for thermal management) */
-  public static final int THROTTLE_DISABLED = 200;
+  public static final int THROTTLE_DISABLED = 0;
 
   /** Throttle value when robot is enabled (0 = full speed) */
   public static final int THROTTLE_ENABLED = 0;

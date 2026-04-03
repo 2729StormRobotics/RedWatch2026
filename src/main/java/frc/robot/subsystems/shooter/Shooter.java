@@ -553,8 +553,7 @@ public class Shooter extends SubsystemBase {
   }
   public Command armFlywheelAuto() {
     return new InstantCommand(
-        () -> {setFlywheelArmed(true); enableMoveAndShoot();})
-        .withName("Shooter/ArmFlywheelAuto");
+        () -> {setFlywheelArmed(true); enableMoveAndShoot();}, this);
   }
   /**
    * Command that reads Elastic/SmartDashboard desired flywheel RPS and hood

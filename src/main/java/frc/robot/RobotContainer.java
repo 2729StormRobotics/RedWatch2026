@@ -279,13 +279,14 @@ public class RobotContainer {
     NamedCommands.registerCommand("StartShooting", Commands.parallel(
         hopper.runContinuous(),
         Commands.run(() -> kicker.setPercent(1), kicker),
-        Commands.run(() -> shooter.armFlywheelAuto(), shooter)));
+        shooter.armFlywheelAuto()));
     // StopShooting
     NamedCommands.registerCommand("StopShooting", Commands.parallel(
         hopper.stopCommand(),
         new InstantCommand(() -> kicker.stop(), kicker),
         new InstantCommand(() -> { shooter.setFlywheelArmed(false); shooter.stop(); }, shooter)));
-    //Set up auto routines chooser
+    // FIX THIS
+        //Set up auto routines chooser
     System.out.println("[Init] Setting up Logged Auto Chooser");
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
