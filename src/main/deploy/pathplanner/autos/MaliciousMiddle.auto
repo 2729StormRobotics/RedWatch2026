@@ -5,39 +5,45 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "S3-N3"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "N3-B3"
+            "name": "IntakeDeploy"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "PrepShooter"
+            "name": "StartIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "S2-D"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShooting"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.0
+            "waitTime": 5.0
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "StartShots5seconds"
+            "name": "StopShooting"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "S3",
+  "folder": "Main",
   "choreoAuto": false
 }

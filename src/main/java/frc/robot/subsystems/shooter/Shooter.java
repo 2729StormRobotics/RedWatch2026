@@ -555,6 +555,18 @@ public class Shooter extends SubsystemBase {
     return new InstantCommand(
         () -> {setFlywheelArmed(true); enableMoveAndShoot();}, this);
   }
+
+  public Command stopShootingAuto() {
+    return new InstantCommand(
+        () -> {
+          setFlywheelArmed(false); 
+          disableMoveAndShoot();
+          desiredTurretAngleDeg = -90;
+          desiredHoodPositionRotations=1;
+          desiredFlywheelVelocity = 0;
+        },
+          this);
+  }
   /**
    * Command that reads Elastic/SmartDashboard desired flywheel RPS and hood
    * position (rotations),
@@ -726,37 +738,6 @@ public class Shooter extends SubsystemBase {
     }, this);
   }
 
-  // public Command autoScoreCommand(Intake intake, Kicker kicker) {
-  // if (Constants.currentMode == Constants.Mode.SIM) {
-  // return Commands.parallel(
-  // Commands.run(() -> this.prep = false),
-  // // Always keep aiming while the button is held
-  // Commands.run(this::enableMoveAndShoot, this),
-
-  // // Repeating sequence for the actual "shots"
-  // Commands.repeatingSequence(
-  // // 1. Wait until the shooter is physically ready
-  // Commands.waitUntil(() -> true),
-
-  // // 2. Fire the hardware/kicker and physics sim simultaneously
-  // Commands.parallel(
-  // kicker.fireCommand().withTimeout(0.1), // Quick pulse of the kicker
-  // Commands.runOnce(() -> this.launchSimulatedFuel(intake))),
-
-  // // 3. The "Stagger" delay (e.g., 0.1s = 10 balls per second)
-  // Commands.waitSeconds(0.2)));
-  // } else {
-  // return Commands.parallel(
-  // Commands.run(() -> {
-  // // Coordinate aim uses robot pose to calculate heading to hub
-  // this.prep = false;
-  // this.enableMoveAndShoot();
-  // }, this),
-  // Commands.sequence(
-  // Commands.waitUntil(this::isReadyToFire),
-  // kicker.fireCommand()));
-  // }
-  // }
 
   public Command prepCommand() {
     return new InstantCommand(() -> {
@@ -765,57 +746,6 @@ public class Shooter extends SubsystemBase {
     }, this);
   }
 
-  // public Command shootforseconds(Intake intake, Kicker kicker, double seconds)
-  // {
-  // return new ParallelCommandGroup(
-  // new RepeatCommand(autoScoreCommand(intake, kicker)),
-  // new WaitCommand(seconds)).withTimeout(seconds);
-  // }
-
-  // SIMULATION STUFF
-
-  // private void launchSimulatedFuel(Intake intake) {
-  // if (Constants.currentMode != Constants.Mode.SIM || driveTrainSimulation ==
-  // null || !intake.decrementBall())
-  // return;
-
-  // // 1. Gather current robot state
-  // var robotPose = driveTrainSimulation.getSimulatedDriveTrainPose();
-  // ChassisSpeeds chassisSpeeds =
-  // driveTrainSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative();
-
-  // // 2. Calculate launch parameters
-  // // We combine robot rotation + turret rotation for the total field-relative
-  // // heading
-  // Rotation2d totalHeader =
-  // robotPose.getRotation().plus(Rotation2d.fromDegrees(this.getTurretCurrentAngleDeg()));
-
-  // GamePieceProjectile fuelProjectile = new GamePieceProjectile(
-  // Constants.FUEL_INFO,
-  // robotPose.getTranslation(),
-  // new Translation2d(0.1, 0), // Shooter offset from robot center (meters)
-  // chassisSpeeds, // Adds robot inertia to the ball
-  // totalHeader,
-  // Distance.ofBaseUnits(0.5, Meters), // Launch height (meters)
-  // LinearVelocity.ofBaseUnits(
-  // this.getFlywheelVelocity() / 4, MetersPerSecond), // Convert RPM to
-  // meters/sec (example scaling)
-  // Angle.ofBaseUnits((Math.PI / 2) - ((Math.PI / 8) +
-  // this.getHoodCurrentAngle()), Radians) // Vertical launch
-  // // angle
-  // );
-
-  // // 3. Optional: Configure scoring visualization
-  // fuelProjectile.withProjectileTrajectoryDisplayCallBack(
-  // (poses) -> Logger.recordOutput("Sim/FuelTrajectory", poses.toArray(new
-  // Pose3d[0])),
-  // (poses) -> Logger.recordOutput("Sim/FuelTrajectoryMiss", poses.toArray(new
-  // Pose3d[0])));
-
-  // fuelProjectile.enableBecomesGamePieceOnFieldAfterTouchGround();
-  // // 4. Register with the arena
-  // SimulatedArena.getInstance().addGamePieceProjectile(fuelProjectile);
-  // }
 
   /** Sets the desired hood position (motor rotations). Periodic applies it. */
   public Command runPositionCommand(double ticks) {
@@ -865,13 +795,27 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command passCommand() {
-    return Commands.startEnd(
+    return Commands.runEnd(
         () -> {
           this.disableMoveAndShoot();
           this.setFlywheelArmed(true);
           this.setDesiredHoodPositionRotations(30);
-          this.setTurretAngleDegrees(0);
           this.setFlywheelVelocity(280);
+
+          // Aim directly backwards towards our alliance side (field-relative)
+          Pose2d robotPose = drive.getPose();
+          boolean isRed = DriverStation.getAlliance().isPresent()
+              && DriverStation.getAlliance().get() == Alliance.Red;
+          
+          // Blue wall is at -X (180 deg / PI rad), Red wall is at +X (0 deg / 0 rad)
+          double headingToWallRad = isRed ? 0.0 : Math.PI;
+          double turretRotationRad = headingToWallRad - robotPose.getRotation().getRadians();
+          
+          // Add Math.PI for physical offset (mirrors updateAimToTarget logic)
+          double turretAngleRad = MathUtil.inputModulus(turretRotationRad + Math.PI, -Math.PI, Math.PI);
+          turretAngleRad = MathUtil.clamp(turretAngleRad, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
+          
+          this.setTurretAngleDegrees(Units.radiansToDegrees(turretAngleRad));
         },
         () -> {
           this.enableMoveAndShoot();

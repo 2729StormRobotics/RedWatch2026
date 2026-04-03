@@ -15,10 +15,7 @@
     "S3"
   ],
   "autoFolders": [
-    "Main",
-    "S1",
-    "S2",
-    "S3"
+    "Main"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,

@@ -266,6 +266,9 @@ public class RobotContainer {
     NamedCommands.registerCommand("IntakeDeploy", new InstantCommand(() -> intake.deploy()));
     // StartIntake
     NamedCommands.registerCommand("StartIntake", new RepeatCommand(new InstantCommand(() -> intake.intake())).withTimeout(0.1));
+
+    // StopIntake
+    NamedCommands.registerCommand("StopIntake", new RepeatCommand(intake.stopCommand()).withTimeout(0.03));
     // LockHood
     NamedCommands.registerCommand("LockHood", new InstantCommand(() -> shooter.lockTrench()));
     // UnlockHood
@@ -284,8 +287,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("StopShooting", Commands.parallel(
         hopper.stopCommand(),
         new InstantCommand(() -> kicker.stop(), kicker),
-        new InstantCommand(() -> { shooter.setFlywheelArmed(false); shooter.stop(); }, shooter)));
-    // FIX THIS
+        shooter.stopShootingAuto()));
         //Set up auto routines chooser
     System.out.println("[Init] Setting up Logged Auto Chooser");
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -319,11 +321,8 @@ public class RobotContainer {
     //     shooter.runTestFlywheelCommand());
     flyWheelTrigger.onTrue(new InstantCommand( () -> shooter.setFlywheelArmed(true)));
     flyWheelTrigger.onFalse(new InstantCommand( () -> shooter.setFlywheelArmed(false)));
-    // runFFCharcterization.whileTrue(DriveCommands.feedforwardCharacterization(drive));
 
-    // runWRCharcterization.whileTrue(DriveCommands.wheelRadiusCharacterization(drive));
-
-    // PASS_LOCK.whileTrue(shooter.passCommand());
+    PASS_LOCK.whileTrue(shooter.passCommand());
 
     HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
 

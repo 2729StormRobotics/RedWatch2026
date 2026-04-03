@@ -7,61 +7,79 @@
         {
           "type": "named",
           "data": {
+            "name": "LockHood"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "IntakeDeploy"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "S2-N2"
+            "name": "StartIntake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "N2-B2"
+            "pathName": "S1-N1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "N1-LeftShoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "PrepShooter"
+            "name": "StartShooting"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.0
+            "waitTime": 5.0
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "StartShots5seconds"
+            "name": "StopShooting"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 6.0
+            "name": "StartIntake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "B2-S2"
+            "pathName": "LeftShoot-Depot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": null
+            "name": "StopIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShooting"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "S2",
+  "folder": "Main",
   "choreoAuto": false
 }

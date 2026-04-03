@@ -7,49 +7,19 @@
         {
           "type": "named",
           "data": {
+            "name": "LockHood"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "IntakeDeploy"
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "S1-N1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "N1-B1"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "PrepShooter"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "StartShots5seconds"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 6.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "B1-S1"
+            "name": "StartIntake"
           }
         },
         {
@@ -61,13 +31,67 @@
         {
           "type": "path",
           "data": {
-            "pathName": "N1-B1"
+            "pathName": "N1-LeftShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "UnlockHood"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShooting"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShooting"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "LockHood"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftShootx2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "UnlockHood"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShooting"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "S1",
+  "folder": "Main",
   "choreoAuto": false
 }
