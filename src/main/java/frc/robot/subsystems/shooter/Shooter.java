@@ -337,7 +337,7 @@ public class Shooter extends SubsystemBase {
     // with 180° flip. Allowed range is now full [-180°, 180°].
     double turretAngle = MathUtil.inputModulus(turretRotation.getRadians() + Math.PI, -Math.PI, Math.PI);
     turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
-    setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
+    setTurretAngleDegrees(Units.radiansToDegrees(0));
     // System.out.println(virtualDistance);
     // Lookup-table based flywheel speed and hood position from distance
     double lookupShooterRps = ShooterConstants.getShooterSpeedRpsForDistance(virtualDistance);
@@ -349,9 +349,9 @@ public class Shooter extends SubsystemBase {
 
     // Flywheel: automatically spin to the distance-based lookup velocity whenever aiming
     if (flywheelArmed) {
-      setFlywheelVelocity(lookupShooterRps);
+      setFlywheelVelocity(167);
     } else {
-      setFlywheelVelocity(100);
+      setFlywheelVelocity(20);
     }
       
 
@@ -794,31 +794,39 @@ public class Shooter extends SubsystemBase {
     return runOnce(() -> setTurretAngleDegrees(degrees)).withName("HoodStop");
   }
 
+  public Command stopPass(){
+    return Commands.run(() -> {
+      this.setFlywheelArmed(false);
+      this.setDesiredHoodPositionRotations(15);
+      this.setFlywheelVelocity(0);
+    }
+    );
+  }
   public Command passCommand() {
     return Commands.runEnd(
         () -> {
           this.disableMoveAndShoot();
           this.setFlywheelArmed(true);
           this.setDesiredHoodPositionRotations(30);
-          this.setFlywheelVelocity(280);
+          this.setFlywheelVelocity(50);
 
-          // Aim directly backwards towards our alliance side (field-relative)
-          Pose2d robotPose = drive.getPose();
-          boolean isRed = DriverStation.getAlliance().isPresent()
-              && DriverStation.getAlliance().get() == Alliance.Red;
+          // // Aim directly backwards towards our alliance side (field-relative)
+          // Pose2d robotPose = drive.getPose();
+          // boolean isRed = DriverStation.getAlliance().isPresent()
+          //     && DriverStation.getAlliance().get() == Alliance.Red;
           
-          // Blue wall is at -X (180 deg / PI rad), Red wall is at +X (0 deg / 0 rad)
-          double headingToWallRad = isRed ? 0.0 : Math.PI;
-          double turretRotationRad = headingToWallRad - robotPose.getRotation().getRadians();
+          // // Blue wall is at -X (180 deg / PI rad), Red wall is at +X (0 deg / 0 rad)
+          // double headingToWallRad = isRed ? 0.0 : Math.PI;
+          // double turretRotationRad = headingToWallRad - robotPose.getRotation().getRadians();
           
-          // Add Math.PI for physical offset (mirrors updateAimToTarget logic)
-          double turretAngleRad = MathUtil.inputModulus(turretRotationRad + Math.PI, -Math.PI, Math.PI);
-          turretAngleRad = MathUtil.clamp(turretAngleRad, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
+          // // Add Math.PI for physical offset (mirrors updateAimToTarget logic)
+          // double turretAngleRad = MathUtil.inputModulus(turretRotationRad + Math.PI, -Math.PI, Math.PI);
+          // turretAngleRad = MathUtil.clamp(turretAngleRad, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
           
-          this.setTurretAngleDegrees(Units.radiansToDegrees(turretAngleRad));
+          // this.setTurretAngleDegrees(Units.radiansToDegrees(turretAngleRad));
         },
         () -> {
-          this.enableMoveAndShoot();
+          // this.enaeMoveAndShoot();
           this.setFlywheelArmed(false);
         },
         this)

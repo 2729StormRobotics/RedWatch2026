@@ -319,11 +319,12 @@ public class RobotContainer {
     // (otherwise it idles at a low speed while MoveAndShoot aiming is active).
     // flyWheelTrigger.whileTrue(
     //     shooter.runTestFlywheelCommand());
-    flyWheelTrigger.onTrue(new InstantCommand( () -> shooter.setFlywheelArmed(true)));
-    flyWheelTrigger.onFalse(new InstantCommand( () -> shooter.setFlywheelArmed(false)));
+    // flyWheelTrigger.onTrue(new InstantCommand( () -> shooter.setFlywheelArmed(true)));
+    // flyWheelTrigger.onFalse(new InstantCommand( () -> shooter.setFlywheelArmed(false)));
+    
 
-    PASS_LOCK.whileTrue(shooter.passCommand());
-
+    // PASS_LOCK.onTrue(shooter.passCommand());
+    // PASS_LOCK.onFalse(shooter.stopPass());
     HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
 
     // Climb Controls
@@ -346,14 +347,19 @@ public class RobotContainer {
     agitateTrigger.onFalse(intake.deployCommand());
 
     // Translator button 5: run hopper + kicker together
-    ReverseHopperTrigger.whileTrue(
+    ReverseHopperTrigger.onTrue(
         Commands.parallel(
             hopper.runContinuous(),
             Commands.run(() -> kicker.setPercent(1), kicker)));
+
     ReverseHopperTrigger.onFalse(
         Commands.parallel(
             hopper.stopCommand(),
-            Commands.runOnce(kicker::stop, kicker)));
+            Commands.run(() -> kicker.setPercent(0), kicker)));
+    // ReverseHopperTrigger.onFalse(
+    //     Commands.parallel(
+    //         hopper.stopCommand(),
+    //         Commands.runOnce(kicker::stop, kicker)));
 
     // Translator button 6: run intake + hopper together
     HopperTrigger.whileTrue(

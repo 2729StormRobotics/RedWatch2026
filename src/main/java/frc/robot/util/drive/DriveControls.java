@@ -176,9 +176,9 @@ public class DriveControls {
   /** Shared driver bindings used by all driver profiles for now. */
   private static void configureDriverCommon() {
     // Axes
-    DRIVE_FORWARD = () -> applyDriveDeadband(-getY(m_translator));
-    DRIVE_STRAFE = () -> applyDriveDeadband(-getX(m_translator));
-    DRIVE_ROTATE = () -> applyDriveDeadband(-getTwist(m_rotator)/2);
+    DRIVE_FORWARD = () -> applyDriveDeadband(-getY(m_translator) * 0.4);
+    DRIVE_STRAFE = () -> applyDriveDeadband(-getX(m_translator) * 0.4);
+    DRIVE_ROTATE = () -> applyDriveDeadband(-getTwist(m_rotator)/3);
 
     // Buttons / modes
     RESET_GYRO = m_translator.button(12);
@@ -204,7 +204,7 @@ public class DriveControls {
     INTAKE_TRIGGER = m_weaponsController.rightTrigger();
 
     // B button: run flywheel at aimed velocity
-    flyWheelTrigger = m_weaponsController.b();
+    // flyWheelTrigger = m_weaponsController.b();
     // Disable old hopper outtake mapping (no button assigned now)
     HopperOutake = new Trigger(() -> false);
 
@@ -222,7 +222,7 @@ public class DriveControls {
     // 5: hopper + kicker
     // 6: intake + hopper
     HopperTrigger = m_weaponsController.leftTrigger();
-    ReverseHopperTrigger = m_weaponsController.leftBumper();
+    ReverseHopperTrigger = m_weaponsController.b();
 
     reverseKicker = m_translator.button(10);
 
