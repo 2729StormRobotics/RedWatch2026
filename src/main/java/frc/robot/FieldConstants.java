@@ -1,25 +1,24 @@
-//
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
-
 package frc.robot;
 
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.wpilibj.Filesystem;
+import java.io.IOException;
 
-/**
- * Contains generic field dimensions that are common across FRC seasons.
- * All units are in meters.
- * 
- * Note: Game-specific field elements should be added here when the 2026 game is announced.
- */
-public class FieldConstants {
-  /** Field length in meters */
-  public static final double fieldLength = Units.inchesToMeters(690.876);
+/** Robocon 2026 field, in meters, using the blue-alliance origin. */
+public final class FieldConstants {
+  public static final AprilTagFieldLayout aprilTagLayout = loadLayout();
+  public static final double fieldLength = aprilTagLayout.getFieldLength();
+  public static final double fieldWidth = aprilTagLayout.getFieldWidth();
 
-  /** Field width in meters */
-  public static final double fieldWidth = Units.inchesToMeters(317);
+  private static AprilTagFieldLayout loadLayout() {
+    try {
+      return new AprilTagFieldLayout(
+          Filesystem.getDeployDirectory().toPath()
+              .resolve("2026-robocon-welded-photonvision-wpilib.json"));
+    } catch (IOException e) {
+      throw new IllegalStateException("Unable to load the Robocon AprilTag field layout", e);
+    }
+  }
 
-  /** Starting line X position in meters (measured from the inside of starting line) */
-  public static final double startingLineX = Units.inchesToMeters(299.438);
+  private FieldConstants() {}
 }

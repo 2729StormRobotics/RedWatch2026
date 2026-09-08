@@ -94,6 +94,16 @@ public class Robot extends LoggedRobot {
     DataLogManager.start();
     Logger.start();
 
+    // Configure field flipping before autonomous paths are loaded.
+    com.pathplanner.lib.util.FlippingUtil.fieldSizeX = FieldConstants.fieldLength;
+    com.pathplanner.lib.util.FlippingUtil.fieldSizeY = FieldConstants.fieldWidth;
+    for (var tag : FieldConstants.aprilTagLayout.getTags()) {
+      var field = new edu.wpi.first.wpilibj.smartdashboard.Field2d();
+      field.setRobotPose(tag.pose.toPose2d());
+      SmartDashboard.putData("Tag" + tag.ID, field);
+      Logger.recordOutput("Field/AprilTags/Tag" + tag.ID, tag.pose);
+    }
+
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();

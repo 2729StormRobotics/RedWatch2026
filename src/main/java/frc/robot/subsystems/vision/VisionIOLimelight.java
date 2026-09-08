@@ -13,6 +13,7 @@
 
 package frc.robot.subsystems.vision;
 
+import frc.robot.FieldConstants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
@@ -169,7 +170,8 @@ public class VisionIOLimelight implements VisionIO {
         double yaw = Math.toRadians(botPose[5]);
         
         // Validate pose is reasonable (field bounds check)
-        if (x >= -1.0 && x <= 18.0 && y >= -1.0 && y <= 9.0) {
+        if (x >= -1.0 && x <= FieldConstants.fieldLength + 1.0
+            && y >= -1.0 && y <= FieldConstants.fieldWidth + 1.0) {
           return new Pose2d(x, y, Rotation2d.fromRadians(yaw));
         }
       }
@@ -277,11 +279,12 @@ public class VisionIOLimelight implements VisionIO {
    */
   private boolean isValidPose(Pose2d pose) {
     // Check if pose is within reasonable field bounds
-    // Field is approximately 16.5m x 8m, but allow some margin
+    // Use the custom Robocon dimensions with a one-meter margin
     double x = pose.getX();
     double y = pose.getY();
     
-    return x >= -1.0 && x <= 18.0 && y >= -1.0 && y <= 9.0;
+    return x >= -1.0 && x <= FieldConstants.fieldLength + 1.0
+            && y >= -1.0 && y <= FieldConstants.fieldWidth + 1.0;
   }
 
   @Override

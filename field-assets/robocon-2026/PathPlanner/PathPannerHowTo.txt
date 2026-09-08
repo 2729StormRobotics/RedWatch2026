@@ -1,0 +1,5 @@
+Before you do this, make a git branch so you dont mess with your old paths.
+
+Go to path planner settings, app settings, then under field image "importCustom"
+
+Name the field 2026Robocon, select one of the 4 field images from the fieldImages folder, and all of them have 47.7481404921 pixels/m
