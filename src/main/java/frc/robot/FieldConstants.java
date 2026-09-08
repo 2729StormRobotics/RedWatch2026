@@ -227,58 +227,6 @@ public class FieldConstants {
         new Translation3d(LinesVertical.oppHubCenter, 0, openingHeight);
   }
 
-  /** Tower related constants */
-  public static class Tower {
-    // Dimensions
-    public static final double width = Units.inchesToMeters(49.25);
-    public static final double depth = Units.inchesToMeters(45.0);
-    public static final double height = Units.inchesToMeters(78.25);
-    public static final double innerOpeningWidth = Units.inchesToMeters(32.250);
-    public static final double frontFaceX = Units.inchesToMeters(43.51);
-
-    public static final double uprightHeight = Units.inchesToMeters(72.1);
-
-    // Rung heights from the floor
-    public static final double lowRungHeight = Units.inchesToMeters(27.0);
-    public static final double midRungHeight = Units.inchesToMeters(45.0);
-    public static final double highRungHeight = Units.inchesToMeters(63.0);
-
-    // Relevant reference points on alliance side
-    public static final Translation2d centerPoint =
-        new Translation2d(
-            frontFaceX, aprilTagLayout.getTagPose(49).get().getY());
-    public static final Translation2d leftUpright =
-        new Translation2d(
-            frontFaceX,
-            (aprilTagLayout.getTagPose(49).get().getY())
-                + innerOpeningWidth / 2
-                + Units.inchesToMeters(0.75));
-    public static final Translation2d rightUpright =
-        new Translation2d(
-            frontFaceX,
-            (aprilTagLayout.getTagPose(49).get().getY())
-                - innerOpeningWidth / 2
-                - Units.inchesToMeters(0.75));
-
-    // Relevant reference points on opposing side
-    public static final Translation2d oppCenterPoint =
-        new Translation2d(
-            fieldLength - frontFaceX,
-            aprilTagLayout.getTagPose(33).get().getY());
-    public static final Translation2d oppLeftUpright =
-        new Translation2d(
-            fieldLength - frontFaceX,
-            (aprilTagLayout.getTagPose(33).get().getY())
-                + innerOpeningWidth / 2
-                + Units.inchesToMeters(0.75));
-    public static final Translation2d oppRightUpright =
-        new Translation2d(
-            fieldLength - frontFaceX,
-            (aprilTagLayout.getTagPose(33).get().getY())
-                - innerOpeningWidth / 2
-                - Units.inchesToMeters(0.75));
-  }
-
   public static class Depot {
     // Dimensions
     public static final double width = Units.inchesToMeters(42.0);
