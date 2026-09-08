@@ -40,10 +40,11 @@ Both WPILib and Limelight maps specify 14.6812 m x 8.069 m; this implementation
 uses those values as its source of truth. The upstream sample sets fieldSizeX to
 15.68 m, and its navgrid still says 16.54 m. Those conflicting values were not
 copied. Confirm physical field dimensions with the event before autonomous use.
-The map has 32 tags: IDs 15/16/31/32 are replaced by 33/34/49/50.
+The customized maps have 28 tags. IDs 33/34/49/50 are intentionally excluded,
+and the old IDs 15/16/31/32 remain absent.
 
 ## Validation
 
 The imported JSON and Limelight map dimensions and tag IDs were checked locally.
-Compilation requires a Java 17/WPILib development environment; this workspace's
-shell has no Java runtime, so compilation and hardware verification remain pending.
+The maps contain the same 28 tag IDs and field dimensions. The robot code compiles
+successfully with Java 17; hardware verification remains pending.
