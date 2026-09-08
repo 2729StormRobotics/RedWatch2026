@@ -13,8 +13,8 @@
 
 package frc.robot.subsystems.vision;
 
+import frc.robot.FieldConstants;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.LimelightHelpers;
@@ -148,7 +148,6 @@ public class VisionIOLimelight implements VisionIO {
    * MegaTag 2 provides a pose estimate with timestamp and tag count information.
    */
   private Pose2d getBotPoseFromNetworkTables() {
-    
     return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName).pose;
   }
 
@@ -211,11 +210,12 @@ public class VisionIOLimelight implements VisionIO {
    */
   private boolean isValidPose(Pose2d pose) {
     // Check if pose is within reasonable field bounds
-    // Field is approximately 16.5m x 8m, but allow some margin
+    // Use the custom Robocon dimensions with a one-meter margin
     double x = pose.getX();
     double y = pose.getY();
     
-    return x >= -1.0 && x <= 18.0 && y >= -1.0 && y <= 9.0;
+    return x >= -1.0 && x <= FieldConstants.fieldLength + 1.0
+            && y >= -1.0 && y <= FieldConstants.fieldWidth + 1.0;
   }
 
   @Override

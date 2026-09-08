@@ -1,0 +1,16 @@
+{
+  "name": "2026 Robocon",
+  "isFTC": false,
+  "coordinateSystem": "wall-blue",
+  "sourceUrl": "https://github.com/owen1050/2026-Robocon-Apriltag-Field-Info",
+  "topLeft": [
+    49,
+    27
+  ],
+  "bottomRight": [
+    751,
+    412
+  ],
+  "widthInches": 578,
+  "heightInches": 318
+}

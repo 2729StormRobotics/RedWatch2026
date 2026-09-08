@@ -1,0 +1,3 @@
+Open AS and under app select show assets folder
+Copy the "Field2d_2026Robocon" folder into your custom assets folder
+If you want dark mode vs light mode change which image in the Field2d_2026Robocon is named "image.png"
