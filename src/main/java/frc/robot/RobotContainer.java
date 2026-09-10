@@ -374,8 +374,8 @@ public class RobotContainer {
     // HopperOutake.whileTrue(HopperBackwardsIntake.getCommand(intake, hopper, shooter, kicker));
     // HopperOutake.onFalse(HopperBackwardsIntake.getStopCommand(intake, hopper, shooter, kicker));
     
-    enableMoveShoot.onTrue(new InstantCommand(() -> shooter.enableMoveAndShoot()));
-    disableMoveShoot.onTrue(new InstantCommand(() -> shooter.disableMoveAndShoot()));
+    enableMoveShoot.onTrue(shooter.armFlywheelLookupCommand());
+    disableMoveShoot.onTrue(shooter.disarmFlywheelLookupCommand());
 
     // Add command scheduler to SmartDashboard for debugging
     SmartDashboard.putData("commandscheduler", CommandScheduler.getInstance());

@@ -361,9 +361,9 @@ public class Shooter extends SubsystemBase {
 
     // Flywheel: automatically spin to the distance-based lookup velocity whenever aiming
     if (flywheelArmed) {
-      setFlywheelVelocity(lookupShooterRps);
+      setFlywheelVelocity(200);
     } else {
-      setFlywheelVelocity(20);
+      setFlywheelVelocity(0);
     }
       
 
@@ -563,6 +563,14 @@ public class Shooter extends SubsystemBase {
         this)
         .withName("Shooter/ArmFlywheelLookup");
   }
+
+  public Command disarmFlywheelLookupCommand() {
+    return Commands.startEnd(
+        () -> {setFlywheelArmed(false); disableMoveAndShoot();},
+        () -> setFlywheelArmed(false),
+        this)
+        .withName("Shooter/ArmFlywheelLookup");
+  }
   public Command armFlywheelAuto() {
     return new InstantCommand(
         () -> {setFlywheelArmed(true); enableMoveAndShoot();}, this);
@@ -740,6 +748,7 @@ public class Shooter extends SubsystemBase {
   public void stop() {
     this.disableMoveAndShoot();
     desiredFlywheelVelocity = 0.0;
+    setFlywheelArmed(false);
     desiredHoodPositionRotations = hoodIO.getPosition(); // Hold current hood position
     flywheelIO.stop();
   }
