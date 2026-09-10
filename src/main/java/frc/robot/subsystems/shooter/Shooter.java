@@ -126,6 +126,14 @@ public class Shooter extends SubsystemBase {
 
   private boolean prep = true;
 
+  /**
+   * SAFETY KILL SWITCH: when true, periodic() never sends the hood any position/velocity
+   * command, regardless of what any button, auto, or dashboard control sets as the desired
+   * hood position. Flip back to false only once the hood mechanism and its code path are
+   * trusted again.
+   */
+  private static final boolean HOOD_DISABLED = true;
+
   // Move-and-Shoot state
   private boolean moveAndShootEnabled = false;
   private boolean depotAimModeEnabled = false;
@@ -216,11 +224,15 @@ public class Shooter extends SubsystemBase {
       flywheelIO.setVelocity(desiredFlywheelVelocity);
     }
     // System.out.println(desiredHoodPositionRotations);
-    double clampedHood = MathUtil.clamp(
-        desiredHoodPositionRotations,
-        HoodConstants.MIN_POSITION_ROTATIONS,
-        HoodConstants.MAX_POSITION_ROTATIONS);
-    hoodIO.setPosition(clampedHood);
+    if (HOOD_DISABLED) {
+      hoodIO.stop();
+    } else {
+      double clampedHood = MathUtil.clamp(
+          desiredHoodPositionRotations,
+          HoodConstants.MIN_POSITION_ROTATIONS,
+          HoodConstants.MAX_POSITION_ROTATIONS);
+      hoodIO.setPosition(clampedHood);
+    }
     turretIO.setAngle(desiredTurretAngleDeg);
 
     // Log shooter state
@@ -337,7 +349,7 @@ public class Shooter extends SubsystemBase {
     // with 180° flip. Allowed range is now full [-180°, 180°].
     double turretAngle = MathUtil.inputModulus(turretRotation.getRadians() + Math.PI, -Math.PI, Math.PI);
     turretAngle = MathUtil.clamp(turretAngle, TurretConstants.MIN_ANGLE_RAD, TurretConstants.MAX_ANGLE_RAD);
-    setTurretAngleDegrees(Units.radiansToDegrees(0));
+    setTurretAngleDegrees(Units.radiansToDegrees(turretAngle));
     // System.out.println(virtualDistance);
     // Lookup-table based flywheel speed and hood position from distance
     double lookupShooterRps = ShooterConstants.getShooterSpeedRpsForDistance(virtualDistance);
@@ -349,7 +361,7 @@ public class Shooter extends SubsystemBase {
 
     // Flywheel: automatically spin to the distance-based lookup velocity whenever aiming
     if (flywheelArmed) {
-      setFlywheelVelocity(167);
+      setFlywheelVelocity(lookupShooterRps);
     } else {
       setFlywheelVelocity(20);
     }
@@ -826,7 +838,7 @@ public class Shooter extends SubsystemBase {
           // this.setTurretAngleDegrees(Units.radiansToDegrees(turretAngleRad));
         },
         () -> {
-          // this.enaeMoveAndShoot();
+          this.enableMoveAndShoot();
           this.setFlywheelArmed(false);
         },
         this)

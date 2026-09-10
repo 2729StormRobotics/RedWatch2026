@@ -323,8 +323,8 @@ public class RobotContainer {
     // flyWheelTrigger.onFalse(new InstantCommand( () -> shooter.setFlywheelArmed(false)));
     
 
-    // PASS_LOCK.onTrue(shooter.passCommand());
-    // PASS_LOCK.onFalse(shooter.stopPass());
+    PASS_LOCK.onTrue(shooter.passCommand());
+    PASS_LOCK.onFalse(shooter.stopPass());
     HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
 
     // Climb Controls
