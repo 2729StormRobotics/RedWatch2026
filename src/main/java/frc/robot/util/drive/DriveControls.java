@@ -176,9 +176,9 @@ public class DriveControls {
   /** Shared driver bindings used by all driver profiles for now. */
   private static void configureDriverCommon() {
     // Axes
-    DRIVE_FORWARD = () -> applyDriveDeadband(-getY(m_translator) * 0.4);
-    DRIVE_STRAFE = () -> applyDriveDeadband(-getX(m_translator) * 0.4);
-    DRIVE_ROTATE = () -> applyDriveDeadband(-getTwist(m_rotator)/3);
+    DRIVE_FORWARD = () -> applyDriveDeadband(-getY(m_translator) * 0.8);
+    DRIVE_STRAFE = () -> applyDriveDeadband(-getX(m_translator) * 0.8);
+    DRIVE_ROTATE = () -> applyDriveDeadband(-getTwist(m_rotator)/2);
 
     // Buttons / modes
     RESET_GYRO = m_translator.button(12);
