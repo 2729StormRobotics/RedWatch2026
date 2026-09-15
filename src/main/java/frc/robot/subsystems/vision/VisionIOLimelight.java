@@ -59,7 +59,7 @@ public class VisionIOLimelight implements VisionIO {
       // Get full pose estimate from MegaTag 2
       LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
 
-      if (mt2 != null && mt2.pose != null && isValidPose(mt2.pose)) {
+      if (mt2 != null && mt2.pose != null && isValidPose(mt2.pose) && isValidPose(mt2.pose)) {
         inputs.hasPose = true;
         
         inputs.tagCount = mt2.tagCount;
