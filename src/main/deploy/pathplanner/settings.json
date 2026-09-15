@@ -6,16 +6,18 @@
     "B1",
     "B2",
     "B3",
+    "B4",
     "N1",
     "N2",
     "N3",
-    "B4",
+    "Robocon Paths",
     "S1",
     "S2",
     "S3"
   ],
   "autoFolders": [
-    "Main"
+    "Main",
+    "Robocon Autos"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
