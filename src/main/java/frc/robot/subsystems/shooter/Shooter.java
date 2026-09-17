@@ -534,6 +534,15 @@ public class Shooter extends SubsystemBase {
         .withName("Shooter/RunTestFlywheel");
   }
 
+  public Command incrementFlywheelOCommand(){
+    return Commands.run(() -> setFlywheelVelocity(desiredFlywheelVelocity + 10), this);
+  }
+
+  public Command decrementFlywheelCommand(){
+    return Commands.run(() -> setFlywheelVelocity(desiredFlywheelVelocity - 10), this);
+  }
+
+
   /**
    * Command to bump the test flywheel velocity up by a fixed step (e.g. +50 RPS).
    */
@@ -566,7 +575,7 @@ public class Shooter extends SubsystemBase {
 
   public Command disarmFlywheelLookupCommand() {
     return Commands.startEnd(
-        () -> {setFlywheelArmed(false); disableMoveAndShoot();},
+        () -> {setFlywheelArmed(false); disableMoveAndShoot(); setFlywheelVelocity(0);},
         () -> setFlywheelArmed(false),
         this)
         .withName("Shooter/ArmFlywheelLookup");
