@@ -9,6 +9,7 @@ public class GyroIOInputsAutoLogged extends GyroIO.GyroIOInputs implements Logga
   @Override
   public void toLog(LogTable table) {
     table.put("Connected", connected);
+    table.put("Status", status);
     table.put("YawPosition", yawPosition);
     table.put("YawVelocityRadPerSec", yawVelocityRadPerSec);
     table.put("OdometryYawTimestamps", odometryYawTimestamps);
@@ -18,6 +19,7 @@ public class GyroIOInputsAutoLogged extends GyroIO.GyroIOInputs implements Logga
   @Override
   public void fromLog(LogTable table) {
     connected = table.get("Connected", connected);
+    status = table.get("Status", status);
     yawPosition = table.get("YawPosition", yawPosition);
     yawVelocityRadPerSec = table.get("YawVelocityRadPerSec", yawVelocityRadPerSec);
     odometryYawTimestamps = table.get("OdometryYawTimestamps", odometryYawTimestamps);
@@ -27,6 +29,7 @@ public class GyroIOInputsAutoLogged extends GyroIO.GyroIOInputs implements Logga
   public GyroIOInputsAutoLogged clone() {
     GyroIOInputsAutoLogged copy = new GyroIOInputsAutoLogged();
     copy.connected = this.connected;
+    copy.status = this.status;
     copy.yawPosition = this.yawPosition;
     copy.yawVelocityRadPerSec = this.yawVelocityRadPerSec;
     copy.odometryYawTimestamps = this.odometryYawTimestamps.clone();
