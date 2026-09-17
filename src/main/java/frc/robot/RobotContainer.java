@@ -290,7 +290,10 @@ public class RobotContainer {
         shooter.stopShootingAuto()));
         //Set up auto routines chooser
     System.out.println("[Init] Setting up Logged Auto Chooser");
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    autoChooser = new LoggedDashboardChooser<>(
+        "Auto Choices",
+        AutoBuilder.buildAutoChooser(
+            Constants.currentMode == Constants.Mode.SIM ? "Robostyle Luscious Left" : ""));
 
     // Set up SysId routines for drive characterization
     autoChooser.addOption(

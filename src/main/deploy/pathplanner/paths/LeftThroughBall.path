@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 6.616238758945347,
+        "y": 7.3307090916143265
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.68764626880795,
+        "y": 6.321354705879752
+      },
+      "isLocked": false,
+      "linkedName": "LeftPreBall"
+    },
+    {
+      "anchor": {
+        "x": 6.733901007740427,
+        "y": 4.724037733778348
+      },
+      "prevControl": {
+        "x": 6.680575048339055,
+        "y": 5.635008443267207
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "LeftDoneBalls"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -90.0
+  },
+  "reversed": false,
+  "folder": "Robocon Paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -90.0
+  },
+  "useDefaultConstraints": true
+}

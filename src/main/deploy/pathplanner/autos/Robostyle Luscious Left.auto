@@ -1,0 +1,85 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDeploy"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "LockHood"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftUnderTrench"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftThroughBall"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftBackUpBalls"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "LockHood"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftBackUnderTrench"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "UnlockHood"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftHomeToShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShots5seconds"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Robocon Autos",
+  "choreoAuto": false
+}

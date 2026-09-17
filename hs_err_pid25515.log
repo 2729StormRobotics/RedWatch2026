@@ -1,0 +1,188 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00000001210cffc8, pid=25515, tid=259
+#
+# JRE version: OpenJDK Runtime Environment Homebrew (17.0.20) (build 17.0.20+0)
+# Java VM: OpenJDK 64-Bit Server VM Homebrew (17.0.20+0, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, bsd-aarch64)
+# Problematic frame:
+# C  [libhalsim_gui.dylib+0x1bfc8]  std::__1::__function::__func<halsimgui::NetworkTablesSimGui::Initialize()::$_0, std::__1::allocator<halsimgui::NetworkTablesSimGui::Initialize()::$_0>, void ()>::operator()()+0x8
+#
+# No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   https://github.com/Homebrew/homebrew-core/issues
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Djava.library.path=/Users/anirudsriram/Documents/GitHub/RedWatch2026/build/jni/release -Dfile.encoding=UTF-8 -Duser.country=US -Duser.language=en -Duser.variant /Users/anirudsriram/Documents/GitHub/RedWatch2026/build/libs/RedWatch2026.jar
+
+Host: "Mac15,6" arm64, 11 cores, 18G, Darwin 25.5.0, macOS 26.5.2 (25F84)
+Time: Thu Sep 17 17:01:07 2026 EDT elapsed time: 2006.824247 seconds (0d 0h 33m 26s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000000010360bf10):  JavaThread "main" [_thread_in_native, id=259, stack(0x000000016c8cc000,0x000000016d0c8000)]
+
+Stack: [0x000000016c8cc000,0x000000016d0c8000],  sp=0x000000016d0c3e50,  free space=8159k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [libhalsim_gui.dylib+0x1bfc8]  std::__1::__function::__func<halsimgui::NetworkTablesSimGui::Initialize()::$_0, std::__1::allocator<halsimgui::NetworkTablesSimGui::Initialize()::$_0>, void ()>::operator()()+0x8
+C  [libhalsim_gui.dylib+0xae1bc]  wpi::gui::PlatformRenderFrame()+0x258
+C  [libhalsim_gui.dylib+0x9b438]  wpi::gui::Main()+0x180
+C  [libhalsim_gui.dylib+0x1b078]  HALSIM_InitExtension::$_7::__invoke(void*)+0xc
+j  edu.wpi.first.hal.HAL.runMain()V+0
+j  edu.wpi.first.wpilibj.RobotBase.startRobot(Ljava/util/function/Supplier;)V+85
+j  frc.robot.Main.main([Ljava/lang/String;)V+5
+v  ~StubRoutines::call_stub
+V  [libjvm.dylib+0x3583e4]  JavaCalls::call_helper(JavaValue*, methodHandle const&, JavaCallArguments*, JavaThread*)+0x220
+V  [libjvm.dylib+0x3ab2b0]  jni_invoke_static(JNIEnv_*, JavaValue*, _jobject*, JNICallType, _jmethodID*, JNI_ArgumentPusher*, JavaThread*)+0xd4
+V  [libjvm.dylib+0x3ae114]  jni_CallStaticVoidMethod+0xdc
+C  [libjli.dylib+0x5858]  JavaMain+0x598
+C  [libjli.dylib+0x8338]  __JVMInit_block_invoke+0x48
+C  [Foundation+0x3e16c]  __NSBLOCKOPERATION_IS_CALLING_OUT_TO_A_BLOCK__+0x18
+C  [Foundation+0x3e03c]  -[NSBlockOperation main]+0x58
+C  [Foundation+0x3dfdc]  __NSOPERATION_IS_INVOKING_MAIN__+0x10
+C  [Foundation+0x3d3e8]  -[NSOperation start]+0x280
+C  [Foundation+0x78adc]  __NSThreadPerformPerform+0x108
+C  [CoreFoundation+0x7df30]  __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__+0x1c
+C  [CoreFoundation+0x7dec4]  __CFRunLoopDoSource0+0xac
+C  [CoreFoundation+0x7dc30]  __CFRunLoopDoSources0+0xe8
+C  [CoreFoundation+0x7c854]  __CFRunLoopRun+0x334
+C  [CoreFoundation+0x14f1c4]  _CFRunLoopRunSpecificWithOptions+0x214
+C  [libjli.dylib+0x7a74]  CreateExecutionEnvironment+0x190
+C  [libjli.dylib+0x3f80]  JLI_Launch+0x46c
+C  [java+0x2168]  main+0x188
+C  [dyld+0x1fe00]  start+0x1b50
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  edu.wpi.first.hal.HAL.runMain()V+0
+j  edu.wpi.first.wpilibj.RobotBase.startRobot(Ljava/util/function/Supplier;)V+85
+j  frc.robot.Main.main([Ljava/lang/String;)V+5
+v  ~StubRoutines::call_stub
+
+siginfo: si_signo: 11 (SIGSEGV), si_code: 2 (SEGV_ACCERR), si_addr: 0x0000000000000000
+
+Registers:
+ x0=0x0000000000000000  x1=0x000000016d0c3aa6  x2=0x000000016d0c3b90  x3=0x0000000000000000
+ x4=0x000000016d0c39c0  x5=0x0000000121e96c68  x6=0x0000000121e96c6c  x7=0x0000000000000000
+ x8=0x0000000121ed6000  x9=0x0000000725008680 x10=0x0000000000000080 x11=0x0000000000000002
+x12=0x0000000000000000 x13=0x0000000000000000 x14=0x000000000000009f x15=0x0000000042c00000
+x16=0x00000001f4639d80 x17=0x00000001f4639d80 x18=0x0000000000000000 x19=0x0000000121ede000
+x20=0x0000000000000003 x21=0x0000000000000078 x22=0x0000000724c100d8 x23=0x00000007273e6440
+x24=0x000000072530d140 x25=0x000000072530d140 x26=0x0000000121edeb20 x27=0x0000000121ed8000
+x28=0x000000010360bf10  fp=0x000000016d0c3e70  lr=0x000000012114f554  sp=0x000000016d0c3e50
+pc=0x00000001210cffc8 cpsr=0x0000000080001000
+
+Register to memory mapping:
+
+ x0=0x0 is NULL
+ x1=0x000000016d0c3aa6 is pointing into the stack for thread: 0x000000010360bf10
+ x2=0x000000016d0c3b90 is pointing into the stack for thread: 0x000000010360bf10
+ x3=0x0 is NULL
+ x4=0x000000016d0c39c0 is pointing into the stack for thread: 0x000000010360bf10
+ x5=0x0000000121e96c68: <offset 0xde2c68> in /Users/anirudsriram/Documents/GitHub/RedWatch2026/build/jni/release/libhalsim_gui.dylib at 0x00000001210b4000
+ x6=0x0000000121e96c6c: <offset 0xde2c6c> in /Users/anirudsriram/Documents/GitHub/RedWatch2026/build/jni/release/libhalsim_gui.dylib at 0x00000001210b4000
+ x7=0x0 is NULL
+ x8=0x0000000121ed6000: _glfwDefaultMappings+0xc0 in /Users/anirudsriram/Documents/GitHub/RedWatch2026/build/jni/release/libhalsim_gui.dylib at 0x00000001210b4000
+ x9=0x0000000725008680 points into unknown readable memory: 0x0000000121ec9a10 | 10 9a ec 21 01 00 00 00
+x10=0x0000000000000080 is an unknown value
+x11=0x0000000000000002 is an unknown value
+x12=0x0 is NULL
+x13=0x0 is NULL
+x14=0x000000000000009f is an unknown value
+x15=0x0000000042c00000 is an unknown value
+x16=0x00000001f4639d80 points into unknown readable memory: 0xab6a3c14ac80a252 | 52 a2 80 ac 14 3c 6a ab
+x17=0x00000001f4639d80 points into unknown readable memory: 0xab6a3c14ac80a252 | 52 a2 80 ac 14 3c 6a ab
+x18=0x0 is NULL
+x19=0x0000000121ede000: _ZZN11ImFontAtlas22GetGlyphRangesJapaneseEvE11full_ranges+0x2486 in /Users/anirudsriram/Documents/GitHub/RedWatch2026/build/jni/release/libhalsim_gui.dylib at 0x00000001210b4000
+x20=0x0000000000000003 is an unknown value
+x21=0x0000000000000078 is an unknown value
+x22=0x0000000724c100d8 points into unknown readable memory: 0x0000000000000000 | 00 00 00 00 00 00 00 00
+x23=0x00000007273e6440 points into unknown readable memory: 0x010000014839d479 | 79 d4 39 48 01 00 00 01
+x24=0x000000072530d140 points into unknown readable memory: 0x01000001f46f8209 | 09 82 6f f4 01 00 00 01
+x25=0x000000072530d140 points into unknown readable memory: 0x01000001f46f8209 | 09 82 6f f4 01 00 00 01
+x26=0x0000000121edeb20: _ZN3wpi3gui8gContextE+0 in /Users/anirudsriram/Documents/GitHub/RedWatch2026/build/jni/release/libhalsim_gui.dylib at 0x00000001210b4000
+x27=0x0000000121ed8000: _ZZL13GetTextBufferNSt3__117basic_string_viewIcNS_11char_traitsIcEEEEE10textBuffer+0x6dc in /Users/anirudsriram/Documents/GitHub/RedWatch2026/build/jni/release/libhalsim_gui.dylib at 0x00000001210b4000
+x28=0x000000010360bf10 is a thread
+
+
+Top of Stack: (sp=0x000000016d0c3e50)
+0x000000016d0c3e50:   0000000724c100d8 0000000725115800
+0x000000016d0c3e60:   0000000725b74000 0000000724edb2c0
+0x000000016d0c3e70:   000000016d0c3f00 00000001211621bc
+0x000000016d0c3e80:   00000001f4694a70 00000a0000000670
+0x000000016d0c3e90:   0000000000000000 3f81111111111111
+0x000000016d0c3ea0:   3ff0000000000000 409f57c292a30553
+0x000000016d0c3eb0:   000000010360bf10 0000000000000000
+0x000000016d0c3ec0:   7fffffffffffffff 00000000000003e8
+0x000000016d0c3ed0:   00000000ffffff81 4340624dd2eb2480
+0x000000016d0c3ee0:   412e848000000000 3eb0c6f7a0b5ed8d
+0x000000016d0c3ef0:   0000000000000001 0000000121ede000
+0x000000016d0c3f00:   000000016d0c3fa0 000000012114f438
+0x000000016d0c3f10:   0000000134411090 000000016d0c4310
+0x000000016d0c3f20:   0000000000733430 000000012a3407c0
+0x000000016d0c3f30:   0000000000000000 0000000000000000
+0x000000016d0c3f40:   3fe0000000000000 0000000000000000
+0x000000016d0c3f50:   000000010360bf10 0000000000000000
+0x000000016d0c3f60:   0000000134411090 000000016d0c4310
+0x000000016d0c3f70:   000000016d0c4028 000000012a3407c0
+0x000000016d0c3f80:   0000000000000000 000000010ef84118
+0x000000016d0c3f90:   000000016d0c3fc0 000000012a33f730
+0x000000016d0c3fa0:   000000016d0c3fb0 00000001210cf078
+0x000000016d0c3fb0:   000000016d0c4010 000000012a3418ac
+0x000000016d0c3fc0:   000000016d0c3fc0 0000000000000000
+0x000000016d0c3fd0:   000000016d0c4028 0000000134411090
+0x000000016d0c3fe0:   0000000300800170 0000000000000000
+0x000000016d0c3ff0:   0000000000000000 000000013440cae8
+0x000000016d0c4000:   0000000000000000 000000016d0c3ff0
+0x000000016d0c4010:   000000016d0c4080 000000012a33dfc8
+0x000000016d0c4020:   0000000000000000 0000000300800170
+0x000000016d0c4030:   000000016d0c4030 0000000134407b0d
+0x000000016d0c4040:   000000016d0c40a8 00000001344087e8 
+
+Instructions: (pc=0x00000001210cffc8)
+0x00000001210cfec8:   f3 03 00 aa a0 03 5b f8 1f 00 14 eb 80 01 00 54
+0x00000001210cfed8:   e0 02 00 b4 08 05 80 52 0a 00 00 14 e8 03 13 aa
+0x00000001210cfee8:   f3 03 00 aa e0 03 08 aa 0d 00 00 14 f3 03 00 aa
+0x00000001210cfef8:   a0 03 5d f8 1f 00 14 eb c1 fe ff 54 08 04 80 52
+0x00000001210cff08:   09 00 40 f9 28 69 68 f8 00 01 3f d6 e0 03 13 aa
+0x00000001210cff18:   a8 8b 0a 94 f3 03 00 aa e0 03 14 aa d0 8d 0a 94
+0x00000001210cff28:   e0 03 13 aa a3 8b 0a 94 f3 03 00 aa e0 03 13 aa
+0x00000001210cff38:   a0 8b 0a 94 28 70 00 f0 00 5d 44 f9 e0 00 00 b4
+0x00000001210cff48:   fd 7b bf a9 fd 03 00 91 41 6e 00 90 21 74 12 91
+0x00000001210cff58:   d3 61 01 94 fd 7b c1 a8 28 70 00 f0 00 61 44 f9
+0x00000001210cff68:   80 00 00 b4 41 6e 00 90 21 c0 12 91 cc 61 01 14
+0x00000001210cff78:   c0 03 5f d6 c0 03 5f d6 b9 8d 0a 14 fd 7b bf a9
+0x00000001210cff88:   fd 03 00 91 00 02 80 52 b8 8d 0a 94 e8 6f 00 90
+0x00000001210cff98:   08 01 34 91 08 00 00 f9 fd 7b c1 a8 c0 03 5f d6
+0x00000001210cffa8:   e8 6f 00 90 08 01 34 91 28 00 00 f9 c0 03 5f d6
+0x00000001210cffb8:   c0 03 5f d6 aa 8d 0a 14 28 70 00 f0 00 59 44 f9
+0x00000001210cffc8:   08 00 40 f9 01 09 40 f9 20 00 1f d6 28 04 40 f9
+0x00000001210cffd8:   a9 15 00 d0 29 e5 36 91 1f 01 09 eb 61 00 00 54
+0x00000001210cffe8:   00 20 00 91 c0 03 5f d6 1f 01 09 ea 6b 00 00 54
+0x00000001210cfff8:   00 00 80 d2 c0 03 5f d6 f4 4f be a9 fd 7b 01 a9
+0x00000001210d0008:   fd 43 00 91 f3 03 00 aa 00 f9 40 92 21 f9 40 92
+0x00000001210d0018:   0a 8f 0a 94 e8 03 00 aa e0 03 13 aa fd 7b 41 a9
+0x00000001210d0028:   f4 4f c2 a8 e8 fd ff 34 00 00 80 d2 c0 03 5f d6
+0x00000001210d0038:   c0 6f 00 f0 00 80 35 91 c0 03 5f d6 c0 03 5f d6
+0x00000001210d0048:   87 8d 0a 14 fd 7b bf a9 fd 03 00 91 00 02 80 52
+0x00000001210d0058:   86 8d 0a 94 c8 6f 00 f0 08 01 36 91 08 00 00 f9
+0x00000001210d0068:   fd 7b c1 a8 c0 03 5f d6 c8 6f 00 f0 08 01 36 91
+0x00000001210d0078:   28 00 00 f9 c0 03 5f d6 c0 03 5f d6 78 8d 0a 14
+0x00000001210d0088:   28 70 00 d0 00 5d 44 f9 62 60 01 14 28 04 40 f9
+0x00000001210d0098:   a9 15 00 b0 29 5d 39 91 1f 01 09 eb 61 00 00 54
+0x00000001210d00a8:   00 20 00 91 c0 03 5f d6 1f 01 09 ea 6b 00 00 54
+0x00000001210d00b8:   00 00 80 d2 c0 03 5f d6 f4 4f be a9 fd 7b 01 a9 
+
+
+Stack slot to memory mapping:
+stack at sp + 0 slots: 0x0000000724c100d8 points into unknown readable memory: 0x0000000000000000 | 00 00 00 00 00 00 00 00
+stack at sp + 1 slots: 0x0000000725115800 points into unknown readable memory: 0x02000001f46f8551 | 51 85 6f f4 01 00 00 02
+stack at sp + 2 slots: 0x0000000725b74000 points into unknown readable memory: 0x020000014839c191 | 91 c1 39 48 01 00 00 02
+stack at sp + 3 slots: 0x0000000724edb2c0 points into unknown readable memory: 0x02000001f46d4f69 | 69 4f 6d f4 01 00 00 02
+stack at sp + 4 slots: 0x000000016d0c3f00 is pointing into the stack for thread: 0x000000010360bf10
+stack at sp + 5 slots: 0x00000001211621bc: _ZN3wpi3gui19PlatformRenderFrameEv+0x258 in /Users/anirudsriram/Documents/GitHub/RedWatch2026/build/jni/release/libhalsim_gui.dylib at 0x00000001210b4000
+stack at sp + 6 slots: 
