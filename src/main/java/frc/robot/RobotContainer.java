@@ -339,6 +339,8 @@ public class RobotContainer {
     // Intake Controls
     INTAKE_TRIGGER.whileTrue(intake.intakeCommand());
     INTAKE_TRIGGER.onFalse(intake.stopCommand());
+    reverseIntake.whileTrue(intake.OutakeCommand());
+    reverseIntake.onFalse(intake.stopCommand());
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 

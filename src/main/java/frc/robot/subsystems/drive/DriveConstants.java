@@ -98,10 +98,10 @@ public final class DriveConstants {
   // 1. Point all wheels forward (same direction)
   // 2. Read absolute encoder values
   // 3. Enter those values here
-  public static final Rotation2d frontLeftZeroRotation = Rotation2d.fromRadians(-Math.PI / 2);
+  public static final Rotation2d frontLeftZeroRotation = Rotation2d.fromRadians(3 * Math.PI / 2);
   public static final Rotation2d frontRightZeroRotation = Rotation2d.fromRadians(0);
   public static final Rotation2d backLeftZeroRotation = Rotation2d.fromRadians(Math.PI);
-  public static final Rotation2d backRightZeroRotation = Rotation2d.fromRadians(Math.PI);
+  public static final Rotation2d backRightZeroRotation = Rotation2d.fromRadians(Math.PI/2);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // DRIVE MOTOR CONFIGURATION (NEO Vortex)

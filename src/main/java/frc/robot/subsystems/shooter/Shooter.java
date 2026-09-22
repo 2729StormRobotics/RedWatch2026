@@ -361,7 +361,7 @@ public class Shooter extends SubsystemBase {
 
     // Flywheel: automatically spin to the distance-based lookup velocity whenever aiming
     if (flywheelArmed) {
-      setFlywheelVelocity(200);
+      setFlywheelVelocity(lookupShooterRps);
     } else {
       setFlywheelVelocity(0);
     }
@@ -370,6 +370,8 @@ public class Shooter extends SubsystemBase {
 
     // Log target information
     Logger.recordOutput("Shooter/isPrep", isPrep);
+    Logger.recordOutput("Shooter/lookupRPS", lookupShooterRps);
+    Logger.recordOutput("Shooter/armed", flywheelArmed);
     Logger.recordOutput("Shooter/ActualDistance", actualDistance);
     Logger.recordOutput("Shooter/VirtualDistance", virtualDistance);
     Logger.recordOutput("Shooter/TargetHeading", headingToHub.getDegrees());
@@ -464,6 +466,7 @@ public class Shooter extends SubsystemBase {
    */
   public void enableMoveAndShoot() {
     this.moveAndShootEnabled = true;
+    this.depotAimModeEnabled = false;
   }
 
   /**

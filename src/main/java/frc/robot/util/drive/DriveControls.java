@@ -130,6 +130,7 @@ public class DriveControls {
   public static Trigger POV_DOWN_RIGHT;
   public static Trigger POV_DOWN_LEFT;
   public static Trigger POV_UP_LEFT;
+  public static Trigger reverseIntake;
 
   public static Trigger INTAKE_TRIGGER;
   public static Trigger RETRACT_INTAKE;
@@ -222,6 +223,7 @@ public class DriveControls {
     // 5: hopper + kicker
     // 6: intake + hopper
     HopperTrigger = m_weaponsController.leftTrigger();
+  reverseIntake = m_weaponsController.rightTrigger();
     ReverseHopperTrigger = m_weaponsController.b();
 
     reverseKicker = m_translator.button(10);
