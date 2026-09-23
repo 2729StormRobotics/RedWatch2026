@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.616238758945347,
-        "y": 5.420960284311597
+        "x": 6.733901007740427,
+        "y": 5.919
       },
       "isLocked": false,
       "linkedName": "LeftDoneBalls"
@@ -20,8 +20,8 @@
         "y": 7.3307090916143265
       },
       "prevControl": {
-        "x": 6.570984047871821,
-        "y": 6.516124292290888
+        "x": 7.4,
+        "y": 7.3307090916143265
       },
       "nextControl": null,
       "isLocked": false,
@@ -41,7 +41,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 1.0,
     "rotation": -90.0
   },
   "reversed": false,
