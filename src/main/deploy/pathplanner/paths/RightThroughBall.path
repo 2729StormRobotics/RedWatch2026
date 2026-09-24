@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.68764626880795,
-        "y": 1.7476452941202483
+        "x": 7.4,
+        "y": 0.7382909083856746
       },
       "isLocked": false,
       "linkedName": "RoboRightPreBall"
@@ -20,8 +20,8 @@
         "y": 3.3449622662216525
       },
       "prevControl": {
-        "x": 6.680575048339055,
-        "y": 2.4339915567327934
+        "x": 6.733901007740427,
+        "y": 2.15
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,7 +47,7 @@
   "reversed": false,
   "folder": "Robocon Paths",
   "idealStartingState": {
-    "velocity": 0,
+    "velocity": 1.0,
     "rotation": 90.0
   },
   "useDefaultConstraints": true
