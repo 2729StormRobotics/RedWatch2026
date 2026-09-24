@@ -132,7 +132,7 @@ public class Shooter extends SubsystemBase {
    * hood position. Flip back to false only once the hood mechanism and its code path are
    * trusted again.
    */
-  private static final boolean HOOD_DISABLED = true;
+  private static final boolean HOOD_DISABLED = false;
 
   // Move-and-Shoot state
   private boolean moveAndShootEnabled = false;
@@ -472,9 +472,22 @@ public class Shooter extends SubsystemBase {
   /**
    * Disables Move-and-Shoot mode.
    */
-  public void disableMoveAndShoot() {
-    this.moveAndShootEnabled = false;
-  }
+/**
+ * Disables Move-and-Shoot mode and resets target states.
+ */
+public void disableMoveAndShoot() {
+  this.moveAndShootEnabled = false;
+  this.depotAimModeEnabled = false;
+  this.flywheelArmed = false;
+  
+  // Reset targets to safe defaults so they don't stay stuck
+  desiredFlywheelVelocity = 0.0;
+  desiredTurretAngleDeg = -90.0; // Or your default/home turret angle
+  setDesiredHoodPositionRotations(HoodConstants.MIN_POSITION_ROTATIONS);
+  
+  // Immediately command hardware to stop
+  flywheelIO.stop();
+}
 
   /**
    * Enables depot-aim mode (aims at our depot instead of the hub).
