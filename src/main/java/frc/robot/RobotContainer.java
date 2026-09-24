@@ -253,7 +253,7 @@ public class RobotContainer {
             Commands.run(() -> shooter.setFlywheelVelocity(285), shooter)))).withTimeout(5));
 
             
-    NamedCommands.registerCommand("StartShots5seconds", new ParallelCommandGroup(new WaitCommand(5), new SequentialCommandGroup(new InstantCommand( () -> {shooter.enableMoveAndShoot(); shooter.setFlywheelArmed(false); shooter.setFlywheelVelocity(245);}), Commands.parallel(
+    NamedCommands.registerCommand("StartShots5seconds", new ParallelCommandGroup(new WaitCommand(5), new SequentialCommandGroup(new InstantCommand( () -> {shooter.enableMoveAndShoot(); shooter.setFlywheelArmed(true);}), Commands.parallel(
         hopper.runContinuous(),
         Commands.run(() -> kicker.setPercent(1), kicker),
         Commands.run(() -> shooter.setFlywheelVelocity(245), shooter)))).withTimeout(5));
