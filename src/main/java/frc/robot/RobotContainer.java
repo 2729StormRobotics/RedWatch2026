@@ -251,12 +251,54 @@ public class RobotContainer {
             hopper.runContinuous(),
             Commands.run(() -> kicker.setPercent(1), kicker),
             Commands.run(() -> shooter.setFlywheelVelocity(285), shooter)))).withTimeout(5));
-
             
-    NamedCommands.registerCommand("StartShots5seconds", new ParallelCommandGroup(new WaitCommand(5), new SequentialCommandGroup(new InstantCommand( () -> {shooter.enableMoveAndShoot(); shooter.setFlywheelArmed(true);}), Commands.parallel(
-        hopper.runContinuous(),
-        Commands.run(() -> kicker.setPercent(1), kicker),
-        Commands.run(() -> shooter.setFlywheelVelocity(245), shooter)))).withTimeout(5));
+    NamedCommands.registerCommand("StartShots5seconds", new SequentialCommandGroup(
+        // 1. Prep shooter state
+        new InstantCommand(() -> {
+            shooter.enableMoveAndShoot();
+            shooter.setFlywheelArmed(true);
+        }, shooter),
+
+        // 2. Run feeding and shooting for 5 seconds
+        Commands.parallel(
+            hopper.runContinuous(),
+            Commands.run(() -> kicker.setPercent(1), kicker),
+            Commands.run(() -> shooter.setFlywheelVelocity(245), shooter)
+        ).withTimeout(5),
+
+        // 3. Stop all subsystems after 5 seconds
+        Commands.parallel(
+            hopper.stopCommand(),
+            new InstantCommand(() -> kicker.stop(), kicker),
+            intake.stopCommand(),
+            new InstantCommand (() -> hopper.stop())
+        )
+    )
+);
+
+    NamedCommands.registerCommand("StartShots5secondsAdjusted", 
+        new SequentialCommandGroup(
+            // 1. Prep shooter state
+            new InstantCommand(() -> {
+                shooter.enableMoveAndShoot();
+                shooter.setFlywheelArmed(true);
+            }, shooter),
+    
+            // 2. Run feeding and shooting for 5 seconds
+            Commands.parallel(
+                hopper.runContinuous(),
+                Commands.run(() -> kicker.setPercent(1), kicker),
+                Commands.run(() -> shooter.setFlywheelVelocity(245), shooter)
+            ).withTimeout(5),
+    
+            // 3. Stop all subsystems after 5 seconds
+            Commands.parallel(
+                hopper.stopCommand(),
+                new InstantCommand(() -> kicker.stop(), kicker),
+                new InstantCommand(() -> shooter.disableMoveAndShoot(), shooter)
+            )
+        )
+    );
 
     // IntakeRetract
     NamedCommands.registerCommand("IntakeRetract", new InstantCommand(() -> intake.retract()));
@@ -326,8 +368,8 @@ public class RobotContainer {
     // flyWheelTrigger.onFalse(new InstantCommand( () -> shooter.setFlywheelArmed(false)));
     
 
-    PASS_LOCK.onTrue(shooter.passCommand());
-    PASS_LOCK.onFalse(shooter.stopPass());
+    // PASS_LOCK.onTrue(shooter.passCommand());
+    // PASS_LOCK.onFalse(shooter.stopPass());
     HOOD_DROP_LOCK.whileTrue(shooter.trenchLockCommand());
 
     // Climb Controls
@@ -344,12 +386,12 @@ public class RobotContainer {
     EXTEND_INTAKE.onTrue(intake.deployCommand());
     RETRACT_INTAKE.onTrue(intake.retractCommand());
 
-    m_weaponsController.povUp().onTrue(shooter.incrementPositionCommand());
+    // m_weaponsController.povUp().onTrue(shooter.incrementPositionCommand());
 
-    m_weaponsController.povDown().onTrue(shooter.decrementPositionCommand());
+    // m_weaponsController.povDown().onTrue(shooter.decrementPositionCommand());
 
-    agitateTrigger.whileTrue(intake.agitateCommand());
-    agitateTrigger.onFalse(intake.deployCommand());
+    // agitateTrigger.whileTrue(intake.agitateCommand());
+    // agitateTrigger.onFalse(intake.deployCommand());
 
     // Translator button 5: run hopper + kicker together
     ReverseHopperTrigger.onTrue(
@@ -390,34 +432,34 @@ public class RobotContainer {
         DriveCommands.joystickDrive(drive, DRIVE_FORWARD, DRIVE_STRAFE, DRIVE_ROTATE));
 
     // POV on translator: while held, drive with linear input but rotate to face that angle
-    POV_UP.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(0)));
-    POV_DOWN.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(180)));
-    POV_LEFT.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(90)));
-    POV_RIGHT.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(270)));
-    // Diagonals (45° intervals)
-    POV_UP_RIGHT.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(45)));
-    POV_DOWN_RIGHT.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(135)));
-    POV_DOWN_LEFT.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(225)));
-    POV_UP_LEFT.whileTrue(
-        DriveCommands.joystickDriveAtAngle(
-            drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(315)));
+    // POV_UP.whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //         drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(0)));
+    // POV_DOWN.whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //         drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(180)));
+    // POV_LEFT.whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //         drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(90)));
+    // POV_RIGHT.whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //         drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(270)));
+    // // Diagonals (45° intervals)
+    // POV_UP_RIGHT.whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //         drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(45)));
+    // POV_DOWN_RIGHT.whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //         drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(135)));
+    // POV_DOWN_LEFT.whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //         drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(225)));
+    // POV_UP_LEFT.whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //         drive, DRIVE_FORWARD, DRIVE_STRAFE, () -> Rotation2d.fromDegrees(315)));
 
-    reverseKicker.whileTrue(kicker.reverse());
-    reverseKicker.onFalse(new InstantCommand(() -> kicker.stop()));
+    // reverseKicker.whileTrue(kicker.reverse());
+    // reverseKicker.onFalse(new InstantCommand(() -> kicker.stop()));
     // Button bindings
     // Reset gyro when button is pressed
     RESET_GYRO.onTrue(

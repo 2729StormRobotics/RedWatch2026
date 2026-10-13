@@ -16,6 +16,7 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static frc.robot.util.drive.DriveControls.disableMoveShoot;
 
 import java.lang.reflect.Field;
 import java.util.function.DoubleSupplier;
@@ -566,6 +567,7 @@ public void disableMoveAndShoot() {
     return Commands.runOnce(() -> adjustTestFlywheelVelocity(10.0), this)
         .withName("Shooter/IncTestFlywheelVel");
   }
+
 
   /**
    * Command to bump the test flywheel velocity down by a fixed step (e.g. -50
