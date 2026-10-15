@@ -169,7 +169,7 @@ public class Shooter extends SubsystemBase {
     // Update inputs from hardware
     flywheelIO.updateInputs(flywheelInputs);
     hoodIO.updateInputs(hoodInputs);
-    turretIO.updateInputs(turretInputs);
+    // turretIO.updateInputs(turretInputs);
 
     // Process inputs for logging
     Logger.processInputs("Shooter/Flywheel", flywheelInputs);
@@ -234,7 +234,7 @@ public class Shooter extends SubsystemBase {
           HoodConstants.MAX_POSITION_ROTATIONS);
       hoodIO.setPosition(clampedHood);
     }
-    turretIO.setAngle(desiredTurretAngleDeg);
+    // turretIO.setAngle(desiredTurretAngleDeg);
 
     // Log shooter state
     Logger.recordOutput("Shooter/ReadyToFire", isReadyToFire());
