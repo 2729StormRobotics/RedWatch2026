@@ -1,12 +1,27 @@
 package frc.robot.subsystems.kicker;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.littletonrobotics.junction.Logger;
 
+/**
+ * The kicker subsystem. This is the "brain" of the mechanism: it decides WHAT the motor should do
+ * and asks the IO layer to do it. It never touches motor controllers directly.
+ *
+ * <p>Flow of the whole robot, for reference:
+ *
+ * <pre>
+ *   Controller button -> Command (in this class) -> Subsystem method -> IO interface
+ *                                                                          |
+ *                                      kickerIOReal (real robot) or kickerIOSim (simulator)
+ * </pre>
+ */
 public class kicker extends SubsystemBase {
+  // The IO object is how we talk to the hardware. Whether it is real or simulated is decided in
+  // RobotContainer, so this class does not need to know or care.
   private final kickerIO io;
-  private final kickerIOInputsAutoLogged inputs = new kickerIOInputsAutoLogged(); 
+
+  // Holds the latest sensor readings. kickerIOInputsAutoLogged is GENERATED for us at build time
+  // from the @AutoLog class inside kickerIO, so it will not exist until the project compiles once.
+  private final kickerIOInputsAutoLogged inputs = new kickerIOInputsAutoLogged();
 
   public kicker(kickerIO io) {
     this.io = io;
@@ -14,31 +29,29 @@ public class kicker extends SubsystemBase {
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Kicker", inputs);
+    // TODO: periodic() runs every 20 ms, automatically, as long as the subsystem exists.
+    //   1. Ask the IO to refresh our inputs:      io.updateInputs(inputs);
+    //   2. Send those inputs to AdvantageKit:     Logger.processInputs("Kicker", inputs);
+    //      (needs: import org.littletonrobotics.junction.Logger;)
+    //   Always do these two in this order, and do them first, so everything else in the
+    //   subsystem works from fresh data.
   }
 
-  public void setPercent(double percent) {
-    io.setPercentIO(percent);
-  }
+  // TODO: setPercent(double percent)
+  //   A plain method that forwards to the IO:  io.setPercentIO(percent);
+  //   Percent is -1.0 (full reverse) to 1.0 (full forward).
 
-  public void stop() {
-    io.stop();
-  }
+  // TODO: stop()
+  //   A plain method that forwards to the IO:  io.stop();
 
-  /**
-   * Returns a command that runs the kicker at a constant voltage.
-   */
-  public Command runContinuous() {
-    return this.run(() -> this.setPercent(kickerConstants.KICK_VOLTAGE))
-        .finallyDo(this::stop);
-  }
+  // TODO: Command runContinuous()
+  //   Returns a command that kicks the ball while it is scheduled and stops when it ends.
+  //   Hint: use this.run(() -> ...) to repeat an action every loop, then chain
+  //   .finallyDo(...) so the motor is guaranteed to stop when the command ends or is interrupted.
+  //   Use kickerConstants.KICK_VOLTAGE for the speed.
+  //   (needs: import edu.wpi.first.wpilibj2.command.Command;)
 
-  /**
-   * Returns a command that runs the kicker in reverse (for clearing jams).
-   */
-  public Command reverse() {
-    return this.run(() -> this.setPercent(-1.0))
-        .finallyDo(this::stop);
-  }
+  // TODO: Command reverse()
+  //   Same shape as runContinuous(), but spins the other way, to clear jams.
+  //   Use kickerConstants.REVERSE_VOLTAGE for the speed.
 }

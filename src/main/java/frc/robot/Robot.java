@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -34,7 +33,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  * project.
  */
 public class Robot extends LoggedRobot {
-  private Command autonomousCommand;
   private RobotContainer robotContainer;
   private PowerDistribution powerDistribution;
 
@@ -75,11 +73,6 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
-      case TEST:
-        // Test mode - same as simulation
-        Logger.addDataReceiver(new NT4Publisher());
-        break;
-
       case REPLAY:
         // Replaying a log, set up replay source
         setUseTiming(false); // Run as fast as possible
@@ -99,18 +92,7 @@ public class Robot extends LoggedRobot {
     // Instantiate the Power Distribution panel/hub (uses default CAN ID and type automatically)
     powerDistribution = new PowerDistribution();
 
-    // Configure field flipping before autonomous paths are loaded.
-    com.pathplanner.lib.util.FlippingUtil.fieldSizeX = FieldConstants.fieldLength;
-    com.pathplanner.lib.util.FlippingUtil.fieldSizeY = FieldConstants.fieldWidth;
-    for (var tag : FieldConstants.aprilTagLayout.getTags()) {
-      var field = new edu.wpi.first.wpilibj.smartdashboard.Field2d();
-      field.setRobotPose(tag.pose.toPose2d());
-      SmartDashboard.putData("Tag" + tag.ID, field);
-      Logger.recordOutput("Field/AprilTags/Tag" + tag.ID, tag.pose);
-    }
-
-    // Instantiate our RobotContainer. This will perform all our button bindings,
-    // and put our autonomous chooser on the dashboard.
+    // Instantiate our RobotContainer. This will perform all our button bindings.
     robotContainer = new RobotContainer();
   }
 
@@ -151,16 +133,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledPeriodic() {}
 
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
+  /** This function is called once when autonomous is enabled. (Unused in this stripped-down project.) */
   @Override
-  public void autonomousInit() {
-    autonomousCommand = robotContainer.getAutonomousCommand();
-
-    // schedule the autonomous command (example)
-    if (autonomousCommand != null) {
-      autonomousCommand.schedule();
-    }
-  }
+  public void autonomousInit() {}
 
   /** This function is called periodically during autonomous. */
   @Override
@@ -169,13 +144,6 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
-    if (autonomousCommand != null) {
-      autonomousCommand.cancel();
-    }
   }
 
   /** This function is called periodically during operator control. */
