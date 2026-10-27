@@ -1,0 +1,9 @@
+{
+  "drive": { "type": "sparkflex_vortex", "id": 6 },
+  "angle": { "type": "sparkmax_neo550", "id": 5 },
+  "absoluteEncoder": { "type": "revthroughbore_attached", "id": 0 },
+  "inverted": { "drive": false, "angle": false },
+  "absoluteEncoderOffset": 180.0,
+  "absoluteEncoderInverted": true,
+  "location": { "front": -12.25, "left": 12.25 }
+}
