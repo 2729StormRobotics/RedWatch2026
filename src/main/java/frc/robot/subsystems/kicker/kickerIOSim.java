@@ -30,9 +30,9 @@ public class kickerIOSim implements kickerIO {
     // TODO: convert percent (-1..1) to volts (multiply by 12), clamp it to +/-12 with
     //   MathUtil.clamp, and store it in the field for updateInputs() to use.
   }
-
+// TODO: set the stored voltage back to 0.
   @Override
   public void stop() {
-    // TODO: set the stored voltage back to 0.
+    appliedVolts = 0.0;
   }
 }

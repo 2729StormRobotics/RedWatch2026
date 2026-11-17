@@ -42,9 +42,7 @@ public class RobotContainer {
 
     configureButtonBindings();
   }
-
-  private void configureButtonBindings() {
-    // TODO: connect buttons to commands. A "binding" says: when THIS happens on the controller,
+ // TODO: connect buttons to commands. A "binding" says: when THIS happens on the controller,
     // run THAT command.
     //
     //   controller.rightTrigger().whileTrue(...)
@@ -56,5 +54,7 @@ public class RobotContainer {
     //
     // Other triggers you can use: onTrue (once, on press), onFalse (once, on release),
     // toggleOnTrue (press to start, press again to stop).
+  private void configureButtonBindings() {
+   
   }
 }

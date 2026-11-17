@@ -38,10 +38,7 @@ public class kickerIOReal implements kickerIO {
     tryUntilOk(motor, 5, () ->
       motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
-
-  @Override
-  public void updateInputs(kickerIOInputs inputs) {
-    // TODO: copy the latest readings from the hardware into the inputs object.
+ // TODO: copy the latest readings from the hardware into the inputs object. * 
     //   inputs.positionRotations      <- encoder.getPosition()
     //   inputs.velocityRotationsPerSec <- encoder.getVelocity(), but the encoder reports RPM,
     //                                    so convert to rotations per second (divide by 60)
@@ -52,19 +49,27 @@ public class kickerIOReal implements kickerIO {
     // Optional: let students flip brake/coast from the dashboard while the robot runs with
     //   SparkIdleModeTuner.syncIdleMode(motor, "Kicker/KickerBrake", IdleMode.kCoast);
     //   (needs: import frc.robot.util.SparkIdleModeTuner;)
-  }
-
   @Override
-  public void setPercentIO(double percent) {
-    // TODO: tell the motor controller to run at this percent output with motor.set(...).
+  public void updateInputs(kickerIOInputs inputs) {
+    inputs.positionRotations = encoder.getPosition();
+    inputs.velocityRotationsPerSec = encoder.getVelocity() / 60.0; // RPM to RPS
+    inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
+    inputs.currentAmps = motor.getOutputCurrent();
+
+  }
+// TODO: tell the motor controller to run at this percent output with motor.set(...).
     //   Heads up: this kicker is mounted so that positive "kick" needs the OPPOSITE motor
     //   direction. Decide whether to negate the value here, or flip MOTOR_INVERTED in
     //   kickerConstants instead - and why one is a better place to do it than the other.
+  @Override
+  public void setPercentIO(double percent) {
+   motor.set(-percent); 
   }
 
   @Override
   public void stop() {
-    // TODO: stop the motor. motor.stopMotor() does the job.
+    motor.stopMotor();
+    // TODO: stop the motor. motor.stopMotor() does the job. * 
   }
 
   // Helper method to retry REV commands: configuration messages over CAN can occasionally fail.
