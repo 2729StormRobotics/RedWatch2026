@@ -1,13 +1,48 @@
 {
   "NTProvider": {
     "types": {
+      "/AdvantageKit/RealOutputs/Alerts": "Alerts",
       "/AdvantageKit/RealOutputs/PathPlanner": "Alerts",
       "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Alerts": "Alerts",
       "/SmartDashboard/Auto Choices": "String Chooser",
       "/SmartDashboard/Deadzone": "String Chooser",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
+      "/SmartDashboard/Tag1": "Field2d",
+      "/SmartDashboard/Tag10": "Field2d",
+      "/SmartDashboard/Tag11": "Field2d",
+      "/SmartDashboard/Tag12": "Field2d",
+      "/SmartDashboard/Tag13": "Field2d",
+      "/SmartDashboard/Tag14": "Field2d",
+      "/SmartDashboard/Tag17": "Field2d",
+      "/SmartDashboard/Tag18": "Field2d",
+      "/SmartDashboard/Tag19": "Field2d",
+      "/SmartDashboard/Tag2": "Field2d",
+      "/SmartDashboard/Tag20": "Field2d",
+      "/SmartDashboard/Tag21": "Field2d",
+      "/SmartDashboard/Tag22": "Field2d",
+      "/SmartDashboard/Tag23": "Field2d",
+      "/SmartDashboard/Tag24": "Field2d",
+      "/SmartDashboard/Tag25": "Field2d",
+      "/SmartDashboard/Tag26": "Field2d",
+      "/SmartDashboard/Tag27": "Field2d",
+      "/SmartDashboard/Tag28": "Field2d",
+      "/SmartDashboard/Tag29": "Field2d",
+      "/SmartDashboard/Tag3": "Field2d",
+      "/SmartDashboard/Tag30": "Field2d",
+      "/SmartDashboard/Tag4": "Field2d",
+      "/SmartDashboard/Tag5": "Field2d",
+      "/SmartDashboard/Tag6": "Field2d",
+      "/SmartDashboard/Tag7": "Field2d",
+      "/SmartDashboard/Tag8": "Field2d",
+      "/SmartDashboard/Tag9": "Field2d",
       "/SmartDashboard/commandscheduler": "Scheduler"
+    }
+  },
+  "NetworkTables": {
+    "Transitory Values": {
+      "open": false
     }
   },
   "NetworkTables Info": {
