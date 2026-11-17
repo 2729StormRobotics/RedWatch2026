@@ -1,6 +1,8 @@
 package frc.robot.subsystems.kicker;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * The kicker subsystem. This is the "brain" of the mechanism: it decides WHAT the motor should do
@@ -14,6 +16,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  *                                      kickerIOReal (real robot) or kickerIOSim (simulator)
  * </pre>
  */
+
+
+
+
+
+
+
 public class kicker extends SubsystemBase {
   // The IO object is how we talk to the hardware. Whether it is real or simulated is decided in
   // RobotContainer, so this class does not need to know or care.
@@ -29,6 +38,10 @@ public class kicker extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    io.updateInputs(inputs);
+    Logger.processInputs("Kicker", inputs);
+
     // TODO: periodic() runs every 20 ms, automatically, as long as the subsystem exists.
     //   1. Ask the IO to refresh our inputs:      io.updateInputs(inputs);
     //   2. Send those inputs to AdvantageKit:     Logger.processInputs("Kicker", inputs);
@@ -37,21 +50,71 @@ public class kicker extends SubsystemBase {
     //   subsystem works from fresh data.
   }
 
+
+  public void setPercent(double percent)  {
+
+      io.setPercentIO(percent);
+
+      if (percent == 1.0) {
+        
+        full.forward();
+      }
+
+      else if (percent == -1.0) {
+
+        full.reverse();
+
+      }
+
+  }   
+
   // TODO: setPercent(double percent)
   //   A plain method that forwards to the IO:  io.setPercentIO(percent);
   //   Percent is -1.0 (full reverse) to 1.0 (full forward).
 
+  public void stop() {
+
+    io.stop();
+  }
+
   // TODO: stop()
   //   A plain method that forwards to the IO:  io.stop();
 
+
+
+
+
+
+  public void Command runContinuous(){
+
+    retrun this.run(() -> setPercentIO(kickerConstants.KICK_VOLTAGE))
+      .finallyDo()
+
+  }
+
+
+
+
   // TODO: Command runContinuous()
   //   Returns a command that kicks the ball while it is scheduled and stops when it ends.
-  //   Hint: use this.run(() -> ...) to repeat an action every loop, then chain
+  //   Hint: use this..run(() -> ...) to repeat an action every loop, then chain
   //   .finallyDo(...) so the motor is guaranteed to stop when the command ends or is interrupted.
   //   Use kickerConstants.KICK_VOLTAGE for the speed.
   //   (needs: import edu.wpi.first.wpilibj2.command.Command;)
+
+  public void Command reverse(){
+
+    retrun this.run(() -> setPercentIO(kickerConstants.KICK_VOLTAGE))
+      .finallyDo()
+  
+  
+  
+  }
+
+
 
   // TODO: Command reverse()
   //   Same shape as runContinuous(), but spins the other way, to clear jams.
   //   Use kickerConstants.REVERSE_VOLTAGE for the speed.
 }
+

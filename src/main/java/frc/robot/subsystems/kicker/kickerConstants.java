@@ -23,7 +23,7 @@ public final class kickerConstants {
   public static final double MASS_KG = 0.5;
   public static final double ARM_LENGTH_M = 0.3;
   public static final double MIN_ANGLE_RAD = 0.0;
-  public static final double MAX_ANGLE_RAD = 0.0;
+  public statc final double MAX_ANGLE_RAD = 0.0;
   
   private kickerConstants() {}
 }

@@ -1,20 +1,38 @@
 package frc.robot.subsystems.kicker;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 /**
  * Simulation implementation of kickerIO. It does the same job as kickerIOReal, but instead of
  * talking to a motor controller it runs a physics model, so the code can be tested on a laptop.
  */
 public class kickerIOSim implements kickerIO {
-  // TODO: add fields for the simulation.
+
+
+  // TODO: add fields for  simulation.
   //   - A DCMotorSim (edu.wpi.first.wpilibj.simulation.DCMotorSim) to model the motor.
   //   - A double to remember the voltage the subsystem asked for.
-  //   - A loop period constant of 0.02 seconds (the robot loop runs every 20 ms).
+  //   - A loop period constant of 0.02 seconds (the robot loop runs every 20 ms)
+
+  private DC
+
+
+
+
+
+
+
+
 
   public kickerIOSim() {
     // TODO: build the motor model.
     //   DCMotorSim takes a LinearSystemId.createDCMotorSystem(DCMotor.getNeoVortex(1),
-    //   kickerConstants.MOI_KG_M2, kickerConstants.GEAR_RATIO) and the same DCMotor.
+    //   kickerConstants.MOI_KG_M2, kickerConstants.GEAR_RATIO) and the same DCMotor
+    LinearSystemId.createDCMotorSystem(DCMotor.getNeoVortex(1), kickerConstants.MOI_KG_M2(), kickerConstants.GEAR_RATIO());
+    
+
+
   }
+
 
   @Override
   public void updateInputs(kickerIOInputs inputs) {
@@ -23,16 +41,34 @@ public class kickerIOSim implements kickerIO {
     //   2. Step it forward one loop:                     motorSim.update(0.02)
     //   3. Copy position, velocity, applied volts and current draw into `inputs`
     //      (the same fields kickerIOReal fills in).
+
+    motorSim.setInputVoltage(voltage);
+
+    motorSim.update(0.02);
+
+    inputs.positionRotations = encoder.getPosition()
+    inputs.velocityRotationsPerSec = ((encoder.getVelocity())/60)
+    inputs.appliedVolts = (motorSim.getAppliedOutput() * motor.getBusVoltage())
+    inputs.currentAmps = motorSim.getOutputCurrent()
+
   }
 
   @Override
   public void setPercentIO(double percent) {
     // TODO: convert percent (-1..1) to volts (multiply by 12), clamp it to +/-12 with
     //   MathUtil.clamp, and store it in the field for updateInputs() to use.
+
+      appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+
+
+
+
   }
 
   @Override
   public void stop() {
     // TODO: set the stored voltage back to 0.
+
+    appliedVolts = 0.0;
   }
 }
