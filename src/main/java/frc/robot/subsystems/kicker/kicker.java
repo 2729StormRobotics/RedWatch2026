@@ -1,8 +1,8 @@
 package frc.robot.subsystems.kicker;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.command;
 
-/**
+import org.littletonrobtics.juction.Logger;periodic()
  * The kicker subsystem. This is the "brain" of the mechanism: it decides WHAT the motor should do
  * and asks the IO layer to do it. It never touches motor controllers directly.
  *
@@ -32,26 +32,25 @@ public class kicker extends SubsystemBase {
     // TODO: periodic() runs every 20 ms, automatically, as long as the subsystem exists.
     //   1. Ask the IO to refresh our inputs:      io.updateInputs(inputs);
     //   2. Send those inputs to AdvantageKit:     Logger.processInputs("Kicker", inputs);
-    //      (needs: import org.littletonrobotics.junction.Logger;)
-    //   Always do these two in this order, and do them first, so everything else in the
-    //   subsystem works from fresh data.
+   io.updateInputs(inputs);
+   Logger.processInputs("Kicker", inputs);
   }
 
-  // TODO: setPercent(double percent)
+  setPercent(double percent)
   //   A plain method that forwards to the IO:  io.setPercentIO(percent);
   //   Percent is -1.0 (full reverse) to 1.0 (full forward).
-
+io.setPercentIO(percent);
   // TODO: stop()
-  //   A plain method that forwards to the IO:  io.stop();
+stop()
 
-  // TODO: Command runContinuous()
+io.stop();
   //   Returns a command that kicks the ball while it is scheduled and stops when it ends.
   //   Hint: use this.run(() -> ...) to repeat an action every loop, then chain
   //   .finallyDo(...) so the motor is guaranteed to stop when the command ends or is interrupted.
   //   Use kickerConstants.KICK_VOLTAGE for the speed.
   //   (needs: import edu.wpi.first.wpilibj2.command.Command;)
 
-  // TODO: Command reverse()
+reverse()
   //   Same shape as runContinuous(), but spins the other way, to clear jams.
-  //   Use kickerConstants.REVERSE_VOLTAGE for the speed.
+kickerConstants.REVERSE_VOLTAGE
 }

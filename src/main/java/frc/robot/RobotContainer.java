@@ -44,17 +44,11 @@ public class RobotContainer {
   }
 
   private void configureButtonBindings() {
-    // TODO: connect buttons to commands. A "binding" says: when THIS happens on the controller,
-    // run THAT command.
-    //
-    //   controller.rightTrigger().whileTrue(...)
-    //     -> runs the command while the trigger is held, cancels it when released.
-    //        Bind the kicker's runContinuous() command here.
-    //
-    //   controller.leftTrigger().whileTrue(...)
-    //     -> bind the kicker's reverse() command here to clear jams.
-    //
-    // Other triggers you can use: onTrue (once, on press), onFalse (once, on release),
-    // toggleOnTrue (press to start, press again to stop).
+   // Hold right trigger to kick; the motor stops when released.
+    controller.rightTrigger().whileTrue(kicker.runContinuous());
+
+    // Hold left trigger to run in reverse and clear jams.
+    controller.leftTrigger().whileTrue(kicker.reverse());
   }
+}
 }

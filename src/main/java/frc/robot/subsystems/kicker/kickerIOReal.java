@@ -41,30 +41,23 @@ public class kickerIOReal implements kickerIO {
 
   @Override
   public void updateInputs(kickerIOInputs inputs) {
-    // TODO: copy the latest readings from the hardware into the inputs object.
-    //   inputs.positionRotations      <- encoder.getPosition()
-    //   inputs.velocityRotationsPerSec <- encoder.getVelocity(), but the encoder reports RPM,
-    //                                    so convert to rotations per second (divide by 60)
-    //   inputs.appliedVolts           <- motor.getAppliedOutput() * motor.getBusVoltage()
-    //                                    (applied output is a -1..1 fraction of bus voltage)
-    //   inputs.currentAmps            <- motor.getOutputCurrent()
-    //
-    // Optional: let students flip brake/coast from the dashboard while the robot runs with
-    //   SparkIdleModeTuner.syncIdleMode(motor, "Kicker/KickerBrake", IdleMode.kCoast);
-    //   (needs: import frc.robot.util.SparkIdleModeTuner;)
+    inputs.positionRotations = encoder.getPosition();
+    inputs.velocityRotationsPerSec = encoder.getVelocity() / 60.0; // encoder reports RPM
+    inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
+    inputs.currentAmps = motor.getOutputCurrent();
+    inputs.temperatureCelsius = motor.getMotorTemperature();
   }
 
   @Override
   public void setPercentIO(double percent) {
-    // TODO: tell the motor controller to run at this percent output with motor.set(...).
-    //   Heads up: this kicker is mounted so that positive "kick" needs the OPPOSITE motor
-    //   direction. Decide whether to negate the value here, or flip MOTOR_INVERTED in
-    //   kickerConstants instead - and why one is a better place to do it than the other.
+    // Direction is handled by MOTOR_Inverted in kickerConstants, not here.
+    motor.set(percent);
   }
 
   @Override
-  public void stop() {
-    // TODO: stop the motor. motor.stopMotor() does the job.
+  public void setPercentIO(double percent) {
+    public void stop() {
+    motor.stopMotor();
   }
 
   // Helper method to retry REV commands: configuration messages over CAN can occasionally fail.
